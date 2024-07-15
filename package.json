@@ -1,0 +1,41 @@
+{
+  "name": "frontend",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "cross-env NODE_OPTIONS='--no-warnings' vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --fix --ignore-path .gitignore"
+  },
+  "dependencies": {
+    "@mdi/font": "7.4.47",
+    "axios": "^1.6.7",
+    "core-js": "^3.34.0",
+    "dayjs": "^1.11.10",
+    "dompurify": "^3.0.9",
+    "marked": "^12.0.0",
+    "mitt": "^3.0.1",
+    "roboto-fontface": "*",
+    "sass-loader": "^14.2.0",
+    "uuid": "^9.0.1",
+    "vue": "^3.3.0",
+    "vuetify": "^3.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.5.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.56.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-n": "^16.4.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-vue": "^9.19.0",
+    "pinia": "^2.1.0",
+    "sass": "^1.75.0",
+    "unplugin-fonts": "^1.1.0",
+    "vite": "^5.0.0",
+    "vite-plugin-vuetify": "^2.0.0",
+    "vue-router": "^4.2.0"
+  }
+}
