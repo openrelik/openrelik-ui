@@ -20,6 +20,7 @@ limitations under the License.
       :class="$vuetify.theme.name === 'dark' ? '' : 'white-background'"
     >
       <v-menu
+        v-if="celeryTask.result"
         activator="parent"
         location="bottom"
         :close-on-content-click="false"
@@ -50,9 +51,18 @@ limitations under the License.
         {{ node.display_name }}
         <span v-if="celeryTask.runtime">
           <br /><small
-            >Runtime {{ celeryTask.runtime.toFixed(1) }} seconds</small
+            >Runtime: {{ celeryTask.runtime.toFixed(1) }} seconds</small
           >
         </span>
+        <span v-if="celeryTask.output_files && celeryTask.output_files.length">
+          <br /><small
+            >Result: {{ celeryTask.output_files.length }}
+            {{
+              $filters.pluralize(celeryTask.output_files.length, "file")
+            }}</small
+          >
+        </span>
+
         <v-icon
           v-if="!workflow.tasks.length"
           size="small"

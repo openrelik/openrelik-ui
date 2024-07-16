@@ -61,6 +61,13 @@ app.config.globalProperties.$filters = {
   formatTime(datetimeString) {
     return dayjs.utc(datetimeString).format();
   },
+  pluralize(count, word) {
+    if (count > 1 || count == 0) {
+      return `${word}s`;
+    } else {
+      return word;
+    }
+  },
 };
 
 registerPlugins(app);

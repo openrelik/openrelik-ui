@@ -35,10 +35,26 @@ limitations under the License.
         }}
         seconds
       </ul>
-      <ul>
-        {{
-          task.output_files
-        }}
+      <ul v-if="task.output_files.length">
+        <br />
+        <v-table>
+          <thead></thead>
+          <tr v-for="file in task.output_files" :key="file.id">
+            <td>
+              <router-link
+                style="text-decoration: none; color: inherit"
+                :to="{ name: 'file', params: { fileId: file.id } }"
+              >
+                <v-icon class="mt-n1">mdi-file-outline</v-icon>
+                {{ file.display_name }}
+              </router-link>
+            </td>
+            <td>{{ $filters.formatBytes(file.filesize) }}</td>
+            <td>
+              <v-icon @click="downloadFileTab(file.id)">mdi-download</v-icon>
+            </td>
+          </tr>
+        </v-table>
       </ul>
 
       <template v-for="(value, key) in result.meta">
@@ -62,6 +78,8 @@ limitations under the License.
 </template>
 
 <script>
+import settings from "@/settings";
+
 export default {
   name: "ProcessingResult",
   props: {
@@ -80,6 +98,13 @@ export default {
     },
     result() {
       return JSON.parse(this.task.result);
+    },
+  },
+  methods: {
+    downloadFileTab(fileId) {
+      const downloadUrl =
+        settings.apiServerUrl + "/api/v1/files/" + fileId + "/download_stream";
+      window.open(downloadUrl);
     },
   },
 };

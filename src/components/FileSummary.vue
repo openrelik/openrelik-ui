@@ -35,6 +35,8 @@ limitations under the License.
     </v-toolbar>
     <v-divider></v-divider>
     <v-skeleton-loader
+      max-width="500px"
+      color="transparent"
       v-if="fileSummary.status_short === 'in_progress'"
       loading
       type="paragraph"

@@ -191,6 +191,11 @@ export default {
     },
   },
   methods: {
+    getWorkflowSimple() {
+      RestApiClient.getWorkflow(this.workflow.id).then((response) => {
+        this.workflow = response;
+      });
+    },
     getWorkflow() {
       RestApiClient.getWorkflow(this.workflow.id)
         .then((response) => {
@@ -252,6 +257,7 @@ export default {
       this.pollData(this.fastPolling);
     },
     pollData(polling_interval_ms) {
+      this.getWorkflowSimple();
       this.polling = setInterval(() => {
         this.getWorkflow();
       }, polling_interval_ms);
