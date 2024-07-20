@@ -20,7 +20,7 @@ limitations under the License.
       :class="$vuetify.theme.name === 'dark' ? '' : 'white-background'"
     >
       <v-menu
-        v-if="celeryTask.result"
+        v-if="celeryTask.status_short"
         activator="parent"
         location="bottom"
         :close-on-content-click="false"
@@ -36,11 +36,13 @@ limitations under the License.
         <div
           v-for="file in workflow.files"
           :key="file.id"
+          :class="file.is_deleted ? 'red-text' : ''"
           style="font-size: 0.9em"
         >
           <v-icon size="small" class="mr-1" style="margin-top: -3px"
             >mdi-file-outline</v-icon
-          >{{ file.display_name }}
+          >
+          {{ file.display_name }}
         </div>
       </template>
       <template v-else>
@@ -52,14 +54,6 @@ limitations under the License.
         <span v-if="celeryTask.runtime">
           <br /><small
             >Runtime: {{ celeryTask.runtime.toFixed(1) }} seconds</small
-          >
-        </span>
-        <span v-if="celeryTask.output_files && celeryTask.output_files.length">
-          <br /><small
-            >Result: {{ celeryTask.output_files.length }}
-            {{
-              $filters.pluralize(celeryTask.output_files.length, "file")
-            }}</small
           >
         </span>
 
@@ -129,5 +123,8 @@ export default {
 <style scoped>
 .white-background {
   background-color: white;
+}
+.red-text {
+  color: red;
 }
 </style>

@@ -93,7 +93,7 @@ limitations under the License.
   </v-dialog>
 
   <!-- Folder -->
-  <v-hover v-slot="{ isHovering, props }">
+  <v-hover v-if="!folder.is_deleted" v-slot="{ isHovering, props }">
     <h2 v-bind="props" @dblclick="showRenameFolderDialog = true">
       {{ folder.display_name }}
       <v-icon
@@ -104,6 +104,7 @@ limitations under the License.
       >
     </h2>
   </v-hover>
+  <h2 v-else>{{ folder.display_name }}</h2>
   <v-breadcrumbs density="compact" class="ml-n4 mt-n1">
     <small>
       <v-breadcrumbs-item :to="{ name: 'home' }"> Home </v-breadcrumbs-item>
@@ -118,97 +119,110 @@ limitations under the License.
     </small>
   </v-breadcrumbs>
 
-  <!-- Button row -->
-  <div class="mt-3">
-    <v-btn
-      v-if="!isWorkflowFolder"
-      variant="outlined"
-      class="text-none custom-border-color"
-      prepend-icon="mdi-folder-plus-outline"
-      @click="showNewFolderDialog = true"
-      >New folder</v-btn
-    >
-    <v-btn
-      v-if="!isWorkflowFolder"
-      variant="outlined"
-      class="text-none mx-2 custom-border-color"
-      prepend-icon="mdi-upload"
-      @click="showUpload = !showUpload"
-      >Upload files</v-btn
-    >
-    <v-menu v-if="files.length">
-      <template v-slot:activator="{ props }">
-        <v-btn
-          :variant="selectedFiles.length ? 'flat' : 'outlined'"
-          :color="selectedFiles.length ? 'info' : 'default'"
-          :class="selectedFiles.length ? '' : 'custom-border-color'"
-          class="text-none"
-          prepend-icon="mdi-plus"
-          append-icon="mdi-chevron-down"
-          v-bind="props"
-          >Create workflow
-        </v-btn>
-      </template>
-      <v-card width="400">
-        <v-card-text v-if="!selectedFiles.length">
-          Select some files to create a workflow from.
-        </v-card-text>
-        <v-list v-else>
-          <v-list-item @click="createWorkflow()">
-            <v-list-item-title>
-              <v-icon size="small" style="margin-top: -3px" class="mr-1"
-                >mdi-plus</v-icon
-              >
-              <strong>New workflow</strong></v-list-item-title
-            >
-          </v-list-item>
-          <div v-if="appStore.workflowTemplates.length">
-            <v-divider></v-divider>
-            <v-list-subheader
-              v-if="appStore.workflowTemplates.length"
-              class="mt-2"
-              >Templates</v-list-subheader
-            >
-
-            <v-list-item
-              @click="createWorkflow(template.id)"
-              v-for="template in appStore.workflowTemplates"
-              :key="template.id"
-            >
-              <v-list-item-title>
-                <v-icon>mdi-plus</v-icon> {{ template.display_name }}
-              </v-list-item-title>
-            </v-list-item>
-          </div>
-        </v-list>
-      </v-card>
-    </v-menu>
+  <div v-if="folder.is_deleted">
+    <v-alert
+      type="error"
+      text="This folder has been deleted"
+      icon="mdi-alert"
+    ></v-alert>
   </div>
+  <div v-else>
+    <!-- Button row -->
+    <div class="mt-3">
+      <v-btn
+        v-if="!isWorkflowFolder"
+        variant="outlined"
+        class="text-none custom-border-color"
+        prepend-icon="mdi-folder-plus-outline"
+        @click="showNewFolderDialog = true"
+        >New folder</v-btn
+      >
+      <v-btn
+        v-if="!isWorkflowFolder"
+        variant="outlined"
+        class="text-none mx-2 custom-border-color"
+        prepend-icon="mdi-upload"
+        @click="showUpload = !showUpload"
+        >Upload files</v-btn
+      >
+      <v-menu v-if="files.length">
+        <template v-slot:activator="{ props }">
+          <v-btn
+            :variant="selectedFiles.length ? 'flat' : 'outlined'"
+            :color="selectedFiles.length ? 'info' : 'default'"
+            :class="selectedFiles.length ? '' : 'custom-border-color'"
+            class="text-none"
+            prepend-icon="mdi-plus"
+            append-icon="mdi-chevron-down"
+            v-bind="props"
+            >Create workflow
+          </v-btn>
+        </template>
+        <v-card width="400">
+          <v-card-text v-if="!selectedFiles.length">
+            Select some files to create a workflow from.
+          </v-card-text>
+          <v-list v-else>
+            <v-list-item @click="createWorkflow()">
+              <v-list-item-title>
+                <v-icon size="small" style="margin-top: -3px" class="mr-1"
+                  >mdi-plus</v-icon
+                >
+                <strong>New workflow</strong></v-list-item-title
+              >
+            </v-list-item>
+            <div v-if="appStore.workflowTemplates.length">
+              <v-divider></v-divider>
+              <v-list-subheader
+                v-if="appStore.workflowTemplates.length"
+                class="mt-2"
+                >Templates</v-list-subheader
+              >
 
-  <div class="mt-4">
-    <workflow
-      v-for="workflow in folder.workflows"
-      :key="workflow.id"
-      :initial-workflow="workflow"
-      :show-controls="true"
-      @workflow-updated="refreshFileListing()"
-      @workflow-deleted="deleteWorkflow()"
-      @workflow-renamed="renameFolder($event)"
-    >
-    </workflow>
+              <v-list-item
+                @click="createWorkflow(template.id)"
+                v-for="template in appStore.workflowTemplates"
+                :key="template.id"
+              >
+                <v-list-item-title>
+                  <v-icon>mdi-plus</v-icon> {{ template.display_name }}
+                </v-list-item-title>
+              </v-list-item>
+            </div>
+          </v-list>
+        </v-card>
+      </v-menu>
+    </div>
 
     <div class="mt-4">
-      <v-card-title v-if="isWorkflowFolder && files.length" class="ml-n4 mt-3">
-        Workflow results
-      </v-card-title>
+      <workflow
+        v-for="workflow in folder.workflows"
+        :key="workflow.id"
+        :initial-workflow="workflow"
+        :show-controls="true"
+        @workflow-updated="refreshFileListing()"
+        @workflow-deleted="deleteWorkflow()"
+        @workflow-renamed="renameFolder($event)"
+      >
+      </workflow>
 
-      <folder-list
-        :items="items"
-        :is-loading="isLoading"
-        :folder="folder"
-        @file-deleted="removeFile($event)"
-        @selected-files="selectedFiles = $event"
-      ></folder-list>
+      <div class="mt-4">
+        <v-card-title
+          v-if="isWorkflowFolder && files.length"
+          class="ml-n4 mt-3"
+        >
+          Workflow results
+        </v-card-title>
+
+        <folder-list
+          :items="items"
+          :is-loading="isLoading"
+          :folder="folder"
+          @file-deleted="removeFile($event)"
+          @folder-deleted="removeFolder($event)"
+          @selected-files="selectedFiles = $event"
+        ></folder-list>
+      </div>
     </div>
   </div>
 </template>
@@ -263,6 +277,11 @@ export default {
     },
   },
   methods: {
+    removeFolder(folder_to_remove) {
+      this.folders = this.folders.filter(
+        (folder) => folder.id != folder_to_remove.id
+      );
+    },
     removeFile(file_to_remove) {
       this.files = this.files.filter((file) => file.id != file_to_remove.id);
     },

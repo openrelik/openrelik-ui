@@ -52,7 +52,11 @@ limitations under the License.
       >New folder</v-btn
     >
   </v-card>
-  <folder-list :items="folders" :is-home-view="true"></folder-list>
+  <folder-list
+    :items="folders"
+    :is-home-view="true"
+    @folder-deleted="removeFolder($event)"
+  ></folder-list>
 </template>
 
 <script>
@@ -91,7 +95,13 @@ export default {
         });
       });
     },
+    removeFolder(folder_to_remove) {
+      this.folders = this.folders.filter(
+        (folder) => folder.id != folder_to_remove.id
+      );
+    },
   },
+
   mounted() {
     RestApiClient.getRootFolders().then((response) => {
       this.folders = response;

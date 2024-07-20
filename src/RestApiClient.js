@@ -345,10 +345,10 @@ export default {
         });
     });
   },
-  async createWorkflowTemplate(displayName, workflow) {
+  async createWorkflowTemplate(displayName, workflowId) {
     const requestBody = {
       display_name: displayName,
-      workflow: workflow,
+      workflow_id: workflowId,
     };
     return new Promise((resolve, reject) => {
       RestApiClient.post("/workflows/templates/", requestBody)

@@ -246,7 +246,7 @@ export default {
       }
       RestApiClient.createWorkflowTemplate(
         this.newTemplateForm.displayName,
-        this.workflow
+        this.workflow.id
       ).then(() => {
         this.appStore.setWorkflowTemplates();
         this.newTemplateForm.displayName = "";

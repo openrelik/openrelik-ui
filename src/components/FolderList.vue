@@ -20,6 +20,7 @@ limitations under the License.
       :items="items"
       :loading="isLoading"
       v-model="selectedFiles"
+      disable-sort
       item-key="uuid"
       item-selectable="selectable"
       items-per-page="100"
@@ -49,6 +50,7 @@ limitations under the License.
               ..
             </router-link>
           </td>
+          <td></td>
           <td></td>
           <td></td>
           <td></td>
@@ -124,14 +126,8 @@ limitations under the License.
       </template>
 
       <!-- Actions -->
-      <template v-slot:item.actions="{ item: file }">
-        <v-btn
-          v-if="file.filesize"
-          small
-          icon
-          flat
-          @click="deleteInventoryItem(file)"
-        >
+      <template v-slot:item.actions="{ item }">
+        <v-btn small icon flat @click="deleteInventoryItem(item)">
           <v-icon size="small"> mdi-trash-can-outline </v-icon>
         </v-btn>
       </template>
@@ -163,25 +159,31 @@ export default {
         { title: "Size", key: "filesize" },
         { title: "Type", key: "magic_mime" },
         { title: "Owner", key: "user" },
-        // Disabled until deletion is implemented
-        // { title: "Actions", key: "actions", sortable: false, width: "140px" },
+        { title: "Actions", key: "actions", sortable: false, width: "140px" },
       ],
       homeViewHeaders: [
         { title: "Name", key: "display_name" },
         { title: "Created", key: "created_at" },
         { title: "Owner", key: "user" },
-        // Disabled until deletion is implemented
-        // { title: "Actions", key: "actions", sortable: false, width: "140px" },
+        { title: "Actions", key: "actions", sortable: false, width: "140px" },
       ],
     };
   },
   computed: {},
   methods: {
     deleteInventoryItem(item_to_delete) {
-      if (confirm("Are you sure you want to delete this file?")) {
-        RestApiClient.deleteFile(item_to_delete).then(() => {
-          this.$emit("file-deleted", item_to_delete);
-        });
+      if (item_to_delete.filesize) {
+        if (confirm("Are you sure you want to delete this file?")) {
+          RestApiClient.deleteFile(item_to_delete).then(() => {
+            this.$emit("file-deleted", item_to_delete);
+          });
+        }
+      } else {
+        if (confirm("Are you sure you want to delete this folder?")) {
+          RestApiClient.deleteFolder(item_to_delete).then(() => {
+            this.$emit("folder-deleted", item_to_delete);
+          });
+        }
       }
     },
     selectItem(item, isSelected) {
