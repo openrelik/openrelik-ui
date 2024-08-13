@@ -80,7 +80,8 @@ export default {
     addTask(newTask, node) {
       // Clone the object to avoid circular JSON serialization.
       let clonedTask = { ...newTask };
-      clonedTask.uuid = uuidv4();
+      // HEX representation of the UUID4 (no hyphens)
+      clonedTask.uuid = uuidv4().replaceAll("-", "");
       if (!clonedTask.tasks) {
         clonedTask.tasks = [];
       }
