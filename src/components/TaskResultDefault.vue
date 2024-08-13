@@ -35,6 +35,16 @@ limitations under the License.
         }}
         seconds
       </ul>
+
+      <template v-for="(value, key) in result.meta">
+        <ul>
+          <strong>{{ key }}: </strong>
+          <span v-if="key == 'sketch'"
+            ><a :href="value" target="_blank">{{ value }}</a></span
+          >
+          <span v-else> {{ value }} </span>
+        </ul>
+      </template>
       <ul v-if="task.output_files.length">
         <br />
         <v-table>
@@ -56,16 +66,6 @@ limitations under the License.
           </tr>
         </v-table>
       </ul>
-
-      <template v-for="(value, key) in result.meta">
-        <ul>
-          <strong>{{ key }}: </strong>
-          <span v-if="key == 'sketch'"
-            ><a :href="value" target="_blank">{{ value }}</a></span
-          >
-          <span v-else> {{ value }} </span>
-        </ul>
-      </template>
     </v-card-text>
   </div>
 

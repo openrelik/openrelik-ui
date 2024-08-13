@@ -244,6 +244,7 @@ limitations under the License.
               :key="workflow.id"
               :initial-workflow="workflow"
               :show-controls="false"
+              class="mt-4"
             ></workflow>
           </v-tabs-window-item>
         </v-tabs-window>
