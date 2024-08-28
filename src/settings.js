@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 const apiServerUrl =
-  import.meta.env.VITE_API_SERVER_URL || "http://localhost:8000";
-const apiServerVersion = import.meta.env.VITE_API_SERVER_VERSION || "v1";
+  import.meta.env.VITE_OPENRELIK_SERVER_URL || "http://localhost:8000";
+const apiServerVersion = import.meta.env.VITE_OPENRELIK_API_VERSION || "v1";
 
 export default {
-  appName: "openrelik",
+  appName: "OpenRelik",
   apiServerUrl: apiServerUrl,
   apiServerVersion: apiServerVersion,
 };

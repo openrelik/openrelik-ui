@@ -1,5 +1,5 @@
 # Use the node image from official Docker Hub
-FROM node:21-bookworm-slim as build-stage
+FROM node:21-bookworm-slim AS build-stage
 # set the working directory
 WORKDIR /app
 # Copy the working directory in the container
@@ -12,7 +12,7 @@ COPY . .
 # Build the Vue.js application to the production mode to dist folder
 RUN yarn build
 # Use the lightweight Nginx image from the previous stage for the nginx container
-FROM nginx:stable-alpine as production-stage
+FROM nginx:stable-alpine AS production-stage
 # Copy the build application from the previous stage to the Nginx container
 COPY --from=build-stage /app/dist /usr/share/nginx/html/
 # Copy the nginx configuration file
