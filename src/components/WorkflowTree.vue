@@ -29,7 +29,7 @@ limitations under the License.
       <v-btn
         v-if="!workflow.tasks.length && workflowSpec.workflow.tasks.length"
         prepend-icon="mdi-play"
-        variant="tonal"
+        variant="flat"
         color="info"
         class="text-none mt-4"
         @click="runWorkflow"
