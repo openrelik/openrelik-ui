@@ -19,9 +19,15 @@ limitations under the License.
       <span>{{ appName }}</span>
     </v-app-bar-title>
     <template v-slot:prepend>
-      <v-btn icon @click="navigate('/')">
-        <v-icon>mdi-orbit</v-icon>
-      </v-btn>
+      <v-img
+        src="/logo-light-transparent.png"
+        width="27"
+        height="27"
+        class="ml-4 mr-3"
+        style="cursor: pointer"
+        @click="navigate('/')"
+      >
+      </v-img>
     </template>
     <template v-slot:append>
       <toggle-theme />

@@ -58,6 +58,7 @@ limitations under the License.
               prepend-icon="mdi-plus"
               append-icon="mdi-chevron-down"
               v-bind="props"
+              v-model="showCreateWorkflow"
               >Create workflow
             </v-btn>
           </template>
@@ -174,7 +175,12 @@ limitations under the License.
           >
             <!-- Content-->
             <v-btn
-              v-if="isTextFormat && file.summaries && !file.summaries.length"
+              v-if="
+                isTextFormat &&
+                file.summaries &&
+                !file.summaries.length &&
+                file.filesize < fileSizeLimit
+              "
               variant="outlined"
               class="text-none mt-4 custom-border-color"
               @click="generateFileSummary()"
@@ -214,19 +220,21 @@ limitations under the License.
                 <v-card-text>
                   <div style="font-family: monospace">
                     <strong v-if="file.filesize > fileSizeLimit">
-                      The file you've selected is too large to preview
+                      The file you have selected exceeds the size limit for
+                      previewing.
                     </strong>
                     <strong v-else>
-                      This file type is not currently supported for preview
+                      This file type is currently not supported for preview.
                     </strong>
 
                     <br />
+                    To view the file, please
                     <span
                       style="text-decoration: underline; cursor: pointer"
                       @click="downloadFileTab()"
-                      >Download</span
+                      >download</span
                     >
-                    the file to your computer.
+                    it to your local machine.
                   </div>
                 </v-card-text>
               </div>
@@ -239,6 +247,32 @@ limitations under the License.
             :transition="false"
             :reverse-transition="false"
           >
+            <v-card variant="outlined" class="mt-4 custom-border-color">
+              <v-toolbar
+                :color="$vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'"
+                density="compact"
+              >
+                <v-toolbar-title style="font-size: 18px">
+                  Workflows
+                </v-toolbar-title>
+              </v-toolbar>
+              <v-divider></v-divider>
+              <v-card-text style="font-family: monospace">
+                <strong>
+                  This file doesn't have any associated workflows yet.</strong
+                >
+                <br />
+                Let's
+                <span
+                  style="text-decoration: underline; cursor: pointer"
+                  @click="createWorkflow()"
+                  >create one</span
+                >
+                to get started.
+              </v-card-text>
+            </v-card>
+
+            <span style="font-family: monospace"></span>
             <workflow
               v-for="workflow in file.workflows"
               :key="workflow.id"
