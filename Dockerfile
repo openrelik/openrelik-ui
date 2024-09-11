@@ -20,7 +20,7 @@ COPY ./nginx/nginx.conf /etc/nginx/conf.d/default.conf
 # Substitute env variables at runtime
 COPY ./nginx/substitute_env_variables.sh /docker-entrypoint.d/substitute_env_variables.sh
 RUN chmod +x /docker-entrypoint.d/substitute_env_variables.sh
-# Expose the port 80
-EXPOSE 80
+# Expose the port 8711
+EXPOSE 8711
 # Start Nginx to serve the application
 CMD ["nginx", "-g", "daemon off;"]
