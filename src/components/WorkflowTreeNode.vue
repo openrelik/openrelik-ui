@@ -15,6 +15,18 @@ limitations under the License.
 -->
 <template>
   <li>
+    <v-dialog v-model="showTaskConfigForm" width="600">
+      <v-card width="600" class="mx-auto">
+        <v-card-title>Config for {{ node.display_name }}</v-card-title>
+        <v-card-text>
+          <task-config-form
+            :fields="node.task_config"
+            @save="saveTaskConfig($event)"
+            @cancel="showTaskConfigForm = false"
+          ></task-config-form>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
     <span
       class="node-content"
       :class="$vuetify.theme.name === 'dark' ? '' : 'white-background'"
@@ -46,27 +58,60 @@ limitations under the License.
         </div>
       </template>
       <template v-else>
-        <task-status-icon
-          class="mr-1"
-          :task-status="celeryTask.status_short"
-        ></task-status-icon>
-        {{ node.display_name }}
-        <span v-if="celeryTask.runtime">
-          <br /><small
-            >Runtime: {{ celeryTask.runtime.toFixed(1) }} seconds</small
-          >
-        </span>
+        <div>
+          <task-status-icon
+            class="mr-1"
+            :task-status="celeryTask.status_short"
+          ></task-status-icon>
+          {{ node.display_name }}
+          <span v-if="celeryTask.runtime">
+            <br /><small class="ml-1"
+              >Runtime:
+              <strong
+                >{{ celeryTask.runtime.toFixed(1) }} seconds</strong
+              ></small
+            >
+          </span>
 
-        <v-icon
-          v-if="!workflow.tasks.length"
-          size="small"
-          color="grey-lighten-1"
-          >mdi-plus</v-icon
-        >
+          <v-icon
+            v-if="!workflow.tasks.length"
+            size="small"
+            color="grey-lighten-1"
+            >mdi-plus</v-icon
+          >
+        </div>
+
+        <div v-if="hasTaskConfig" class="mt-2 pl-1">
+          <div v-for="option in node.task_config">
+            <small
+              v-if="
+                option.hasOwnProperty('value') &&
+                option.value !== null &&
+                option.value !== undefined &&
+                option.value !== ''
+              "
+            >
+              {{ option.name }}:
+              {{ option.value }}
+            </small>
+          </div>
+          <v-btn
+            v-if="!Object.keys(celeryTask).length"
+            block
+            variant="tonal"
+            size="small"
+            class="text-none custom-border-color mt-2"
+            @click.stop="showTaskConfigForm = true"
+          >
+            <v-icon left class="mr-1">mdi-cog-outline</v-icon>
+            Configure
+          </v-btn>
+        </div>
       </template>
 
       <workflow-task-dropdown
         v-if="!workflow.tasks.length"
+        :isRootNode="node.isRoot"
         @add-task="addTask($event, node)"
         @remove-task="removeTask(node)"
       ></workflow-task-dropdown>
@@ -78,6 +123,7 @@ limitations under the License.
         :workflow="workflow"
         :add-task="addTask"
         :remove-task="removeTask"
+        :update-workflow="updateWorkflow"
       ></tree-node>
     </ul>
   </li>
@@ -87,6 +133,7 @@ limitations under the License.
 import WorkflowTaskDropdown from "./WorkflowTaskDropdown";
 import TaskStatusIcon from "./TaskStatusIcon";
 import TaskResultDefault from "@/components/TaskResultDefault.vue";
+import TaskConfigForm from "./TaskConfigForm.vue";
 
 export default {
   name: "treeNode",
@@ -95,14 +142,18 @@ export default {
     workflow: Object,
     addTask: Function,
     removeTask: Function,
+    updateWorkflow: Function,
   },
   components: {
     WorkflowTaskDropdown,
     TaskStatusIcon,
     TaskResultDefault,
+    TaskConfigForm: TaskConfigForm,
   },
   data() {
-    return {};
+    return {
+      showTaskConfigForm: false,
+    };
   },
   computed: {
     celeryTask() {
@@ -111,10 +162,37 @@ export default {
         {}
       );
     },
+    hasTaskConfig() {
+      return this.node.task_config && this.node.task_config.length;
+    },
+    hasTaskConfigWithValue() {
+      return this.node.task_config.some((option) => {
+        return (
+          option.hasOwnProperty("value") &&
+          option.value !== null &&
+          option.value !== undefined &&
+          option.value !== ""
+        );
+      });
+    },
     nodeIcon() {
       return this.celeryTask.status_short === "PROGRESS"
         ? "mdi-chart-box-outline"
         : "mdi-information-outline";
+    },
+  },
+  methods: {
+    saveTaskConfig(formData) {
+      // Loop through the task options in the object
+      this.node.task_config.forEach((option) => {
+        // Check if there's a corresponding value in the formData
+        if (formData.hasOwnProperty(option.name)) {
+          // Update the option with the value from the formData
+          option.value = formData[option.name];
+        }
+      });
+      this.updateWorkflow();
+      this.showTaskConfigForm = false;
     },
   },
 };

@@ -23,6 +23,7 @@ limitations under the License.
           :workflow="workflow"
           :add-task="addTask"
           :remove-task="removeTask"
+          :update-workflow="updateWorkflow"
         ></tree-node>
       </ul>
 
@@ -47,6 +48,8 @@ import RestApiClient from "@/RestApiClient";
 import TreeNode from "@/components/WorkflowTreeNode";
 import WorkflowTaskDropdown from "@/components/WorkflowTaskDropdown";
 import TaskResultDefault from "@/components/TaskResultDefault.vue";
+
+import _ from "lodash";
 
 export default {
   name: "WorkflowTree",
@@ -79,19 +82,15 @@ export default {
   methods: {
     addTask(newTask, node) {
       // Clone the object to avoid circular JSON serialization.
-      let clonedTask = { ...newTask };
+      let clonedTask = _.cloneDeep(newTask);
       // HEX representation of the UUID4 (no hyphens)
       clonedTask.uuid = uuidv4().replaceAll("-", "");
+
       if (!clonedTask.tasks) {
         clonedTask.tasks = [];
       }
       node.tasks.push(clonedTask);
-      let requestBody = { spec_json: JSON.stringify(this.workflowSpec) };
-      RestApiClient.updateWorkflow(this.workflow, requestBody)
-        .then((response) => {})
-        .catch((error) => {
-          console.error(error);
-        });
+      this.updateWorkflow();
     },
     removeTask(node) {
       // Recursivly remove the task from all tasks in the workflow spec.
@@ -115,6 +114,9 @@ export default {
         return false;
       }
       findAndRemove(this.workflowSpec.workflow.tasks, "uuid", node.uuid);
+      this.updateWorkflow();
+    },
+    updateWorkflow() {
       let requestBody = { spec_json: JSON.stringify(this.workflowSpec) };
       RestApiClient.updateWorkflow(this.workflow, requestBody)
         .then((response) => {})

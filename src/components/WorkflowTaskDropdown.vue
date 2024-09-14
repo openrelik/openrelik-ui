@@ -26,10 +26,12 @@ limitations under the License.
           {{ celery_task.description }}
         </v-list-item-subtitle>
       </v-list-item>
-      <v-divider class="mt-3"></v-divider>
-      <v-list-item @click="removeTask" prepend-icon="mdi-trash-can-outline"
-        >Remove task</v-list-item
-      >
+      <template v-if="!isRootNode">
+        <v-divider class="mt-3"></v-divider>
+        <v-list-item @click="removeTask" prepend-icon="mdi-trash-can-outline"
+          >Remove task</v-list-item
+        >
+      </template>
     </v-list>
   </v-menu>
 </template>
@@ -39,6 +41,7 @@ import { useAppStore } from "@/stores/app";
 
 export default {
   name: "WorkflowTaskDropdown",
+  props: { isRootNode: Boolean },
   data() {
     return {
       appStore: useAppStore(),
