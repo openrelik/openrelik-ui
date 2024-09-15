@@ -62,7 +62,11 @@ limitations under the License.
       <!-- Display name -->
       <template v-slot:item.display_name="{ item: item }">
         <span v-if="item.filesize">
-          <v-icon class="mr-2 mt-n1">mdi-file-outline</v-icon>
+          <v-icon v-if="item.data_type.startsWith('cloud:')" class="mr-2 mt-n1"
+            >mdi-cloud-outline</v-icon
+          >
+          <v-icon v-else class="mr-2 mt-n1">mdi-file-outline</v-icon>
+
           <router-link
             style="text-decoration: none; color: inherit"
             :to="{ name: 'file', params: { fileId: item.id } }"

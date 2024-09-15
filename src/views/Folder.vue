@@ -92,6 +92,50 @@ limitations under the License.
     </v-card>
   </v-dialog>
 
+  <!-- Add cloud disk dialog -->
+  <v-dialog v-model="showAddCloudDisk" width="800">
+    <v-card width="800" class="mx-auto">
+      <v-card-text>
+        <h3>Add cloud disk</h3>
+        <v-list-subheader class="mb-4">
+          <v-icon size="small" color="success" class="mt-n1"
+            >mdi-check-circle-outline</v-icon
+          >
+          Connected to
+          <strong>{{ systemConfig.active_cloud.display_name }}</strong>
+          on project
+          <strong>{{ systemConfig.active_cloud.project_name }}</strong> in zone
+          <strong>{{ systemConfig.active_cloud.zone }}</strong>
+        </v-list-subheader>
+        <v-form @submit.prevent="addCloudDisk">
+          <v-text-field
+            v-model="newCloudDiskName"
+            label="Enter cloud disk name"
+            variant="outlined"
+            required
+          ></v-text-field>
+          <v-btn
+            :disabled="!newCloudDiskName"
+            type="submit"
+            color="primary"
+            variant="text"
+            class="text-none"
+            >Add</v-btn
+          >
+          <v-btn
+            variant="text"
+            class="text-none"
+            @click="
+              newCloudDiskName = '';
+              showAddCloudDisk = false;
+            "
+            >Cancel</v-btn
+          >
+        </v-form>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
+
   <!-- Folder -->
   <v-hover v-if="!folder.is_deleted" v-slot="{ isHovering, props }">
     <h2 v-bind="props" @dblclick="showRenameFolderDialog = true">
@@ -140,10 +184,17 @@ limitations under the License.
       <v-btn
         v-if="!isWorkflowFolder"
         variant="outlined"
-        class="text-none mx-2 custom-border-color"
+        class="text-none ml-2 custom-border-color"
         prepend-icon="mdi-upload"
         @click="showUpload = !showUpload"
         >Upload files</v-btn
+      >
+      <v-btn
+        variant="outlined"
+        class="text-none mx-2 custom-border-color"
+        prepend-icon="mdi-cloud-plus-outline"
+        @click="showAddCloudDisk = !showAddCloudDisk"
+        >Add cloud disk</v-btn
       >
       <v-menu v-if="files.length">
         <template v-slot:activator="{ props }">
@@ -253,8 +304,10 @@ export default {
       files: [],
       selectedFiles: [],
       showUpload: false,
+      showAddCloudDisk: false,
       showNewFolderDialog: false,
       showRenameFolderDialog: false,
+      newCloudDiskName: "",
       newFolderForm: {
         name: "",
       },
@@ -266,6 +319,9 @@ export default {
     };
   },
   computed: {
+    systemConfig() {
+      return this.appStore.systemConfig;
+    },
     items() {
       return this.folders.concat(this.files);
     },
@@ -355,7 +411,18 @@ export default {
         });
       });
     },
+    addCloudDisk() {
+      RestApiClient.createCloudDiskFile(
+        this.newCloudDiskName,
+        this.folder.id
+      ).then((response) => {
+        this.refreshFileListing();
+      });
+      this.showAddCloudDisk = false;
+      this.newCloudDiskName = "";
+    },
   },
+
   mounted() {
     this.isLoading = true;
     this.getFolder();

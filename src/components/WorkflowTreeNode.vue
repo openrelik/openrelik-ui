@@ -51,7 +51,10 @@ limitations under the License.
           :class="file.is_deleted ? 'red-text' : ''"
           style="font-size: 0.9em"
         >
-          <v-icon size="small" class="mr-1" style="margin-top: -3px"
+          <v-icon v-if="file.data_type.startsWith('cloud:')" class="mr-2 mt-n1"
+            >mdi-cloud-outline</v-icon
+          >
+          <v-icon v-else size="small" class="mr-1" style="margin-top: -3px"
             >mdi-file-outline</v-icon
           >
           {{ file.display_name }}

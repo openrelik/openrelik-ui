@@ -36,7 +36,6 @@ limitations under the License.
           label="Choose files to upload"
           variant="outlined"
           hide-details
-          density="compact"
           multiple
         ></v-file-input>
         <v-btn
