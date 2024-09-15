@@ -119,13 +119,39 @@ limitations under the License.
                 :color="$vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'"
                 density="compact"
               >
-                <v-toolbar-title style="font-size: 18px">
-                  Basic properties
+                <v-icon v-if="isCloudDisk" class="ml-4 mr-n2"
+                  >mdi-cloud-outline</v-icon
+                >
+                <v-toolbar-title
+                  style="font-size: 18px"
+                  :text="isCloudDisk ? 'Cloud disk' : 'Basic properties'"
+                >
                 </v-toolbar-title>
               </v-toolbar>
               <v-divider></v-divider>
 
-              <v-table density="compact">
+              <v-table v-if="isCloudDisk" density="compact">
+                <tbody>
+                  <tr>
+                    <td>Provider</td>
+                    <td>{{ systemConfig.active_cloud.display_name }}</td>
+                  </tr>
+                  <tr>
+                    <td>Project</td>
+                    <td>{{ systemConfig.active_cloud.project_name }}</td>
+                  </tr>
+                  <tr>
+                    <td>Zone</td>
+                    <td>{{ systemConfig.active_cloud.zone }}</td>
+                  </tr>
+                  <tr>
+                    <td>Disk name</td>
+                    <td>{{ file.filename }}</td>
+                  </tr>
+                </tbody>
+              </v-table>
+
+              <v-table v-else density="compact">
                 <tbody>
                   <tr>
                     <td>MD5</td>
@@ -139,12 +165,6 @@ limitations under the License.
                     <td>SHA-256</td>
                     <td>{{ file.hash_sha256 }}</td>
                   </tr>
-                  <!-- Disabled until implemented
-                <tr>
-                  <td>SSDEEP</td>
-                  <td></td>
-                </tr>
-                -->
                   <tr>
                     <td>Data type</td>
                     <td>{{ file.data_type }}</td>
@@ -220,15 +240,15 @@ limitations under the License.
                 <v-card-text>
                   <div style="font-family: monospace">
                     <strong v-if="file.filesize > fileSizeLimit">
-                      The file you have selected exceeds the size limit for
-                      previewing.
+                      The selected file exceeds the maximum size allowed for
+                      preview.
                     </strong>
                     <strong v-else>
-                      This file type is currently not supported for preview.
+                      This file format isn't currently supported for preview.
                     </strong>
 
                     <br />
-                    To view the file, please
+                    To examine the file, please
                     <span
                       style="text-decoration: underline; cursor: pointer"
                       @click="downloadFileTab()"
@@ -247,7 +267,11 @@ limitations under the License.
             :transition="false"
             :reverse-transition="false"
           >
-            <v-card variant="outlined" class="mt-4 custom-border-color">
+            <v-card
+              v-if="!file.workflows.length"
+              variant="outlined"
+              class="mt-4 custom-border-color"
+            >
               <v-toolbar
                 :color="$vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'"
                 density="compact"
@@ -356,6 +380,9 @@ export default {
         "text/csv",
       ];
       return textFileTypes.includes(this.file.magic_mime);
+    },
+    isCloudDisk() {
+      return this.file.data_type.startsWith("cloud:");
     },
   },
 
