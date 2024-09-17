@@ -93,7 +93,7 @@ export default {
       this.updateWorkflow();
     },
     removeTask(node) {
-      // Recursivly remove the task from all tasks in the workflow spec.
+      // Recursively remove the task from all tasks in the workflow spec.
       function findAndRemove(data, targetProperty, targetValue) {
         for (let i = 0; i < data.length; i++) {
           if (data[i][targetProperty] === targetValue) {
