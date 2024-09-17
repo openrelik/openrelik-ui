@@ -17,7 +17,7 @@ limitations under the License.
 // Composables
 import { createRouter, createWebHistory } from "vue-router";
 
-// Import the default layout that wrapps all other views with an AppBar etc.
+// Import the default layout that wraps all other views with an AppBar etc.
 import Default from "@/layouts/default/Default.vue";
 
 // Import App views
