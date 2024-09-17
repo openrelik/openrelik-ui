@@ -84,7 +84,7 @@ limitations under the License.
           >
         </div>
 
-        <div v-if="hasTaskConfig" class="mt-2 pl-1">
+        <div v-if="hasTaskConfig" class="pl-1">
           <div v-for="option in node.task_config">
             <small
               v-if="
@@ -100,10 +100,10 @@ limitations under the License.
           </div>
           <v-btn
             v-if="!Object.keys(celeryTask).length"
-            block
-            variant="tonal"
-            size="small"
-            class="text-none custom-border-color mt-2"
+            variant="text"
+            size="x-small"
+            color="primary"
+            class="text-none"
             @click.stop="showTaskConfigForm = true"
           >
             <v-icon left class="mr-1">mdi-cog-outline</v-icon>

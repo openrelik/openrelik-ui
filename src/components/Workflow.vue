@@ -77,7 +77,11 @@ limitations under the License.
       </v-card>
     </v-dialog>
 
-    <v-card variant="outlined" class="custom-border-color">
+    <v-card
+      variant="outlined"
+      class="custom-border-color"
+      :class="$vuetify.theme.name === 'dark' ? '' : 'light-background'"
+    >
       <v-toolbar
         :color="$vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'"
         density="compact"
@@ -272,3 +276,9 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.light-background {
+  background-color: #fafafa;
+}
+</style>
