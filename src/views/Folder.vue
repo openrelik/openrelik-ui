@@ -190,6 +190,7 @@ limitations under the License.
         >Upload files</v-btn
       >
       <v-btn
+        v-if="!isWorkflowFolder"
         variant="outlined"
         class="text-none mx-2 custom-border-color"
         prepend-icon="mdi-cloud-plus-outline"
