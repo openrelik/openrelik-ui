@@ -93,7 +93,7 @@ limitations under the License.
   </v-dialog>
 
   <!-- Add cloud disk dialog -->
-  <v-dialog v-model="showAddCloudDisk" width="800">
+  <v-dialog v-if="isCloudEnabled" v-model="showAddCloudDisk" width="800">
     <v-card width="800" class="mx-auto">
       <v-card-text>
         <h3>Add cloud disk</h3>
@@ -184,15 +184,15 @@ limitations under the License.
       <v-btn
         v-if="!isWorkflowFolder"
         variant="outlined"
-        class="text-none ml-2 custom-border-color"
+        class="text-none mx-2 custom-border-color"
         prepend-icon="mdi-upload"
         @click="showUpload = !showUpload"
         >Upload files</v-btn
       >
       <v-btn
-        v-if="!isWorkflowFolder"
+        v-if="!isWorkflowFolder && isCloudEnabled"
         variant="outlined"
-        class="text-none mx-2 custom-border-color"
+        class="text-none mr-2 custom-border-color"
         prepend-icon="mdi-cloud-plus-outline"
         @click="showAddCloudDisk = !showAddCloudDisk"
         >Add cloud disk</v-btn
@@ -331,6 +331,12 @@ export default {
         return;
       }
       return this.folder.workflows.length;
+    },
+    isCloudEnabled() {
+      if (!this.systemConfig) {
+        return;
+      }
+      return Object.keys(this.systemConfig.active_cloud).length > 0;
     },
   },
   methods: {
