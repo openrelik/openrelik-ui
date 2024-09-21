@@ -163,7 +163,6 @@ export default {
     align-items: center;
     padding-top: 0.5vh;
     padding-bottom: 0.5vh;
-
     position: relative;
     padding-left: 1vw;
 

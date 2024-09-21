@@ -45,19 +45,23 @@ limitations under the License.
         </v-card>
       </v-menu>
       <template v-if="node.isRoot">
-        <div
-          v-for="file in workflow.files"
-          :key="file.id"
-          :class="file.is_deleted ? 'red-text' : ''"
-          style="font-size: 0.9em"
-        >
-          <v-icon v-if="file.data_type.startsWith('cloud:')" class="mr-2 mt-n1"
-            >mdi-cloud-outline</v-icon
+        <div>
+          <div
+            v-for="file in workflow.files"
+            :key="file.id"
+            :class="file.is_deleted ? 'red-text' : ''"
+            style="font-size: 0.9em"
           >
-          <v-icon v-else size="small" class="mr-1" style="margin-top: -3px"
-            >mdi-file-outline</v-icon
-          >
-          {{ file.display_name }}
+            <v-icon
+              v-if="file.data_type.startsWith('cloud:')"
+              class="mr-2 mt-n1"
+              >mdi-cloud-outline</v-icon
+            >
+            <v-icon v-else size="small" class="mr-1" style="margin-top: -3px"
+              >mdi-file-outline</v-icon
+            >
+            {{ file.display_name }}
+          </div>
         </div>
       </template>
       <template v-else>
@@ -75,40 +79,40 @@ limitations under the License.
               ></small
             >
           </span>
-
-          <v-icon
-            v-if="!workflow.tasks.length"
-            size="small"
-            color="grey-lighten-1"
-            >mdi-plus</v-icon
-          >
-        </div>
-
-        <div v-if="hasTaskConfig" class="pl-1">
-          <div v-for="option in node.task_config">
-            <small
-              v-if="
-                option.hasOwnProperty('value') &&
-                option.value !== null &&
-                option.value !== undefined &&
-                option.value !== ''
-              "
+          <v-btn icon variant="text" size="x-small" class="text-none ml-1">
+            <v-icon
+              v-if="!workflow.tasks.length"
+              color="grey-lighten-1"
+              size="x-large"
+              >mdi-plus</v-icon
             >
-              {{ option.name }}:
-              {{ option.value }}
-            </small>
-          </div>
-          <v-btn
-            v-if="!Object.keys(celeryTask).length"
-            variant="text"
-            size="x-small"
-            color="primary"
-            class="text-none"
-            @click.stop="showTaskConfigForm = true"
-          >
-            <v-icon left class="mr-1">mdi-cog-outline</v-icon>
-            Configure
           </v-btn>
+          <span v-if="hasTaskConfig">
+            <v-btn
+              v-if="!Object.keys(celeryTask).length"
+              icon
+              variant="text"
+              size="x-small"
+              class="text-none"
+              @click.stop="showTaskConfigForm = true"
+            >
+              <v-icon>mdi-cog-outline</v-icon>
+            </v-btn>
+          </span>
+        </div>
+        <div class="ml-1" v-for="option in node.task_config">
+          <small
+            v-if="
+              option.hasOwnProperty('value') &&
+              option.value !== null &&
+              option.value !== undefined &&
+              option.value !== ''
+            "
+          >
+            <strong>{{ option.name }}</strong
+            >:
+            {{ option.value }}
+          </small>
         </div>
       </template>
 
