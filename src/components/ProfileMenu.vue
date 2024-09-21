@@ -14,6 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <template>
+  <v-snackbar v-model="showSnackbar" :timeout="2000" location="top">
+    {{ snackbarText }}
+  </v-snackbar>
   <v-dialog v-model="showApiKeysDialog" width="600">
     <v-card width="600" class="mx-auto">
       <v-toolbar color="transparent">
@@ -55,11 +58,27 @@ limitations under the License.
         <span v-if="!apiKeys.length">No API keys</span>
       </div>
       <div class="pa-4">
-        <ul v-for="apiKey in apiKeys" :key="apiKey.id">
-          {{
-            apiKey.api_key
-          }}
-        </ul>
+        <v-table>
+          <tbody>
+            <tr v-for="apiKey in apiKeys" :key="apiKey.id">
+              <td>{{ apiKey.display_name }}</td>
+              <td>
+                <span style="font-style: italic; user-select: none">
+                  {{
+                    apiKey.api_key.slice(0, 15) +
+                    "..." +
+                    apiKey.api_key.slice(-15)
+                  }}
+                </span>
+              </td>
+              <td>
+                <v-icon @click="copyToClipboard(apiKey)"
+                  >mdi-content-copy</v-icon
+                >
+              </td>
+            </tr>
+          </tbody>
+        </v-table>
       </div>
     </v-card>
   </v-dialog>
@@ -105,6 +124,8 @@ export default {
       },
       showApiKeysDialog: false,
       showApiKeysForm: false,
+      showSnackbar: false,
+      snackbarText: "",
     };
   },
   computed: {
@@ -139,7 +160,21 @@ export default {
       ).then((response) => {
         this.showApiKeysForm = false;
         this.newApiKey.displayName = "";
+        this.apiKeys.push(response);
       });
+    },
+    copyToClipboard(apiKey) {
+      this.showSnackbar = false;
+      this.snackbarText = "";
+      navigator.clipboard
+        .writeText(apiKey.api_key)
+        .then(() => {
+          this.snackbarText = `Copied "${apiKey.display_name}" to clipboard`;
+          this.showSnackbar = true;
+        })
+        .catch((err) => {
+          console.error("Failed to copy to clipboard:", err);
+        });
     },
   },
   mounted() {

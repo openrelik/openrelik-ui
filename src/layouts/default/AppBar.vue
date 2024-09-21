@@ -16,7 +16,7 @@ limitations under the License.
 <template>
   <v-toolbar flat class="pr-4" color="transparent">
     <v-app-bar-title class="ml-n1">
-      <span>{{ appName }}</span>
+      <strong>{{ appName }}</strong>
     </v-app-bar-title>
     <template v-slot:prepend>
       <v-img
