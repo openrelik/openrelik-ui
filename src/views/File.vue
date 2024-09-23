@@ -58,7 +58,6 @@ limitations under the License.
               prepend-icon="mdi-plus"
               append-icon="mdi-chevron-down"
               v-bind="props"
-              v-model="showCreateWorkflow"
               >Create workflow
             </v-btn>
           </template>
@@ -196,6 +195,7 @@ limitations under the License.
             <!-- Content-->
             <v-btn
               v-if="
+                systemConfig.active_llms.length &&
                 isTextFormat &&
                 file.summaries &&
                 !file.summaries.length &&
@@ -221,6 +221,15 @@ limitations under the License.
               >
                 <v-toolbar-title style="font-size: 18px">
                   File content
+                  <v-btn
+                    v-if="allowedPreview"
+                    variant="text"
+                    size="small"
+                    class="ml-3 text-none"
+                    :text="showFilePreview ? 'Raw' : 'Preview'"
+                    @click="showFilePreview = !showFilePreview"
+                  >
+                  </v-btn>
                 </v-toolbar-title>
               </v-toolbar>
               <v-divider></v-divider>
@@ -230,7 +239,8 @@ limitations under the License.
                 v-if="isTextFormat && file.filesize < fileSizeLimit"
               >
                 <iframe
-                  :src="getIframeSrc()"
+                  sandbox
+                  :src="getIframeSrc({ unsafe: showFilePreview })"
                   frameborder="0"
                   scrolling="yes"
                   style="width: 100%; height: 65vh"
@@ -341,6 +351,7 @@ export default {
     return {
       file: null,
       fileContent: null,
+      showFilePreview: true,
       fileContentLoading: false,
       workflows: [],
       appStore: useAppStore(),
@@ -384,17 +395,31 @@ export default {
     isCloudDisk() {
       return this.file.data_type.startsWith("cloud:");
     },
+    allowedPreview() {
+      // Render unescaped HTML content in sandboxed iframe if data_type is in server side
+      // provided allowlist and magic_mime is text/html.
+      return (
+        this.systemConfig.allowed_data_types_preview.includes(
+          this.file.data_type
+        ) && this.file.magic_mime == "text/html"
+      );
+    },
   },
 
   methods: {
-    getIframeSrc() {
-      return (
+    getIframeSrc(options = {}) {
+      let url =
         settings.apiServerUrl +
         "/api/v1/files/" +
         this.file.id +
         "/content?theme=" +
-        this.$vuetify.theme.name
-      );
+        this.$vuetify.theme.name;
+
+      if (options.unsafe) {
+        url += "&unescaped=true";
+      }
+
+      return url;
     },
     generateFileSummary() {
       RestApiClient.generateFileSummary(this.file.id).then((response) => {
