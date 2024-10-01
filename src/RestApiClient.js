@@ -28,6 +28,38 @@ const RestApiBlobClient = axios.create({
   withCredentials: true,
 });
 
+function addRefreshTokenInterceptor(client) {
+  client.interceptors.response.use(
+    (response) => {
+      // Return all 2xx responsed.
+      return response;
+    },
+    async (error) => {
+      const originalRequest = error.config;
+      if (error.response.status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true;
+        try {
+          // Make a request to refresh the access token
+          console.log("Refreshing token...");
+          await axios.get(settings.apiServerUrl + "/auth/refresh", {
+            withCredentials: true,
+          });
+          // Retry the original request with the new access token
+          return client(originalRequest);
+        } catch (refreshError) {
+          // Handle refresh token error (redirect to login)
+          window.location.href = "/login";
+        }
+      }
+      return Promise.reject(error);
+    }
+  );
+}
+
+// Add the interceptor to both clients
+addRefreshTokenInterceptor(RestApiClient);
+addRefreshTokenInterceptor(RestApiBlobClient);
+
 export default {
   async getUser() {
     return new Promise((resolve, reject) => {
@@ -415,6 +447,17 @@ export default {
     };
     return new Promise((resolve, reject) => {
       RestApiClient.post("/users/me/apikeys/", requestBody)
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async deleteUserApiKey(apiKeyId) {
+    return new Promise((resolve, reject) => {
+      RestApiClient.delete(`/users/me/apikeys/${apiKeyId}/`)
         .then((response) => {
           resolve(response.data);
         })

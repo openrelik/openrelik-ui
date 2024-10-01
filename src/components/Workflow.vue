@@ -94,7 +94,7 @@ limitations under the License.
             :title="workflow.user.name"
           >
             <v-img
-              :src="workflow.user.picture"
+              :src="workflow.user.profile_picture_url"
               referrerpolicy="no-referrer"
               alt="Profile Picture"
             ></v-img>
