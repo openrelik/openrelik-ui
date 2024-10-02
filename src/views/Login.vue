@@ -35,6 +35,7 @@ limitations under the License.
               prepend-inner-icon="mdi-account"
               variant="outlined"
               class="mb-3"
+              autocomplete="username"
               required
               hide-details
             ></v-text-field>
@@ -45,6 +46,7 @@ limitations under the License.
               prepend-inner-icon="mdi-lock"
               type="password"
               class="mb-3"
+              autocomplete="current-password"
               required
               hide-details
             ></v-text-field>
@@ -114,32 +116,71 @@ export default {
   methods: {
     async submitUsernamePassword() {
       if (!this.username || !this.password) {
+        // Don't submit if username or password is empty
         return;
       }
+
       try {
-        const formData = new FormData();
-        formData.append("username", this.username);
-        formData.append("password", this.password);
-        const response = await axios.post(
-          settings.apiServerUrl + "/auth/local",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-            withCredentials: true,
-          }
-        );
-        if (response.status === 200) {
-          window.location.href = "/";
-        }
+        await this.loginUser(); // 1. Attempt to log in the user
+        await this.fetchCsrfToken(); // 2. If login successful, fetch CSRF token
+        this.$router.push("/"); // 3. Redirect to the home page
       } catch (err) {
-        this.error = err.response?.data?.detail || "An error occurred.";
-        this.showError = true;
-        this.password = "";
+        // Handle any errors during login or fetching CSRF token
+        this.handleError(err);
       }
     },
+
+    async loginUser() {
+      // Prepare form data for login request
+      const formData = new FormData();
+      formData.append("username", this.username);
+      formData.append("password", this.password);
+
+      // Send login request
+      const response = await axios.post(
+        `${settings.apiServerUrl}/auth/local`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true, // Include credentials for cross-origin requests
+        }
+      );
+
+      // Check if login was successful
+      if (response.status !== 200) {
+        throw new Error("Login failed");
+      }
+    },
+
+    async fetchCsrfToken() {
+      // Fetch CSRF token after successful login
+      const csrfTokenResponse = await axios.get(
+        `${settings.apiServerUrl}/auth/csrf`,
+        {
+          withCredentials: true, // Include credentials for cross-origin requests
+        }
+      );
+
+      // Store CSRF token in session storage
+      if (csrfTokenResponse.status === 200) {
+        sessionStorage.setItem("csrfToken", csrfTokenResponse.data);
+      } else {
+        throw new Error("Failed to fetch CSRF token");
+      }
+    },
+
+    handleError(err) {
+      // Display error message to the user
+      this.error = err.response?.data?.detail || "An error occurred.";
+      this.showError = true;
+      // Clear password field after error
+      this.password = "";
+    },
+
     getAuthIcon(authMethod) {
+      // Map authentication methods to icons
       const iconMap = {
         google: "mdi-google",
       };

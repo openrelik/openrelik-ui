@@ -16,6 +16,7 @@ limitations under the License.
 <template>
   <v-app>
     <v-main>
+      <AppSnackbar />
       <router-view></router-view>
     </v-main>
   </v-app>

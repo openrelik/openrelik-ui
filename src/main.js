@@ -26,6 +26,9 @@ import { createApp } from "vue";
 // EventBus
 import eventBus from "./plugins/eventbus";
 
+// Global snackbar
+import AppSnackbar from "./components/AppSnackbar.vue";
+
 // DayJS for time functions
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -76,4 +79,5 @@ app.config.globalProperties.$filters = {
 registerPlugins(app);
 
 app.use(eventBus);
+app.component("AppSnackbar", AppSnackbar);
 app.mount("#app");

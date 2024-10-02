@@ -21,8 +21,8 @@ limitations under the License.
     <template v-slot:prepend>
       <v-img
         src="/logo-light-transparent.png"
-        width="27"
-        height="27"
+        width="30"
+        height="30"
         class="ml-4 mr-3"
         style="cursor: pointer"
         @click="navigate('/')"
@@ -31,7 +31,7 @@ limitations under the License.
     </template>
     <template v-slot:append>
       <toggle-theme />
-      <profile-menu />
+      <profile-menu size="30" />
     </template>
   </v-toolbar>
   <v-divider></v-divider>

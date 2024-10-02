@@ -28,29 +28,76 @@ const RestApiBlobClient = axios.create({
   withCredentials: true,
 });
 
+/**
+ * Adds an interceptor to the provided Axios client that automatically refreshes
+ * the access token when a 401 (Unauthorized) response is encountered.
+ */
 function addRefreshTokenInterceptor(client) {
   client.interceptors.response.use(
     (response) => {
-      // Return all 2xx responsed.
+      // If the response is successful (status code 2xx), return it as is.
       return response;
     },
     async (error) => {
+      // If the response is an error, check if it's a 401 (Unauthorized) error.
       const originalRequest = error.config;
+      // Only attempt to refresh the token if the request hasn't already been retried.
       if (error.response.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true;
+        originalRequest._retry = true; // Mark the request as retried to prevent infinite loops.
         try {
-          // Make a request to refresh the access token
-          console.log("Refreshing token...");
-          await axios.get(settings.apiServerUrl + "/auth/refresh", {
-            withCredentials: true,
-          });
-          // Retry the original request with the new access token
+          // Make a request to the auth server to refresh the access token.
+          const response = await axios.get(
+            settings.apiServerUrl + "/auth/refresh",
+            {
+              withCredentials: true, // Include credentials (cookies) in the refresh request.
+            }
+          );
+
+          // Update CSRF token in sessionStorage
+          sessionStorage.setItem("csrfToken", response.data.new_csrf_token);
+
+          // Retry the original request. The updated access token should be
+          // automatically included in the request headers by the Axios client.
           return client(originalRequest);
         } catch (refreshError) {
-          // Handle refresh token error (redirect to login)
+          // If refreshing the token fails, redirect the user to the login page.
+          // This could happen if the refresh token is invalid or expired.
+          console.error("Refresh error, redirect");
           window.location.href = "/login";
         }
       }
+      // If the error is not a 401 or the refresh failed, reject the promise and
+      // let the calling code handle the error.
+      return Promise.reject(error);
+    }
+  );
+}
+
+/**
+ * Adds an interceptor to the provided Axios client that automatically refreshes
+ * the CSRF token and adds it to the request headers. Token is stored in sessionStorage.
+ */
+function addCSRFInterceptor(client) {
+  // Add X-CSRF-Token to all requests
+  client.interceptors.request.use(
+    async (config) => {
+      // 1. Check if the request method is safe, and if so skip setting the CSRF header.
+      const safeMethods = ["GET", "HEAD", "OPTIONS", "TRACE"];
+      if (safeMethods.includes(config.method.toUpperCase())) {
+        return config; // Skip adding CSRF token for safe methods
+      }
+
+      // 2. Attempt to retrieve the CSRF token from session storage.
+      const csrfToken = sessionStorage.getItem("csrfToken");
+
+      // 3. If the token exists, add it to the request headers and proceed.
+      if (csrfToken) {
+        config.headers["X-CSRF-Token"] = csrfToken;
+      }
+      return config;
+    },
+    (error) => {
+      // Handle general request errors.
       return Promise.reject(error);
     }
   );
@@ -59,6 +106,10 @@ function addRefreshTokenInterceptor(client) {
 // Add the interceptor to both clients
 addRefreshTokenInterceptor(RestApiClient);
 addRefreshTokenInterceptor(RestApiBlobClient);
+
+// Add CSRF header X-CSRF-Token, fetching token from the server if it is missing
+addCSRFInterceptor(RestApiClient);
+addCSRFInterceptor(RestApiBlobClient);
 
 export default {
   async getUser() {
