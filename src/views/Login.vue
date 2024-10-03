@@ -15,20 +15,78 @@ limitations under the License.
 -->
 <template>
   <v-container fluid style="margin-top: 12vh">
-    <v-card flat class="mx-auto" max-width="700">
+    <v-snackbar v-model="showError" color="error" location="top">
+      {{ error }}
+    </v-snackbar>
+    <v-card flat class="mx-auto" max-width="400">
+      <template v-slot:prepend>
+        <v-img src="/logo-light-transparent.png" width="40" height="40">
+        </v-img>
+      </template>
       <template v-slot:title>
-        <h2>Login</h2>
+        <h2>OpenRelik</h2>
       </template>
       <template v-slot:text>
-        <code>
-          Greetings and welcome to this Digital Forensics Artifact Workflow
-          System. Designed for streamlined analysis and management of digital
-          evidence, it provides a robust backend for artifact management and
-          processing.
-        </code>
-        <br /><br />
-        <v-btn variant="outlined" prepend-icon="mdi-google" :href="loginUrl">
-          Login with Google
+        <v-sheet v-if="authMethods.includes('local')" class="mt-2">
+          <v-form @submit.prevent="">
+            <v-text-field
+              v-model="username"
+              label="Username"
+              prepend-inner-icon="mdi-account"
+              variant="outlined"
+              class="mb-3"
+              autocomplete="username"
+              required
+              hide-details
+            ></v-text-field>
+            <v-text-field
+              v-model="password"
+              label="Password"
+              variant="outlined"
+              prepend-inner-icon="mdi-lock"
+              type="password"
+              class="mb-3"
+              autocomplete="current-password"
+              required
+              hide-details
+            ></v-text-field>
+            <v-btn
+              type="submit"
+              variant="flat"
+              size="large"
+              class="text-none"
+              block
+              color="info"
+              @click="submitUsernamePassword"
+            >
+              Login
+            </v-btn>
+          </v-form>
+        </v-sheet>
+
+        <br />
+
+        <div
+          v-if="
+            authMethods.includes('local') &&
+            authMethods.filter((item) => item !== 'local').length
+          "
+        >
+          <div class="text-center mt-5">Or sign in with</div>
+          <br />
+        </div>
+
+        <v-btn
+          v-for="authMethod in authMethods.filter((item) => item !== 'local')"
+          :key="authMethod"
+          variant="outlined"
+          :prepend-icon="getAuthIcon(authMethod)"
+          :href="loginUrl + '/' + authMethod"
+          class="text-none mb-3"
+          size="large"
+          block
+        >
+          {{ $filters.capitalizeFirstLetter(authMethod) }}
         </v-btn>
       </template>
     </v-card>
@@ -37,12 +95,96 @@ limitations under the License.
 
 <script>
 import settings from "@/settings";
+import axios from "axios";
 
 export default {
   name: "Login",
+  data: () => ({
+    username: "",
+    password: "",
+    showError: false,
+    error: "",
+  }),
   computed: {
     loginUrl() {
       return settings.apiServerUrl + "/login";
+    },
+    authMethods() {
+      return settings.authMethods;
+    },
+  },
+  methods: {
+    async submitUsernamePassword() {
+      if (!this.username || !this.password) {
+        // Don't submit if username or password is empty
+        return;
+      }
+
+      try {
+        await this.loginUser(); // 1. Attempt to log in the user
+        await this.fetchCsrfToken(); // 2. If login successful, fetch CSRF token
+        this.$router.push("/"); // 3. Redirect to the home page
+      } catch (err) {
+        // Handle any errors during login or fetching CSRF token
+        this.handleError(err);
+      }
+    },
+
+    async loginUser() {
+      // Prepare form data for login request
+      const formData = new FormData();
+      formData.append("username", this.username);
+      formData.append("password", this.password);
+
+      // Send login request
+      const response = await axios.post(
+        `${settings.apiServerUrl}/auth/local`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true, // Include credentials for cross-origin requests
+        }
+      );
+
+      // Check if login was successful
+      if (response.status !== 200) {
+        throw new Error("Login failed");
+      }
+    },
+
+    async fetchCsrfToken() {
+      // Fetch CSRF token after successful login
+      const csrfTokenResponse = await axios.get(
+        `${settings.apiServerUrl}/auth/csrf`,
+        {
+          withCredentials: true, // Include credentials for cross-origin requests
+        }
+      );
+
+      // Store CSRF token in session storage
+      if (csrfTokenResponse.status === 200) {
+        sessionStorage.setItem("csrfToken", csrfTokenResponse.data);
+      } else {
+        throw new Error("Failed to fetch CSRF token");
+      }
+    },
+
+    handleError(err) {
+      // Display error message to the user
+      this.error = err.response?.data?.detail || "An error occurred.";
+      this.showError = true;
+      // Clear password field after error
+      this.password = "";
+    },
+
+    getAuthIcon(authMethod) {
+      // Map authentication methods to icons
+      const iconMap = {
+        google: "mdi-google",
+      };
+      return iconMap[authMethod] || "mdi-account";
     },
   },
 };

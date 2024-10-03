@@ -87,18 +87,13 @@ limitations under the License.
         density="compact"
       >
         <v-toolbar-title style="font-size: 18px">
-          <v-avatar
-            v-if="workflow.user"
-            class="mr-2"
+          <profile-picture
+            :user="workflow.user"
             size="30"
-            :title="workflow.user.name"
-          >
-            <v-img
-              :src="workflow.user.picture"
-              referrerpolicy="no-referrer"
-              alt="Profile Picture"
-            ></v-img>
-          </v-avatar>
+            :title="workflow.user.display_name"
+            class="mr-4"
+          ></profile-picture>
+
           <v-hover v-slot="{ isHovering, props }">
             <span v-bind="props" @dblclick="showRenameWorkflowDialog = true">
               {{ workflow.display_name }}
@@ -155,6 +150,7 @@ limitations under the License.
 import RestApiClient from "@/RestApiClient";
 
 import WorkflowTree from "@/components/WorkflowTree";
+import ProfilePicture from "./ProfilePicture.vue";
 import { useAppStore } from "@/stores/app";
 
 export default {
@@ -165,6 +161,7 @@ export default {
   },
   components: {
     WorkflowTree,
+    ProfilePicture,
   },
   data() {
     return {
@@ -217,18 +214,32 @@ export default {
         });
     },
     copyWorkflow() {
-      RestApiClient.copyWorkflow(this.workflow).then((response) => {
-        this.$router.push({
-          name: "folder",
-          params: { folderId: response.folder.id },
+      RestApiClient.copyWorkflow(this.workflow)
+        .then((response) => {
+          this.$router.push({
+            name: "folder",
+            params: { folderId: response.folder.id },
+          });
+        })
+        .catch((error) => {
+          this.$eventBus.emit("showSnackbar", {
+            message: error.response.data.detail,
+            color: "error",
+          });
         });
-      });
     },
     deleteWorkflow() {
       if (confirm("Are you sure you want to delete this workflow?")) {
-        RestApiClient.deleteWorkflow(this.workflow).then(() => {
-          this.$emit("workflow-deleted", this.workflow);
-        });
+        RestApiClient.deleteWorkflow(this.workflow)
+          .then(() => {
+            this.$emit("workflow-deleted", this.workflow);
+          })
+          .catch((error) => {
+            this.$eventBus.emit("showSnackbar", {
+              message: error.response.data.detail,
+              color: "error",
+            });
+          });
       }
     },
     renameWorkflow() {

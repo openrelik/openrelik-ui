@@ -18,17 +18,23 @@ limitations under the License.
     {{ snackbarText }}
   </v-snackbar>
   <v-dialog v-model="showApiKeysDialog" width="600">
-    <v-card width="600" class="mx-auto">
-      <v-toolbar color="transparent">
-        <v-toolbar-title>API keys</v-toolbar-title>
-        <v-btn
-          variant="tonal"
-          class="text-none mr-4"
-          prepend-icon="mdi-plus"
-          @click="showApiKeysForm = true"
-          >Create API key</v-btn
-        >
-      </v-toolbar>
+    <v-card width="600" class="mx-auto pa-4">
+      <v-card-title class="ml-2">API keys</v-card-title>
+      <v-card-text>
+        This list shows your existing API keys. You can revoke an existing key
+        at any time by deleting it from this list.
+
+        <div>
+          <v-btn
+            variant="flat"
+            color="info"
+            class="text-none mt-5"
+            prepend-icon="mdi-plus"
+            @click="showApiKeysForm = true"
+            >Create API key</v-btn
+          >
+        </div>
+      </v-card-text>
 
       <div v-if="showApiKeysForm" class="pa-4">
         <v-form @submit.prevent="createApiKey()">
@@ -40,41 +46,37 @@ limitations under the License.
           ></v-text-field>
         </v-form>
         <v-card-actions>
-          <v-spacer></v-spacer>
+          <v-btn
+            variant="text"
+            color="primary"
+            class="text-none"
+            @click="createApiKey()"
+            :disabled="!newApiKey.displayName"
+            >Create</v-btn
+          >
           <v-btn
             variant="text"
             class="text-none"
             @click="showApiKeysForm = false"
             >Cancel</v-btn
           >
-          <v-btn
-            variant="text"
-            color="primary"
-            class="text-none"
-            @click="createApiKey()"
-            >Create</v-btn
-          >
         </v-card-actions>
         <span v-if="!apiKeys.length">No API keys</span>
       </div>
-      <div class="pa-4">
+      <div class="pa-2">
         <v-table>
           <tbody>
             <tr v-for="apiKey in apiKeys" :key="apiKey.id">
               <td>{{ apiKey.display_name }}</td>
               <td>
-                <span style="font-style: italic; user-select: none">
-                  {{
-                    apiKey.api_key.slice(0, 15) +
-                    "..." +
-                    apiKey.api_key.slice(-15)
-                  }}
-                </span>
-              </td>
-              <td>
-                <v-icon @click="copyToClipboard(apiKey)"
-                  >mdi-content-copy</v-icon
+                <v-btn
+                  size="small"
+                  icon
+                  variant="flat"
+                  @click="deleteUserApiKey(apiKey.id)"
                 >
+                  <v-icon small>mdi-trash-can-outline</v-icon>
+                </v-btn>
               </td>
             </tr>
           </tbody>
@@ -83,15 +85,30 @@ limitations under the License.
     </v-card>
   </v-dialog>
 
+  <v-dialog v-model="showApiKeyContent" persistent width="600">
+    <v-card width="600" class="mx-auto pa-4">
+      <v-card-title class="ml-2">API key created</v-card-title>
+      <v-card-text
+        >⚠️ This is the only time your API key will be accessable. Please copy
+        it to your clipboard now and store it in a secure location. You'll need
+        it to access the API and won't be able to retrieve it again later.
+
+        <v-btn
+          prepend-icon="mdi-content-copy"
+          class="text-none mt-7"
+          color="info"
+          variant="flat"
+          block
+          @click="copyToClipboard(apiKeyContent)"
+          >Copy API key to clipboard</v-btn
+        >
+      </v-card-text>
+    </v-card>
+  </v-dialog>
+
   <v-menu>
     <template v-slot:activator="{ props }">
-      <v-avatar :size="size" v-bind="props" style="cursor: pointer">
-        <v-img
-          :src="user.picture"
-          referrerpolicy="no-referrer"
-          alt="Profile Picture"
-        ></v-img>
-      </v-avatar>
+      <profile-picture :user="user" :size="size" v-bind="props" />
     </template>
     <v-list>
       <v-list-item @click="logout()">
@@ -109,21 +126,27 @@ import axios from "axios";
 import RestApiClient from "@/RestApiClient";
 import settings from "@/settings";
 import { useUserStore } from "@/stores/user";
+import ProfilePicture from "./ProfilePicture.vue";
 
 export default {
   name: "ProfileMenu",
   props: {
     size: String,
   },
+  components: {
+    ProfilePicture,
+  },
   data() {
     return {
       userStore: useUserStore(),
       apiKeys: [],
       newApiKey: {
-        name: "",
+        displayName: "",
       },
+      apiKeyContent: "",
       showApiKeysDialog: false,
       showApiKeysForm: false,
+      showApiKeyContent: false,
       showSnackbar: false,
       snackbarText: "",
     };
@@ -133,7 +156,7 @@ export default {
       return this.userStore.user;
     },
     logoutUrl() {
-      return settings.apiServerUrl + "/logout";
+      return settings.apiServerUrl + "/auth/logout";
     },
   },
   methods: {
@@ -141,6 +164,7 @@ export default {
       axios
         .delete(this.logoutUrl, { withCredentials: true })
         .then((response) => {
+          sessionStorage.removeItem("csrfToken");
           window.location.href = "/";
         })
         .catch((error) => {
@@ -158,19 +182,29 @@ export default {
         this.newApiKey.displayName,
         expireMinutes
       ).then((response) => {
+        this.getApiKeys();
         this.showApiKeysForm = false;
+        this.showApiKeysDialog = false;
         this.newApiKey.displayName = "";
-        this.apiKeys.push(response);
+        this.showApiKeyContent = true;
+        this.apiKeyContent = response;
+      });
+    },
+    deleteUserApiKey(id) {
+      RestApiClient.deleteUserApiKey(id).then((response) => {
+        this.getApiKeys();
       });
     },
     copyToClipboard(apiKey) {
       this.showSnackbar = false;
       this.snackbarText = "";
       navigator.clipboard
-        .writeText(apiKey.api_key)
+        .writeText(apiKey.token)
         .then(() => {
           this.snackbarText = `Copied "${apiKey.display_name}" to clipboard`;
           this.showSnackbar = true;
+          this.apiKeyContent = "";
+          this.showApiKeyContent = false;
         })
         .catch((err) => {
           console.error("Failed to copy to clipboard:", err);

@@ -120,13 +120,11 @@ limitations under the License.
 
       <!-- Owner -->
       <template v-slot:item.user="{ item: file }">
-        <v-avatar size="30" :title="file.user.name">
-          <v-img
-            :src="file.user.picture"
-            referrerpolicy="no-referrer"
-            alt="Profile Picture"
-          ></v-img>
-        </v-avatar>
+        <profile-picture
+          :user="file.user"
+          :title="file.user.display_name"
+          size="30"
+        />
       </template>
 
       <!-- Actions -->
@@ -141,6 +139,7 @@ limitations under the License.
 
 <script>
 import RestApiClient from "@/RestApiClient";
+import ProfilePicture from "./ProfilePicture.vue";
 
 export default {
   name: "FolderList",
@@ -152,6 +151,9 @@ export default {
       type: Boolean,
       default: false,
     },
+  },
+  components: {
+    ProfilePicture,
   },
   data() {
     return {

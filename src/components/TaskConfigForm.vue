@@ -19,6 +19,7 @@ limitations under the License.
       <component
         v-model="formData[field.name]"
         variant="outlined"
+        color="primary"
         :is="getFieldComponent(field.type)"
         :label="field.label"
         :hint="field.description"
@@ -67,7 +68,7 @@ export default {
       valid: false,
       // Initial form data, set to empty strings or false for checkboxes
       formData: this.fields.reduce((initialFormData, field) => {
-        initialFormData[field.name] = field.value ? field.value : null;
+        initialFormData[field.name] = field.value ? field.value : false;
         return initialFormData;
       }, {}),
     };

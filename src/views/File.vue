@@ -389,6 +389,7 @@ export default {
         "text/html",
         "application/json",
         "text/csv",
+        "application/javascript",
       ];
       return textFileTypes.includes(this.file.magic_mime);
     },
