@@ -27,7 +27,7 @@ limitations under the License.
         <h2>OpenRelik</h2>
       </template>
       <template v-slot:text>
-        <v-sheet v-if="authMethods.includes('local')" class="mt-2">
+        <v-sheet v-if="authMethods.includes('local')" class="mt-3">
           <v-form @submit.prevent="">
             <v-text-field
               v-model="username"
