@@ -240,7 +240,9 @@ limitations under the License.
               >
                 <iframe
                   sandbox
-                  :src="getIframeSrc({ unsafe: showFilePreview })"
+                  :src="
+                    getIframeSrc({ unsafe: allowedPreview && showFilePreview })
+                  "
                   frameborder="0"
                   scrolling="yes"
                   style="width: 100%; height: 65vh"
@@ -399,10 +401,8 @@ export default {
     allowedPreview() {
       // Render unescaped HTML content in sandboxed iframe if data_type is in server side
       // provided allowlist and magic_mime is text/html.
-      return (
-        this.systemConfig.allowed_data_types_preview.includes(
-          this.file.data_type
-        ) && this.file.magic_mime == "text/html"
+      return this.systemConfig.allowed_data_types_preview.includes(
+        this.file.data_type
       );
     },
   },

@@ -61,10 +61,16 @@ limitations under the License.
             >Cancel</v-btn
           >
         </v-card-actions>
-        <span v-if="!apiKeys.length">No API keys</span>
       </div>
-      <div class="pa-2">
+      <div v-if="apiKeys.length" class="pa-2">
         <v-table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
           <tbody>
             <tr v-for="apiKey in apiKeys" :key="apiKey.id">
               <td>{{ apiKey.display_name }}</td>
@@ -110,12 +116,18 @@ limitations under the License.
     <template v-slot:activator="{ props }">
       <profile-picture :user="user" :size="size" v-bind="props" />
     </template>
-    <v-list>
-      <v-list-item @click="logout()">
-        <v-list-item-title>Logout</v-list-item-title>
-      </v-list-item>
+    <v-list width="200">
       <v-list-item @click="showApiKeysDialog = !showApiKeysDialog">
+        <template v-slot:prepend>
+          <v-icon size="small">mdi-key-outline</v-icon>
+        </template>
         <v-list-item-title>API keys</v-list-item-title>
+      </v-list-item>
+      <v-list-item @click="logout()">
+        <template v-slot:prepend>
+          <v-icon size="small">mdi-logout</v-icon>
+        </template>
+        <v-list-item-title>Sign out</v-list-item-title>
       </v-list-item>
     </v-list>
   </v-menu>
