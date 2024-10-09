@@ -61,6 +61,14 @@ limitations under the License.
               >mdi-file-outline</v-icon
             >
             {{ file.display_name }}
+            <v-btn icon variant="text" size="x-small" class="text-none ml-1">
+              <v-icon
+                v-if="!workflow.tasks.length"
+                color="grey-lighten-1"
+                size="x-large"
+                >mdi-plus</v-icon
+              >
+            </v-btn>
           </div>
         </div>
       </template>
