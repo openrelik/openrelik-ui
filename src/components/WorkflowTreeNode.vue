@@ -117,9 +117,13 @@ limitations under the License.
               option.value !== ''
             "
           >
-            <strong>{{ option.name }}</strong
-            >:
-            {{ option.value }}
+            <strong>{{ option.name }}: </strong>
+            <span v-if="Array.isArray(option.value)">
+              <div v-for="value in option.value">{{ value }}</div>
+            </span>
+            <span v-else>
+              {{ option.value }}
+            </span>
           </small>
         </div>
       </template>

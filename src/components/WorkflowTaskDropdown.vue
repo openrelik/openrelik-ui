@@ -17,7 +17,7 @@ limitations under the License.
   <v-menu activator="parent">
     <v-list two-line>
       <v-list-item
-        v-for="celery_task in registeredCeleryTasks"
+        v-for="celery_task in sortedCeleryTasks"
         @click="addTask(celery_task)"
         prepend-icon="mdi-plus"
       >
@@ -50,6 +50,13 @@ export default {
   computed: {
     registeredCeleryTasks() {
       return this.appStore.registeredCeleryTasks;
+    },
+    sortedCeleryTasks() {
+      // Create a copy of the array to avoid mutating the original
+      return [...this.registeredCeleryTasks].sort((a, b) => {
+        // Use localeCompare for case-insensitive sorting
+        return a.display_name.localeCompare(b.display_name);
+      });
     },
   },
   methods: {

@@ -61,7 +61,7 @@ limitations under the License.
 
       <!-- Display name -->
       <template v-slot:item.display_name="{ item: item }">
-        <span v-if="item.filesize">
+        <span v-if="item.magic_mime">
           <v-icon v-if="item.data_type.startsWith('cloud:')" class="mr-2 mt-n1"
             >mdi-cloud-outline</v-icon
           >
@@ -94,9 +94,11 @@ limitations under the License.
 
       <!-- Time -->
       <template v-slot:item.filesize="{ item: file }">
-        <span v-if="file.filesize" :title="file.filesize">{{
-          $filters.formatBytes(file.filesize)
-        }}</span>
+        <span
+          v-if="file.filesize || file.filesize === 0"
+          :title="file.filesize"
+          >{{ $filters.formatBytes(file.filesize) }}</span
+        >
       </template>
 
       <!-- Only show select box for files. -->

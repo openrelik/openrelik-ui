@@ -183,6 +183,10 @@ limitations under the License.
                       <small>({{ file.filesize }} bytes)</small>
                     </td>
                   </tr>
+                  <tr v-if="file.original_path">
+                    <td>Original Path</td>
+                    <td>{{ file.original_path }}</td>
+                  </tr>
                 </tbody>
               </v-table>
             </v-card>
