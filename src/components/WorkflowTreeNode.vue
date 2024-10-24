@@ -79,21 +79,34 @@ limitations under the License.
             :task-status="celeryTask.status_short"
           ></task-status-icon>
           {{ node.display_name }}
-          <span v-if="celeryTask.runtime">
-            <br /><small class="ml-1"
+          <div v-if="celeryTask.runtime">
+            <small class="ml-1"
               >Runtime:
-              <strong
-                >{{ celeryTask.runtime.toFixed(1) }} seconds</strong
-              ></small
+              <strong>{{ celeryTask.runtime.toFixed(1) }}</strong>
+              seconds</small
             >
-          </span>
-          <v-btn icon variant="text" size="x-small" class="text-none ml-1">
-            <v-icon
-              v-if="!workflow.tasks.length"
-              color="grey-lighten-1"
-              size="x-large"
-              >mdi-plus</v-icon
-            >
+          </div>
+          <div v-if="celeryTask.file_reports && celeryTask.file_reports.length">
+            <small class="ml-1">
+              Reports:
+              <strong>{{ celeryTask.file_reports.length }}</strong> reports
+            </small>
+          </div>
+          <div v-if="hasReportFindings && hasReportFindings.length">
+            <small class="ml-1 red-text">
+              <strong>{{ hasReportFindings.length }}</strong> report(s) with
+              high priority findings
+            </small>
+          </div>
+
+          <v-btn
+            v-if="!workflow.tasks.length"
+            icon
+            variant="text"
+            size="x-small"
+            class="text-none ml-1"
+          >
+            <v-icon color="grey-lighten-1" size="x-large">mdi-plus</v-icon>
           </v-btn>
           <span v-if="hasTaskConfig">
             <v-btn
@@ -153,6 +166,7 @@ import WorkflowTaskDropdown from "./WorkflowTaskDropdown";
 import TaskStatusIcon from "./TaskStatusIcon";
 import TaskResultDefault from "@/components/TaskResultDefault.vue";
 import TaskConfigForm from "./TaskConfigForm.vue";
+import { has } from "lodash";
 
 export default {
   name: "treeNode",
@@ -193,6 +207,17 @@ export default {
           option.value !== ""
         );
       });
+    },
+    hasReportFindings() {
+      if (
+        !this.celeryTask.file_reports ||
+        !this.celeryTask.file_reports.length
+      ) {
+        return false;
+      }
+      return this.celeryTask.file_reports.filter(
+        (report) => report.priority < 21
+      );
     },
     nodeIcon() {
       return this.celeryTask.status_short === "PROGRESS"

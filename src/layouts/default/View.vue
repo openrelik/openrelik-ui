@@ -15,6 +15,7 @@ limitations under the License.
 -->
 <template>
   <v-main>
+    <v-divider></v-divider>
     <v-container fluid class="px-5">
       <router-view />
     </v-container>
