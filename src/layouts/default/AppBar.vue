@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <template>
-  <v-toolbar flat class="pr-4" color="transparent">
+  <v-app-bar flat class="pr-4" color="transparent">
     <v-app-bar-title class="ml-n1">
       <strong>{{ appName }}</strong>
     </v-app-bar-title>
@@ -33,8 +33,7 @@ limitations under the License.
       <toggle-theme />
       <profile-menu size="30" />
     </template>
-  </v-toolbar>
-  <v-divider></v-divider>
+  </v-app-bar>
 </template>
 
 <script>

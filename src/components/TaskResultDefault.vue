@@ -17,19 +17,18 @@ limitations under the License.
   <div v-if="task.status_short === 'PROGRESS'">
     {{ statusProgress }}
   </div>
-
   <div variant="outlined" v-if="task.status_short === 'SUCCESS'">
     <v-card-text>
       <template v-for="(value, key) in result">
-        <ul v-if="attributesToRender.includes(key)">
-          <strong>{{ key }}:</strong>
+        <ul v-if="attributesToRender.includes(key) && value">
+          <strong>{{ $filters.capitalizeFirstLetter(key) }}:</strong>
           {{
             value
           }}
         </ul>
       </template>
       <ul>
-        <strong>runtime:</strong>
+        <strong>Runtime:</strong>
         {{
           task.runtime.toFixed(1)
         }}
@@ -45,9 +44,44 @@ limitations under the License.
           <span v-else> {{ value }} </span>
         </ul>
       </template>
+      <ul v-if="task.file_reports.length">
+        <br />
+        <strong>File reports ({{ task.file_reports.length }})</strong>
+        <v-card class="mt-2" variant="outlined">
+          <v-table density="compact">
+            <thead>
+              <tr>
+                <th class="text-left">File</th>
+                <th class="text-left">Summary</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="report in task.file_reports" :key="report.id">
+                <td>
+                  <router-link
+                    style="color: inherit"
+                    :to="{
+                      name: 'fileContent',
+                      params: { fileId: report.file.id },
+                    }"
+                  >
+                    {{ report.file.display_name }}
+                  </router-link>
+                </td>
+                <td :class="report.priority < 21 ? 'text-red' : ''">
+                  {{ report.summary }}
+                </td>
+              </tr>
+            </tbody>
+          </v-table>
+        </v-card>
+      </ul>
+
       <ul v-if="task.output_files.length">
         <br />
-        <v-table>
+        <strong>Result files ({{ task.output_files.length }})</strong>
+
+        <v-table class="mt-2">
           <thead></thead>
           <tr v-for="file in task.output_files" :key="file.id">
             <td>

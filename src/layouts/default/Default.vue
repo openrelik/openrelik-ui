@@ -16,7 +16,7 @@ limitations under the License.
 <template>
   <v-app>
     <default-app-bar />
-    <default-view></default-view>
+    <default-view />
   </v-app>
 </template>
 
