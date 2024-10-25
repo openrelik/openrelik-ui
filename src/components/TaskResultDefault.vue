@@ -68,7 +68,7 @@ limitations under the License.
                     {{ report.file.display_name }}
                   </router-link>
                 </td>
-                <td :class="report.priority < 21 ? 'text-red' : ''">
+                <td :class="report.priority >= 40 ? 'text-red' : ''">
                   {{ report.summary }}
                 </td>
               </tr>

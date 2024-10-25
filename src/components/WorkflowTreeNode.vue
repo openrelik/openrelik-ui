@@ -92,10 +92,10 @@ limitations under the License.
               <strong>{{ celeryTask.file_reports.length }}</strong> reports
             </small>
           </div>
-          <div v-if="hasReportFindings && hasReportFindings.length">
+          <div v-if="hasHighPriorityReports && hasHighPriorityReports.length">
             <small class="ml-1 red-text">
-              <strong>{{ hasReportFindings.length }}</strong> report(s) with
-              high priority findings
+              <strong>{{ hasHighPriorityReports.length }}</strong> report(s)
+              with high priority findings
             </small>
           </div>
 
@@ -208,7 +208,7 @@ export default {
         );
       });
     },
-    hasReportFindings() {
+    hasHighPriorityReports() {
       if (
         !this.celeryTask.file_reports ||
         !this.celeryTask.file_reports.length
@@ -216,7 +216,7 @@ export default {
         return false;
       }
       return this.celeryTask.file_reports.filter(
-        (report) => report.priority < 21
+        (report) => report.priority >= 40
       );
     },
     nodeIcon() {
