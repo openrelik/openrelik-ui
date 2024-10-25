@@ -50,7 +50,9 @@ limitations under the License.
             v-for="file in workflow.files"
             :key="file.id"
             :class="file.is_deleted ? 'red-text' : ''"
+            :title="file.display_name"
             style="font-size: 0.9em"
+            class="file-container"
           >
             <v-icon
               v-if="file.data_type.startsWith('cloud:')"
@@ -60,15 +62,9 @@ limitations under the License.
             <v-icon v-else size="small" class="mr-1" style="margin-top: -3px"
               >mdi-file-outline</v-icon
             >
-            {{ file.display_name }}
-            <v-btn icon variant="text" size="x-small" class="text-none ml-1">
-              <v-icon
-                v-if="!workflow.tasks.length"
-                color="grey-lighten-1"
-                size="x-large"
-                >mdi-plus</v-icon
-              >
-            </v-btn>
+            <div class="truncate">
+              {{ file.display_name }}
+            </div>
           </div>
         </div>
       </template>
@@ -99,15 +95,6 @@ limitations under the License.
             </small>
           </div>
 
-          <v-btn
-            v-if="!workflow.tasks.length"
-            icon
-            variant="text"
-            size="x-small"
-            class="text-none ml-1"
-          >
-            <v-icon color="grey-lighten-1" size="x-large">mdi-plus</v-icon>
-          </v-btn>
           <span v-if="hasTaskConfig">
             <v-btn
               v-if="!Object.keys(celeryTask).length"
@@ -120,6 +107,16 @@ limitations under the License.
               <v-icon>mdi-cog-outline</v-icon>
             </v-btn>
           </span>
+
+          <v-btn
+            v-if="!workflow.tasks.length"
+            icon
+            variant="text"
+            size="x-small"
+            class="text-none ml-1"
+          >
+            <v-icon color="grey-lighten-1" size="x-large">mdi-plus</v-icon>
+          </v-btn>
         </div>
         <div class="ml-1" v-for="option in node.task_config">
           <small
@@ -247,5 +244,16 @@ export default {
 }
 .red-text {
   color: red;
+}
+.file-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.truncate {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

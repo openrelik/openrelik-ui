@@ -28,7 +28,10 @@ limitations under the License.
       </v-list-item>
       <template v-if="!isRootNode">
         <v-divider class="mt-3"></v-divider>
-        <v-list-item @click="removeTask" prepend-icon="mdi-trash-can-outline"
+        <v-list-item
+          @click="removeTask"
+          prepend-icon="mdi-trash-can-outline"
+          style="color: red"
           >Remove task</v-list-item
         >
       </template>
