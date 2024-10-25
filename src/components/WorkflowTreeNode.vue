@@ -166,7 +166,6 @@ import WorkflowTaskDropdown from "./WorkflowTaskDropdown";
 import TaskStatusIcon from "./TaskStatusIcon";
 import TaskResultDefault from "@/components/TaskResultDefault.vue";
 import TaskConfigForm from "./TaskConfigForm.vue";
-import { has } from "lodash";
 
 export default {
   name: "treeNode",
