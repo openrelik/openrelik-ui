@@ -20,7 +20,15 @@ limitations under the License.
     </v-snackbar>
     <v-card flat class="mx-auto" max-width="400">
       <template v-slot:prepend>
-        <v-img src="/logo-light-transparent.png" width="40" height="40">
+        <v-img
+          :src="
+            $vuetify.theme.name === 'dark'
+              ? '/logo-dark-round.png'
+              : '/logo-light-round.png'
+          "
+          width="40"
+          height="40"
+        >
         </v-img>
       </template>
       <template v-slot:title>
@@ -96,6 +104,7 @@ limitations under the License.
 <script>
 import settings from "@/settings";
 import axios from "axios";
+import { useTheme } from "vuetify";
 
 export default {
   name: "Login",
@@ -186,6 +195,10 @@ export default {
       };
       return iconMap[authMethod] || "mdi-account";
     },
+  },
+  mounted() {
+    const theme = useTheme();
+    theme.global.name.value = localStorage.getItem("theme") || "light";
   },
 };
 </script>
