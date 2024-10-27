@@ -131,7 +131,12 @@ limitations under the License.
 
       <!-- Actions -->
       <template v-slot:item.actions="{ item }">
-        <v-btn small icon flat @click="deleteInventoryItem(item)">
+        <v-btn
+          icon
+          variant="flat"
+          size="small"
+          @click="deleteInventoryItem(item)"
+        >
           <v-icon size="small"> mdi-trash-can-outline </v-icon>
         </v-btn>
       </template>
