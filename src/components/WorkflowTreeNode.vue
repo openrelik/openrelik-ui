@@ -29,7 +29,11 @@ limitations under the License.
     </v-dialog>
     <span
       class="node-content"
-      :class="$vuetify.theme.name === 'dark' ? '' : 'white-background'"
+      :class="
+        $vuetify.theme.name === 'dark'
+          ? 'dark-grey-background'
+          : 'white-background'
+      "
     >
       <v-menu
         v-if="celeryTask.status_short"
@@ -241,6 +245,9 @@ export default {
 <style scoped>
 .white-background {
   background-color: white;
+}
+.dark-grey-background {
+  background-color: #181818;
 }
 .red-text {
   color: red;
