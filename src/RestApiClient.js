@@ -136,7 +136,7 @@ export default {
   },
   async getRegisteredCeleryTasks() {
     return new Promise((resolve, reject) => {
-      RestApiClient.get("/workflows/registered_tasks/")
+      RestApiClient.get("/taskqueue/tasks/registered")
         .then((response) => {
           resolve(response.data);
         })
