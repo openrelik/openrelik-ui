@@ -49,7 +49,7 @@ limitations under the License.
         </v-card>
       </v-menu>
       <template v-if="node.isRoot">
-        <div>
+        <div class="py-1">
           <div
             v-for="file in workflow.files"
             :key="file.id"
@@ -66,9 +66,7 @@ limitations under the License.
             <v-icon v-else size="small" class="mr-1" style="margin-top: -3px"
               >mdi-file-outline</v-icon
             >
-            <div class="truncate">
-              {{ file.display_name }}
-            </div>
+            <div class="truncate">{{ file.display_name }}</div>
           </div>
         </div>
       </template>
