@@ -87,8 +87,11 @@ export default {
       resumable: null,
     };
   },
-  mounted() {
-    const csrfToken = sessionStorage.getItem("csrfToken");
+  async mounted() {
+    let csrfToken = sessionStorage.getItem("csrfToken");
+    if (!csrfToken) {
+      csrfToken = await RestApiClient.refreshCsrfToken();
+    }
     const baseURL = settings.apiServerUrl + "/api/" + settings.apiServerVersion;
     this.resumable = new Resumable({
       target: baseURL + "/files/upload", // Your FastAPI endpoint

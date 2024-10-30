@@ -527,4 +527,8 @@ export default {
         });
     });
   },
+  async refreshCsrfToken() {
+    let token = await fetchCsrfToken();
+    return token;
+  },
 };
