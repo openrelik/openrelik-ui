@@ -21,19 +21,20 @@ limitations under the License.
     <v-card width="600" class="mx-auto pa-4">
       <v-card-title class="ml-2">API keys</v-card-title>
       <v-card-text>
-        This list shows your existing API keys. You can revoke an existing key
-        at any time by deleting it from this list.
-
-        <div>
-          <v-btn
-            variant="flat"
-            color="info"
-            class="text-none mt-5"
-            prepend-icon="mdi-plus"
-            @click="showApiKeysForm = true"
-            >Create API key</v-btn
-          >
+        <div v-if="apiKeys.length">
+          This list shows your existing API keys. You can revoke an existing key
+          at any time by deleting it.
         </div>
+        <div v-else>You don't have any API keys.</div>
+
+        <v-btn
+          variant="flat"
+          color="info"
+          class="text-none mt-5"
+          prepend-icon="mdi-plus"
+          @click="showApiKeysForm = true"
+          >Create API key</v-btn
+        >
       </v-card-text>
 
       <div v-if="showApiKeysForm" class="pa-4">
