@@ -348,11 +348,10 @@ export default {
     removeFile(file_to_remove) {
       this.files = this.files.filter((file) => file.id != file_to_remove.id);
     },
-    updateFilesArray(newFiles) {
-      for (const file in newFiles) {
-        this.files.unshift(newFiles[file]);
-      }
-      this.showUpload = false;
+    updateFilesArray() {
+      RestApiClient.getFiles(this.folderId).then((response) => {
+        this.files = response;
+      });
     },
     createFolder() {
       if (this.newFolderForm.name === "") {
