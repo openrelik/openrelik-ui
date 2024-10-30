@@ -131,10 +131,8 @@ export default {
 
       try {
         await this.loginUser(); // 1. Attempt to log in the user
-        await this.fetchCsrfToken(); // 2. If login successful, fetch CSRF token
-        this.$router.push("/"); // 3. Redirect to the home page
+        this.$router.push("/"); // 2. Redirect to the home page
       } catch (err) {
-        // Handle any errors during login or fetching CSRF token
         this.handleError(err);
       }
     },
@@ -160,23 +158,6 @@ export default {
       // Check if login was successful
       if (response.status !== 200) {
         throw new Error("Login failed");
-      }
-    },
-
-    async fetchCsrfToken() {
-      // Fetch CSRF token after successful login
-      const csrfTokenResponse = await axios.get(
-        `${settings.apiServerUrl}/auth/csrf`,
-        {
-          withCredentials: true, // Include credentials for cross-origin requests
-        }
-      );
-
-      // Store CSRF token in session storage
-      if (csrfTokenResponse.status === 200) {
-        sessionStorage.setItem("csrfToken", csrfTokenResponse.data);
-      } else {
-        throw new Error("Failed to fetch CSRF token");
       }
     },
 
