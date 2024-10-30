@@ -307,17 +307,6 @@ export default {
         });
     });
   },
-  async createFileProgress(formData, config) {
-    return new Promise((resolve, reject) => {
-      RestApiClient.post("/files/", formData, config)
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
-  },
   async deleteFile(file) {
     return new Promise((resolve, reject) => {
       RestApiClient.delete("/files/" + file.id)
