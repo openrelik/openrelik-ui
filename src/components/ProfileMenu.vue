@@ -22,8 +22,8 @@ limitations under the License.
       <v-card-title class="ml-2">API keys</v-card-title>
       <v-card-text>
         <div v-if="apiKeys.length">
-          This list shows your existing API keys. You can revoke an existing key
-          at any time by deleting it.
+          This list shows your existing API keys. You can revoke a key at any
+          time by deleting it.
         </div>
         <div v-else>You don't have any API keys.</div>
 
