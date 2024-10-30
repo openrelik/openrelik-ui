@@ -174,7 +174,7 @@ export default {
   methods: {
     logout() {
       axios
-        .post(this.logoutUrl, { withCredentials: true })
+        .delete(this.logoutUrl, { withCredentials: true })
         .then((response) => {
           sessionStorage.removeItem("csrfToken");
           window.location.href = "/";

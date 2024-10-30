@@ -73,6 +73,23 @@ function addRefreshTokenInterceptor(client) {
   );
 }
 
+async function fetchCsrfToken() {
+  const csrfTokenResponse = await axios.get(
+    `${settings.apiServerUrl}/auth/csrf`,
+    {
+      withCredentials: true, // Include credentials for cross-origin requests
+    }
+  );
+
+  // Store CSRF token in session storage and return.
+  if (csrfTokenResponse.status === 200) {
+    sessionStorage.setItem("csrfToken", csrfTokenResponse.data);
+    return csrfTokenResponse.data;
+  } else {
+    throw new Error("Failed to fetch CSRF token");
+  }
+}
+
 /**
  * Adds an interceptor to the provided Axios client that automatically refreshes
  * the CSRF token and adds it to the request headers. Token is stored in sessionStorage.
@@ -87,8 +104,12 @@ function addCSRFInterceptor(client) {
         return config; // Skip adding CSRF token for safe methods
       }
 
-      // 2. Attempt to retrieve the CSRF token from session storage.
-      const csrfToken = sessionStorage.getItem("csrfToken");
+      // 2. Attempt to retrieve the CSRF token from session storage. If it is missing
+      // try to fetch it.
+      let csrfToken = sessionStorage.getItem("csrfToken");
+      if (!csrfToken) {
+        csrfToken = await fetchCsrfToken();
+      }
 
       // 3. If the token exists, add it to the request headers and proceed.
       if (csrfToken) {
