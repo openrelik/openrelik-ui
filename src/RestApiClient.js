@@ -63,7 +63,7 @@ function addRefreshTokenInterceptor(client) {
           // If refreshing the token fails, redirect the user to the login page.
           // This could happen if the refresh token is invalid or expired.
           console.error("Refresh error, redirect");
-          window.location.href = "/login";
+          window.location.href = "/login?redirect=" + window.location.pathname;
         }
       }
       // If the error is not a 401 or the refresh failed, reject the promise and

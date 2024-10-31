@@ -113,6 +113,7 @@ export default {
     password: "",
     showError: false,
     error: "",
+    redirect_url: null,
   }),
   computed: {
     loginUrl() {
@@ -131,7 +132,7 @@ export default {
 
       try {
         await this.loginUser(); // 1. Attempt to log in the user
-        this.$router.push("/"); // 2. Redirect to the home page
+        this.$router.replace({ name: "home" }); // 2. Redirect to the home page
       } catch (err) {
         this.handleError(err);
       }
@@ -180,6 +181,11 @@ export default {
   mounted() {
     const theme = useTheme();
     theme.global.name.value = localStorage.getItem("theme") || "light";
+  },
+  created() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirect_url = urlParams.get("redirect") || "/foobar";
+    sessionStorage.setItem("redirect_url", redirect_url);
   },
 };
 </script>
