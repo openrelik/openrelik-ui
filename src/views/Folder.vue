@@ -382,6 +382,7 @@ export default {
       });
     },
     getFolder() {
+      this.isLoading = true;
       RestApiClient.getFolder(this.folderId).then((response) => {
         this.folder = response;
         this.newFolderNameForm.displayName = this.folder.display_name;

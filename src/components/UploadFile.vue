@@ -17,17 +17,26 @@ limitations under the License.
   <div>
     <v-form @submit.prevent>
       <div v-if="showUploadProgress">
-        <h3 class="ml-4">Uploading..</h3>
+        <h3 class="ml-4">Uploading.. {{ overallProgress.toFixed(2) }}%</h3>
+        <div class="pa-4">
+          <v-progress-linear
+            v-if="files.length > 1"
+            v-model="overallProgress"
+            height="10"
+          />
+        </div>
         <div class="pa-4">
           <template
             v-for="file in filesInProgress"
             :key="file.uniqueIdentifier"
           >
             <div class="mb-2">
-              {{ file.fileName }} ({{ Math.ceil(file.progress) }}%)
+              {{ file.fileName }}
+              <span v-if="files.length > 1"
+                >({{ Math.ceil(file.progress) }}%)</span
+              >
             </div>
-            <v-progress-linear v-model="file.progress" height="10">
-            </v-progress-linear>
+            <v-progress-linear v-model="file.progress" height="5" />
             <br />
           </template>
         </div>
@@ -84,6 +93,7 @@ export default {
       files: [],
       filesInProgress: [],
       showUploadProgress: false,
+      overallProgress: 0,
       resumable: null,
     };
   },
@@ -147,6 +157,10 @@ export default {
     this.resumable.on("complete", (event) => {
       this.$emit("close-dialog");
       this.showUploadProgress = false;
+    });
+
+    this.resumable.on("progress", () => {
+      this.overallProgress = this.resumable.progress() * 100;
     });
 
     this.resumable.on("fileSuccess", (file, message) => {
