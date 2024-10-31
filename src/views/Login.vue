@@ -36,7 +36,7 @@ limitations under the License.
       </template>
       <template v-slot:text>
         <v-sheet v-if="authMethods.includes('local')" class="mt-3">
-          <v-form @submit.prevent="">
+          <v-form @submit.prevent>
             <v-text-field
               v-model="username"
               label="Username"

@@ -16,7 +16,7 @@ limitations under the License.
 <template>
   <v-form
     v-model="valid"
-    @submit.prevent="$emit('save', formData)"
+    @submit.prevent
     @keyup.enter="$emit('save', formData)"
   >
     <template v-for="field in fields" :key="field.name">

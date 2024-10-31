@@ -18,7 +18,7 @@ limitations under the License.
     <v-card width="400" class="mx-auto">
       <v-card-title>New folder</v-card-title>
       <div class="pa-4">
-        <v-form @submit.prevent="createFolder()" @keyup.enter="createFolder()">
+        <v-form @submit.prevent @keyup.enter="createFolder()">
           <v-text-field
             v-model="newFolderForm.name"
             variant="outlined"
