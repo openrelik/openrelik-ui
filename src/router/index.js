@@ -44,8 +44,6 @@ const routes = [
         path: "",
         name: "home",
         redirect: { name: "myFolders" },
-        // component: Home,
-        // props: true,
       },
       {
         path: "my-folders",

@@ -120,8 +120,7 @@ export default {
       return settings.apiServerUrl + "/login";
     },
     authMethods() {
-      return ["local", "google"];
-      //return settings.authMethods;
+      return settings.authMethods;
     },
   },
   methods: {
