@@ -44,19 +44,52 @@ limitations under the License.
   </v-dialog>
 
   <v-card variant="flat" color="transparent">
-    <v-btn
-      variant="outlined"
-      class="text-none custom-border-color"
-      prepend-icon="mdi-folder-plus-outline"
-      @click="showNewFolderDialog = true"
-      >New folder</v-btn
-    >
+    <v-tabs v-model="activeTab">
+      <v-tab
+        v-for="tab in tabs"
+        :key="tab.value"
+        :value="tab.value"
+        class="text-none"
+        :prepend-icon="tab.icon"
+        @click="updateRoute(tab.routeName)"
+        >{{ tab.name }}</v-tab
+      >
+    </v-tabs>
+    <br />
   </v-card>
-  <folder-list
-    :items="folders"
-    :is-home-view="true"
-    @folder-deleted="removeFolder($event)"
-  ></folder-list>
+
+  <v-tabs-window v-model="activeTab">
+    <v-tabs-window-item
+      :value="1"
+      :transition="false"
+      :reverse-transition="false"
+    >
+      <v-btn
+        v-if="activeTab === 0"
+        variant="outlined"
+        class="text-none custom-border-color"
+        prepend-icon="mdi-folder-plus-outline"
+        @click="showNewFolderDialog = true"
+        >New folder</v-btn
+      >
+      <folder-list
+        :items="folders"
+        :is-home-view="true"
+        @folder-deleted="removeFolder($event)"
+      ></folder-list>
+    </v-tabs-window-item>
+    <v-tabs-window-item
+      :value="2"
+      :transition="false"
+      :reverse-transition="false"
+    >
+      <folder-list
+        :items="folders"
+        :is-home-view="true"
+        @folder-deleted="removeFolder($event)"
+      ></folder-list>
+    </v-tabs-window-item>
+  </v-tabs-window>
 </template>
 
 <script>
@@ -77,6 +110,23 @@ export default {
       newFolderForm: {
         name: "",
       },
+      activeTab: null,
+      tabs: [
+        {
+          name: "My Folders",
+          value: 0,
+          routeName: "myFolders",
+          route: "my-folders",
+          icon: "mdi-folder-multiple-outline",
+        },
+        {
+          name: "Shared With Me",
+          value: 1,
+          routeName: "sharedWithMe",
+          route: "shared-with-me",
+          icon: "mdi-folder-account-outline",
+        },
+      ],
     };
   },
   computed: {},
@@ -100,12 +150,35 @@ export default {
         (folder) => folder.id != folder_to_remove.id
       );
     },
+    getFolders() {
+      this.folders = [];
+      if (this.activeTab === 0) {
+        RestApiClient.getRootFolders().then((response) => {
+          this.folders = response;
+        });
+      } else if (this.activeTab === 1) {
+        RestApiClient.getSharedFolders().then((response) => {
+          this.folders = response;
+        });
+      }
+    },
+    updateRoute(routeName) {
+      this.$router.replace({
+        name: routeName,
+      });
+      this.getFolders();
+    },
+    setActiveTab() {
+      const tabIndex = this.tabs.findIndex(
+        (tab) => tab.routeName === this.$route.name
+      );
+      this.activeTab = tabIndex;
+      this.getFolders();
+    },
   },
 
   mounted() {
-    RestApiClient.getRootFolders().then((response) => {
-      this.folders = response;
-    });
+    this.setActiveTab();
     // If there is a URL parameter 'redirect' then redirect the user to it. This will
     // preserve any URL that the user clicked when not authenticated. When the user has
     // authenticated they will be redirected to the original location they were trying

@@ -63,6 +63,7 @@ function addRefreshTokenInterceptor(client) {
           // If refreshing the token fails, redirect the user to the login page.
           // This could happen if the refresh token is invalid or expired.
           console.error("Refresh error, redirect");
+          sessionStorage.removeItem("csrfToken");
           window.location.href = "/login?redirect=" + window.location.pathname;
         }
       }
@@ -189,6 +190,18 @@ export default {
         });
     });
   },
+  async getSharedFolders() {
+    return new Promise((resolve, reject) => {
+      let url = "/folders/shared/";
+      RestApiClient.get(url)
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
   async getFolders(folderId) {
     return new Promise((resolve, reject) => {
       let url = "/folders/" + folderId + "/folders/";
@@ -202,12 +215,14 @@ export default {
     });
   },
   async createFolder(name, parent_id) {
+    let url = "/folders/";
     let requestBody = { display_name: name };
     if (parent_id) {
+      url = url + parent_id + "/folders/";
       requestBody.parent_id = parent_id;
     }
     return new Promise((resolve, reject) => {
-      RestApiClient.post("/folders/", requestBody)
+      RestApiClient.post(url, requestBody)
         .then((response) => {
           resolve(response.data);
         })
@@ -331,6 +346,7 @@ export default {
         });
     });
   },
+
   async getFolderWorkflows(folderId) {
     return new Promise((resolve, reject) => {
       RestApiClient.get("/folders/" + folderId + "/workflows")
@@ -342,6 +358,7 @@ export default {
         });
     });
   },
+
   async getFileWorkflows(fileId) {
     return new Promise((resolve, reject) => {
       RestApiClient.get("/files/" + fileId + "/workflows")
@@ -353,9 +370,10 @@ export default {
         });
     });
   },
-  async getWorkflow(workflowId) {
+
+  async getWorkflow(folderId, workflowId) {
     return new Promise((resolve, reject) => {
-      RestApiClient.get("/workflows/" + workflowId)
+      RestApiClient.get("/folders/" + folderId + "/workflows/" + workflowId)
         .then((response) => {
           resolve(response.data);
         })
@@ -371,7 +389,7 @@ export default {
       template_id: templateId,
     };
     return new Promise((resolve, reject) => {
-      RestApiClient.post("/workflows/", requestBody)
+      RestApiClient.post("/folders/" + folder_id + "/workflows/", requestBody)
         .then((response) => {
           resolve(response.data);
         })
@@ -382,31 +400,9 @@ export default {
   },
   async updateWorkflow(workflow, requestBody) {
     return new Promise((resolve, reject) => {
-      RestApiClient.patch("/workflows/" + workflow.id, requestBody)
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
-  },
-
-  async copyWorkflow(workflow) {
-    return new Promise((resolve, reject) => {
-      RestApiClient.post("/workflows/" + workflow.id + "/copy/")
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
-  },
-  async getWorkflowTasks(fileId, workflowId) {
-    return new Promise((resolve, reject) => {
-      RestApiClient.get(
-        "/files/" + fileId + "/workflows/" + workflowId + "/tasks/"
+      RestApiClient.patch(
+        "/folders/" + workflow.folder.id + "/workflows/" + workflow.id,
+        requestBody
       )
         .then((response) => {
           resolve(response.data);
@@ -416,13 +412,37 @@ export default {
         });
     });
   },
-  async runWorkflow(workflowId, workflowSpec) {
+  async copyWorkflow(workflow) {
+    return new Promise((resolve, reject) => {
+      RestApiClient.post(
+        "/folders/" +
+          workflow.folder.id +
+          "/workflows/" +
+          workflow.id +
+          "/copy/"
+      )
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async runWorkflow(workflow, workflowSpec) {
     const requestBody = {
-      workflow_id: workflowId,
+      workflow_id: workflow.id,
       workflow_spec: workflowSpec,
     };
     return new Promise((resolve, reject) => {
-      RestApiClient.post("/workflows/run/", requestBody)
+      RestApiClient.post(
+        "/folders/" +
+          workflow.folder.id +
+          "/workflows/" +
+          workflow.id +
+          "/run/",
+        requestBody
+      )
         .then((response) => {
           resolve(response.data);
         })
@@ -433,7 +453,9 @@ export default {
   },
   async deleteWorkflow(workflow) {
     return new Promise((resolve, reject) => {
-      RestApiClient.delete("/workflows/" + workflow.id)
+      RestApiClient.delete(
+        "/folders/" + workflow.folder.id + "/workflows/" + workflow.id
+      )
         .then((response) => {
           resolve(response.data);
         })
@@ -442,6 +464,7 @@ export default {
         });
     });
   },
+
   async getWorkflowTemplates() {
     return new Promise((resolve, reject) => {
       RestApiClient.get("/workflows/templates/")
@@ -468,6 +491,7 @@ export default {
         });
     });
   },
+
   async getFileSummary(fileId, summaryId) {
     return new Promise((resolve, reject) => {
       RestApiClient.get("/files/" + fileId + "/summaries/" + summaryId)
@@ -530,5 +554,84 @@ export default {
   async refreshCsrfToken() {
     let token = await fetchCsrfToken();
     return token;
+  },
+  async searchUsers(query) {
+    const requestBody = {
+      search_string: query,
+    };
+    return new Promise((resolve, reject) => {
+      RestApiClient.post("/users/search", requestBody)
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async getAllGroups() {
+    return new Promise((resolve, reject) => {
+      RestApiClient.get("/groups/")
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async shareFolder(folder_id, groups, group_role, users, user_role) {
+    const requestBody = {
+      group_ids: groups.map((group) => group.id),
+      group_role: group_role,
+      user_ids: users.map((user) => user.id),
+      user_role: user_role,
+    };
+    return new Promise((resolve, reject) => {
+      RestApiClient.post("/folders/" + folder_id + "/roles", requestBody)
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async getMyFolderRole(folder_id) {
+    return new Promise((resolve, reject) => {
+      RestApiClient.get("/folders/" + folder_id + "/roles/me")
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async deleteUserRole(folder_id, user_role_id) {
+    return new Promise((resolve, reject) => {
+      RestApiClient.delete(
+        "/folders/" + folder_id + "/roles/users/" + user_role_id
+      )
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async deleteGroupRole(folder_id, group_role_id) {
+    return new Promise((resolve, reject) => {
+      RestApiClient.delete(
+        "/folders/" + folder_id + "/roles/groups/" + group_role_id
+      )
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
   },
 };

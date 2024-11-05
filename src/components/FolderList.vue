@@ -132,6 +132,7 @@ limitations under the License.
       <!-- Actions -->
       <template v-slot:item.actions="{ item }">
         <v-btn
+          v-if="item.user.id === currentUser.id"
           icon
           variant="flat"
           size="small"
@@ -147,6 +148,7 @@ limitations under the License.
 <script>
 import RestApiClient from "@/RestApiClient";
 import ProfilePicture from "./ProfilePicture.vue";
+import { useUserStore } from "@/stores/user";
 
 export default {
   name: "FolderList",
@@ -164,6 +166,7 @@ export default {
   },
   data() {
     return {
+      userStore: useUserStore(),
       selectedFiles: [],
       headers: [
         { title: "Name", key: "display_name" },
@@ -182,7 +185,11 @@ export default {
       ],
     };
   },
-  computed: {},
+  computed: {
+    currentUser() {
+      return this.userStore.user;
+    },
+  },
   methods: {
     deleteInventoryItem(item_to_delete) {
       if (item_to_delete.filesize) {

@@ -125,7 +125,7 @@ export default {
         });
     },
     runWorkflow() {
-      RestApiClient.runWorkflow(this.workflow.id, this.workflowSpec)
+      RestApiClient.runWorkflow(this.workflow, this.workflowSpec)
         .then((response) => {
           this.$emit("workflow-started");
           this.$eventBus.emit("clear-selected-files");

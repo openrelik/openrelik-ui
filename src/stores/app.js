@@ -24,6 +24,7 @@ export const useAppStore = defineStore("app", {
     activeLLM: null,
     registeredCeleryTasks: [],
     workflowTemplates: [],
+    groups: [],
   }),
   actions: {
     async setSystemConfig() {
@@ -47,6 +48,10 @@ export const useAppStore = defineStore("app", {
     async setWorkflowTemplates() {
       const response = await RestApiClient.getWorkflowTemplates();
       this.workflowTemplates = await response;
+    },
+    async setGroups() {
+      const response = await RestApiClient.getAllGroups();
+      this.groups = await response;
     },
   },
 });

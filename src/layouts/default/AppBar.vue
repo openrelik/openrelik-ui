@@ -64,6 +64,12 @@ export default {
   },
   methods: {
     navigate(path) {
+      if (
+        this.$route.name === "myFolders" ||
+        this.$route.name === "sharedWithMe"
+      ) {
+        return;
+      }
       this.$router.push(path);
     },
   },
