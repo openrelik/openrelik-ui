@@ -43,6 +43,17 @@ const routes = [
       {
         path: "",
         name: "home",
+        redirect: { name: "myFolders" },
+      },
+      {
+        path: "my-folders",
+        name: "myFolders",
+        component: Home,
+        props: true,
+      },
+      {
+        path: "shared-with-me",
+        name: "sharedWithMe",
         component: Home,
         props: true,
       },

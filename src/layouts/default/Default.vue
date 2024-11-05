@@ -35,4 +35,5 @@ const appStore = useAppStore();
 appStore.setSystemConfig();
 appStore.setRegisteredCeleryTasks();
 appStore.setWorkflowTemplates();
+appStore.setGroups();
 </script>

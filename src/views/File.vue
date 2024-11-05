@@ -355,14 +355,14 @@ export default {
   },
   data() {
     return {
+      appStore: useAppStore(),
       file: null,
       fileContent: null,
       showFilePreview: true,
       fileContentLoading: false,
       workflows: [],
-      appStore: useAppStore(),
-      activeTab: null,
       fileSizeLimit: 10485760,
+      activeTab: null,
       tabs: [
         {
           name: "Details",

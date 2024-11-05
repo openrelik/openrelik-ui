@@ -184,7 +184,7 @@ export default {
   },
   created() {
     const urlParams = new URLSearchParams(window.location.search);
-    const redirect_url = urlParams.get("redirect") || "/foobar";
+    const redirect_url = urlParams.get("redirect") || "/";
     sessionStorage.setItem("redirect_url", redirect_url);
   },
 };

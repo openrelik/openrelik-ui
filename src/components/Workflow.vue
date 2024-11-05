@@ -193,12 +193,14 @@ export default {
   },
   methods: {
     getWorkflowSimple() {
-      RestApiClient.getWorkflow(this.workflow.id).then((response) => {
-        this.workflow = response;
-      });
+      RestApiClient.getWorkflow(this.workflow.folder.id, this.workflow.id).then(
+        (response) => {
+          this.workflow = response;
+        }
+      );
     },
     getWorkflow() {
-      RestApiClient.getWorkflow(this.workflow.id)
+      RestApiClient.getWorkflow(this.workflow.folder.id, this.workflow.id)
         .then((response) => {
           this.workflow = response;
           this.pollDataCount++;
@@ -290,6 +292,6 @@ export default {
 
 <style lang="scss" scoped>
 .light-background {
-  background-color: #fafafa;
+  background-color: #f9f9f9;
 }
 </style>
