@@ -104,8 +104,9 @@ limitations under the License.
   </div>
 
   <v-card-text v-if="task.status_short === 'FAILURE'">
-    <strong>Error: </strong>{{ task.error_exception }} <br /><br />
     <code>
+      <h3>{{ task.error_exception }}</h3>
+      <br />
       {{ task.error_traceback }}
     </code>
   </v-card-text>
