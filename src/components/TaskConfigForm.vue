@@ -34,7 +34,7 @@ limitations under the License.
         :required="field.required"
         :rules="field.required ? [(v) => !!v || 'This field is required'] : []"
         :items="field.type === 'artifacts' ? artifactNames : field.items"
-        :multiple="field.type === 'autocomplete' || 'artifacts'"
+        :multiple="field.type === 'autocomplete' || field.type === 'artifacts'"
       />
     </template>
     <v-btn
