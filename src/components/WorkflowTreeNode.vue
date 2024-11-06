@@ -51,7 +51,9 @@ limitations under the License.
       <template v-if="node.isRoot">
         <div class="py-1">
           <div
-            v-for="file in workflow.files"
+            v-for="(file, index) in showAllFiles
+              ? workflow.files
+              : workflow.files.slice(0, 10)"
             :key="file.id"
             :class="file.is_deleted ? 'red-text' : ''"
             :title="file.display_name"
@@ -67,6 +69,23 @@ limitations under the License.
               >mdi-file-outline</v-icon
             >
             <div class="truncate">{{ file.display_name }}</div>
+          </div>
+
+          <div
+            v-if="workflow.files.length > 10"
+            class="mt-1"
+            style="
+              text-decoration: underline;
+              cursor: pointer;
+              font-size: 0.9em;
+            "
+            @click="showAllFiles = !showAllFiles"
+          >
+            {{
+              showAllFiles
+                ? "Show less"
+                : `Show all ${workflow.files.length} files`
+            }}
           </div>
         </div>
       </template>
@@ -184,6 +203,7 @@ export default {
   data() {
     return {
       showTaskConfigForm: false,
+      showAllFiles: false,
     };
   },
   computed: {
