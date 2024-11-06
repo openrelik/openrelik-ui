@@ -83,14 +83,21 @@ limitations under the License.
 
         <v-table class="mt-2">
           <thead></thead>
-          <tr v-for="file in task.output_files" :key="file.id">
+          <tr
+            v-for="(file, index) in showAllFiles
+              ? task.output_files
+              : task.output_files.slice(0, 10)"
+            :key="file.id"
+          >
             <td>
               <router-link
                 style="text-decoration: none; color: inherit"
                 :to="{ name: 'file', params: { fileId: file.id } }"
               >
-                <v-icon class="mt-n1">mdi-file-outline</v-icon>
-                {{ file.display_name }}
+                <div class="truncate">
+                  <v-icon class="mt-n1">mdi-file-outline</v-icon>
+                  {{ file.display_name }}
+                </div>
               </router-link>
             </td>
             <td>{{ $filters.formatBytes(file.filesize) }}</td>
@@ -99,6 +106,18 @@ limitations under the License.
             </td>
           </tr>
         </v-table>
+        <div
+          v-if="task.output_files.length > 10"
+          class="mt-2"
+          style="text-decoration: underline; cursor: pointer"
+          @click="showAllFiles = !showAllFiles"
+        >
+          {{
+            showAllFiles
+              ? "Show less"
+              : `Show all ${task.output_files.length} files`
+          }}
+        </div>
       </ul>
     </v-card-text>
   </div>
@@ -125,6 +144,7 @@ export default {
   data() {
     return {
       attributesToRender: ["command"],
+      showAllFiles: false,
     };
   },
   computed: {
@@ -144,3 +164,12 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.truncate {
+  max-width: 400px; /* Adjust the width as needed */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
