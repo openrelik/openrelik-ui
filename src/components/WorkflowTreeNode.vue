@@ -139,7 +139,7 @@ limitations under the License.
             <v-icon color="grey-lighten-1" size="x-large">mdi-plus</v-icon>
           </v-btn>
         </div>
-        <div class="ml-1" v-for="option in node.task_config">
+        <div class="ml-1" v-for="(option, optionIndex) in node.task_config">
           <small
             v-if="
               option.hasOwnProperty('value') &&
@@ -150,11 +150,32 @@ limitations under the License.
           >
             <strong>{{ option.name }}: </strong>
             <span v-if="Array.isArray(option.value)">
-              <div v-for="value in option.value">{{ value }}</div>
+              <div
+                v-for="(value, index) in showOption[optionIndex]
+                  ? option.value
+                  : option.value.slice(0, 5)"
+                :key="index"
+              >
+                {{ value }}
+              </div>
+              <div
+                v-if="option.value.length > 5"
+                class="mt-1"
+                style="
+                  text-decoration: underline;
+                  cursor: pointer;
+                  font-size: 0.9em;
+                "
+                @click.stop="showOption[optionIndex] = !showOption[optionIndex]"
+              >
+                {{
+                  showOption[optionIndex]
+                    ? "See less"
+                    : `See all ${option.value.length}`
+                }}
+              </div>
             </span>
-            <span v-else>
-              {{ option.value }}
-            </span>
+            <span v-else>{{ option.value }} </span>
           </small>
         </div>
       </template>
@@ -204,6 +225,7 @@ export default {
     return {
       showTaskConfigForm: false,
       showAllFiles: false,
+      showOption: {},
     };
   },
   computed: {
