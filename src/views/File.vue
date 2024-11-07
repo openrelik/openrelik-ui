@@ -132,19 +132,19 @@ limitations under the License.
               <v-table v-if="isCloudDisk" density="compact">
                 <tbody>
                   <tr>
-                    <td>Provider</td>
+                    <td>Cloud Provider</td>
                     <td>{{ systemConfig.active_cloud.display_name }}</td>
                   </tr>
                   <tr>
-                    <td>Project</td>
+                    <td>Cloud Project</td>
                     <td>{{ systemConfig.active_cloud.project_name }}</td>
                   </tr>
                   <tr>
-                    <td>Zone</td>
+                    <td>Cloud Zone</td>
                     <td>{{ systemConfig.active_cloud.zone }}</td>
                   </tr>
                   <tr>
-                    <td>Disk name</td>
+                    <td>Cloud Disk Name</td>
                     <td>{{ file.filename }}</td>
                   </tr>
                 </tbody>
@@ -181,6 +181,23 @@ limitations under the License.
                     <td>
                       {{ $filters.formatBytes(file.filesize) }}
                       <small>({{ file.filesize }} bytes)</small>
+                    </td>
+                  </tr>
+                  <tr v-if="file.source_file">
+                    <td>Source File</td>
+                    <td>
+                      <router-link
+                        style="color: inherit"
+                        :to="{
+                          name: 'file',
+                          params: {
+                            fileId: file.source_file.id,
+                            folderId: file.source_file.folder_id,
+                          },
+                        }"
+                      >
+                        {{ file.source_file.display_name }}
+                      </router-link>
                     </td>
                   </tr>
                   <tr v-if="file.original_path">
@@ -479,12 +496,23 @@ export default {
         });
       });
     },
+    fetchFileData() {
+      RestApiClient.getFile(this.fileId).then((response) => {
+        this.file = response;
+      });
+    },
   },
   mounted() {
-    RestApiClient.getFile(this.fileId).then((response) => {
-      this.file = response;
-    });
+    this.fetchFileData();
     this.setActiveTab();
+  },
+  watch: {
+    $route(to, from) {
+      // Fetch new file data when fileId changes
+      if (to.params.fileId !== from.params.fileId) {
+        this.fetchFileData();
+      }
+    },
   },
 };
 </script>
