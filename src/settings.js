@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 const apiServerUrl =
-  import.meta.env.VITE_OPENRELIK_SERVER_URL || "http://localhost:8710";
+  import.meta.env.VITE_OPENRELIK_SERVER_URL || "http://openrelik-server:8710";
 const apiServerVersion = import.meta.env.VITE_OPENRELIK_API_VERSION || "v1";
 const authMethods = import.meta.env.VITE_OPENRELIK_AUTH_METHODS || "local";
 
