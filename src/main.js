@@ -34,6 +34,8 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
 
+import VueApexCharts from "vue3-apexcharts";
+
 const app = createApp(App);
 
 // Global filters
@@ -79,5 +81,6 @@ app.config.globalProperties.$filters = {
 registerPlugins(app);
 
 app.use(eventBus);
+app.use(VueApexCharts);
 app.component("AppSnackbar", AppSnackbar);
 app.mount("#app");

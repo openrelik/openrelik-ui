@@ -14,9 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <template>
-  <v-btn class="mr-3" icon @click="toggleTheme"
-    ><v-icon>mdi-brightness-6</v-icon></v-btn
-  >
+  <v-list-item @click="toggleTheme">
+    <template v-slot:prepend>
+      <v-icon>mdi-brightness-6</v-icon>
+    </template>
+    <v-list-item-title>Toggle theme</v-list-item-title>
+  </v-list-item>
 </template>
 
 <script setup>

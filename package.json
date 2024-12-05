@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@mdi/font": "7.4.47",
+    "apexcharts": "^4.1.0",
     "axios": "^1.6.7",
     "core-js": "^3.34.0",
     "dayjs": "^1.11.10",
@@ -21,6 +22,7 @@
     "sass-loader": "^14.2.0",
     "uuid": "^9.0.1",
     "vue": "^3.3.0",
+    "vue3-apexcharts": "^1.8.0",
     "vuetify": "^3.0.0"
   },
   "devDependencies": {

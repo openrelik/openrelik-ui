@@ -19,7 +19,6 @@ limitations under the License.
 import RestApiClient from "@/RestApiClient";
 
 export default {
-  name: "TEMPLATE",
   props: {},
   data() {
     return {};
