@@ -34,8 +34,8 @@ limitations under the License.
       </v-img>
     </template>
     <template v-slot:append>
-      <toggle-theme />
       <profile-menu size="30" />
+      <system-menu />
     </template>
   </v-app-bar>
 </template>
@@ -44,12 +44,12 @@ limitations under the License.
 import { useAppStore } from "@/stores/app";
 import settings from "@/settings";
 import ProfileMenu from "@/components/ProfileMenu.vue";
-import ToggleTheme from "@/components/ToggleTheme.vue";
+import SystemMenu from "@/components/SystemMenu.vue";
 
 export default {
   components: {
     ProfileMenu,
-    ToggleTheme,
+    SystemMenu,
   },
   data() {
     return {

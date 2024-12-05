@@ -634,4 +634,22 @@ export default {
         });
     });
   },
+  async getTaskMetrics(metricName, aggregate, range, step, resolution) {
+    const requestBody = {
+      metric_name: metricName,
+      aggregate: aggregate,
+      range: range,
+      step: step,
+      resolution: resolution,
+    };
+    return new Promise((resolve, reject) => {
+      RestApiClient.post("/metrics/tasks", requestBody)
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
 };

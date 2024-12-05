@@ -25,6 +25,7 @@ import Login from "@/views/Login.vue";
 import Home from "@/views/Home.vue";
 import Folder from "@/views/Folder.vue";
 import File from "@/views/File.vue";
+import Metrics from "@/views/Metrics.vue";
 
 // Import Pinia stores
 import { useUserStore } from "@/stores/user";
@@ -55,6 +56,12 @@ const routes = [
         path: "shared-with-me",
         name: "sharedWithMe",
         component: Home,
+        props: true,
+      },
+      {
+        path: "/metrics",
+        name: "metrics",
+        component: Metrics,
         props: true,
       },
       {
