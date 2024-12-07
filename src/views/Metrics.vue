@@ -109,9 +109,19 @@ export default {
       ],
       metricCharts: [
         {
-          name: "Total tasks",
-          metric: "celery_task_received_total",
+          name: "Total active tasks",
+          metric: "celery_task_started_total",
           aggregate: true,
+        },
+        {
+          name: "Total tasks in queue",
+          metric: "celery_queue_length_total",
+          aggregate: true,
+        },
+        {
+          name: "Tasks in queue",
+          metric: "celery_queue_length_total",
+          aggregate: false,
         },
         {
           name: "Tasks recieved",
