@@ -54,7 +54,7 @@ export default {
     },
     resolution: {
       type: String,
-      default: "5m",
+      default: "1m",
     },
   },
   data() {
@@ -140,6 +140,9 @@ export default {
   },
   mounted() {
     this.getTaskMetrics();
+    this.$eventBus.on("refresh-chart-data", () => {
+      this.getTaskMetrics();
+    });
   },
   watch: {
     range: "getTaskMetrics",
