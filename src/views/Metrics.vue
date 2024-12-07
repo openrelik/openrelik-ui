@@ -21,6 +21,7 @@ limitations under the License.
           <v-select
             v-model="range"
             :items="rangeOptions"
+            @update:modelValue="updateStepAndResolution()"
             label="Range (Look back period for data)"
             variant="outlined"
           ></v-select>
@@ -29,26 +30,37 @@ limitations under the License.
           <v-select
             v-model="step"
             :items="stepOptions"
-            label="Step (time interval between successive data points)"
+            label="Resolution (Time interval between data points)"
             variant="outlined"
           ></v-select>
         </v-col>
         <v-col cols="12" sm="4">
           <v-select
-            v-model="resolution"
-            :items="resolutionOptions"
-            label="Resolution (time interval between each data point)"
+            v-model="refreshInterval"
+            :items="autoRefreshOptions"
+            @update:modelValue="resetRefreshInterval"
+            label="Refresh interval"
             variant="outlined"
-          ></v-select>
+          >
+            <template v-slot:append>
+              <v-btn
+                icon
+                variant="flat"
+                @click="$eventBus.emit('refresh-chart-data')"
+              >
+                <v-icon>mdi-refresh</v-icon>
+              </v-btn>
+            </template>
+          </v-select>
         </v-col>
       </v-row>
     </v-form>
     <v-row>
-      <v-col v-for="metric in metricNames" :key="metric.name" cols="12" sm="6">
+      <v-col v-for="chart in metricCharts" :key="chart.name" cols="12" sm="6">
         <range-chart
-          :chart-name="metric.name"
-          :metric-name="metric.metric"
-          :aggregate="metric.aggregate"
+          :chart-name="chart.name"
+          :metric-name="chart.metric"
+          :aggregate="chart.aggregate"
           :range="range"
           :step="step"
           :resolution="resolution"
@@ -69,32 +81,33 @@ export default {
     return {
       range: 3600,
       step: 60,
-      resolution: "5m",
+      resolution: "1m",
+      refreshInterval: null,
+      refreshTimer: null,
       rangeOptions: [
-        { title: "1 hour", value: 3600 },
-        { title: "6 hours", value: 21600 },
-        { title: "12 hours", value: 43200 },
-        { title: "1 day", value: 86400 },
-        { title: "30 day", value: 2592000 },
+        { title: "Last 5 minutes", value: 300 },
+        { title: "Last hour", value: 3600 },
+        { title: "Last 6 hours", value: 21600 },
+        { title: "Last 12 hours", value: 43200 },
+        { title: "Last 24 hours", value: 86400 },
+        { title: "Last 30 days", value: 2592000 },
+        { title: "Last 12 months", value: 31556926 },
       ],
       stepOptions: [
+        { title: "15 seconds", value: 15 },
         { title: "1 minute", value: 60 },
         { title: "5 minutes", value: 300 },
-        { title: "15 minutes", value: 900 },
         { title: "1 hour", value: 3600 },
-        { title: "12 hours", value: 43200 },
         { title: "1 day", value: 86400 },
+        { title: "1 week", value: 604800 },
       ],
-      resolutionOptions: [
-        { title: "1 minute", value: "1m" },
-        { title: "5 minutes", value: "5m" },
-        { title: "15 minutes", value: "15m" },
-        { title: "1 hour", value: "1h" },
-        { title: "6 hours", value: "6h" },
-        { title: "12 hours", value: "12h" },
-        { title: "1 day", value: "1d" },
+      autoRefreshOptions: [
+        { title: "No automatic refresh", value: null },
+        { title: "15 seconds", value: 15000 },
+        { title: "1 minute", value: 60000 },
+        { title: "5 minutes", value: 300000 },
       ],
-      metricNames: [
+      metricCharts: [
         {
           name: "Total tasks",
           metric: "celery_task_received_total",
@@ -137,6 +150,59 @@ export default {
         },
       ],
     };
+  },
+  mounted() {
+    this.resetRefreshInterval();
+  },
+  beforeUnmount() {
+    clearInterval(this.refreshTimer);
+  },
+  methods: {
+    updateStepAndResolution() {
+      // Logic to calculate step and resolution based on range
+      switch (this.range) {
+        case 300: // 5 hour
+          this.step = 15; // 1 minute
+          this.resolution = "15s";
+          break;
+        case 3600: // 1 hour
+          this.step = 60; // 1 minute
+          this.resolution = "1m";
+          break;
+        case 21600: // 6 hours
+          this.step = 300; // 5 minutes
+          this.resolution = "5m";
+          break;
+        case 43200: // 12 hours
+          this.step = 3600; // 1 hour
+          this.resolution = "1h";
+          break;
+        case 86400: // 1 day
+          this.step = 3600; // 1 minute
+          this.resolution = "1h";
+          break;
+        case 2592000: // 30 days
+          this.step = 86400; // 1 day
+          this.resolution = "1d";
+          break;
+        case 31556926: // 30 days
+          this.step = 604800; // 1 day
+          this.resolution = "1w";
+          break;
+        default:
+          this.step = 60; // Default to 1 minute
+          this.resolution = "1m";
+      }
+    },
+    resetRefreshInterval() {
+      clearInterval(this.refreshTimer);
+
+      if (this.refreshInterval) {
+        this.refreshTimer = setInterval(() => {
+          this.$eventBus.emit("refresh-chart-data");
+        }, this.refreshInterval);
+      }
+    },
   },
 };
 </script>
