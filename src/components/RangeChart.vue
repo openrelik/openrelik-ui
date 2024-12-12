@@ -144,10 +144,8 @@ export default {
       this.getTaskMetrics();
     });
   },
-  watch: {
-    range: "getTaskMetrics",
-    step: "getTaskMetrics",
-    resolution: "getTaskMetrics",
+  beforeUnmount() {
+    this.$eventBus.off("refresh-chart-data");
   },
 };
 </script>
