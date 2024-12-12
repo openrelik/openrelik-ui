@@ -30,6 +30,7 @@ limitations under the License.
           <v-select
             v-model="step"
             :items="stepOptions"
+            @update:modelValue="updateStep()"
             label="Resolution (Time interval between data points)"
             variant="outlined"
           ></v-select>
@@ -38,7 +39,7 @@ limitations under the License.
           <v-select
             v-model="refreshInterval"
             :items="autoRefreshOptions"
-            @update:modelValue="resetRefreshInterval"
+            @update:modelValue="resetRefreshInterval()"
             label="Refresh interval"
             variant="outlined"
           >
@@ -203,10 +204,15 @@ export default {
           this.step = 60; // Default to 1 minute
           this.resolution = "1m";
       }
+      this.$nextTick(() => {
+        this.$eventBus.emit("refresh-chart-data");
+      });
+    },
+    updateStep() {
+      this.$eventBus.emit("refresh-chart-data");
     },
     resetRefreshInterval() {
       clearInterval(this.refreshTimer);
-
       if (this.refreshInterval) {
         this.refreshTimer = setInterval(() => {
           this.$eventBus.emit("refresh-chart-data");
