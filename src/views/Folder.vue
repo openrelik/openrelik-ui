@@ -366,7 +366,7 @@ limitations under the License.
         class="text-none custom-border-color"
         prepend-icon="mdi-folder-plus-outline"
         @click="showNewFolderDialog = true"
-        >New folder</v-btn
+        >New subfolder</v-btn
       >
       <v-btn
         v-if="!isWorkflowFolder && canEdit"

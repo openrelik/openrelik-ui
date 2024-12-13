@@ -44,17 +44,30 @@ limitations under the License.
   </v-dialog>
 
   <v-card variant="flat" color="transparent">
-    <v-tabs v-model="activeTab">
-      <v-tab
-        v-for="tab in tabs"
-        :key="tab.value"
-        :value="tab.value"
-        class="text-none"
-        :prepend-icon="tab.icon"
-        @click="updateRoute(tab.routeName)"
-        >{{ tab.name }}</v-tab
-      >
-    </v-tabs>
+    <v-row align="center">
+      <v-col cols="auto">
+        <v-btn
+          variant="outlined"
+          class="text-none custom-border-color mt-2"
+          prepend-icon="mdi-folder-plus-outline"
+          @click="showNewFolderDialog = true"
+          >New folder</v-btn
+        >
+      </v-col>
+      <v-col>
+        <v-tabs v-model="activeTab">
+          <v-tab
+            v-for="tab in tabs"
+            :key="tab.value"
+            :value="tab.value"
+            class="text-none"
+            :prepend-icon="tab.icon"
+            @click="updateRoute(tab.routeName)"
+            >{{ tab.name }}</v-tab
+          >
+        </v-tabs>
+      </v-col>
+    </v-row>
     <br />
   </v-card>
 
@@ -64,14 +77,6 @@ limitations under the License.
       :transition="false"
       :reverse-transition="false"
     >
-      <v-btn
-        v-if="activeTab === 0"
-        variant="outlined"
-        class="text-none custom-border-color"
-        prepend-icon="mdi-folder-plus-outline"
-        @click="showNewFolderDialog = true"
-        >New folder</v-btn
-      >
       <folder-list
         :items="folders"
         :is-home-view="true"
