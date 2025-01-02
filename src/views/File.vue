@@ -220,7 +220,7 @@ limitations under the License.
                 isTextFormat &&
                 file.summaries &&
                 !file.summaries.length &&
-                file.filesize < fileSizeLimit
+                file.filesize < genAISizeLimit
               "
               variant="outlined"
               class="text-none mt-4 custom-border-color"
@@ -379,6 +379,7 @@ export default {
       fileContentLoading: false,
       workflows: [],
       fileSizeLimit: 10485760,
+      genAISizeLimit: 1048576,
       activeTab: null,
       tabs: [
         {
