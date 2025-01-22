@@ -15,8 +15,7 @@ limitations under the License.
 -->
 <template>
   <div v-if="file">
-    <h2>{{ file.display_name }}</h2>
-    <v-breadcrumbs density="compact" class="ml-n4 mb-2 mt-n1">
+    <v-breadcrumbs density="compact" class="ml-n4 mt-n1">
       <small>
         <v-breadcrumbs-item :to="{ name: 'home' }"> Home </v-breadcrumbs-item>
         <v-breadcrumbs-divider v-if="file.folder"></v-breadcrumbs-divider>
@@ -28,11 +27,17 @@ limitations under the License.
       </small>
     </v-breadcrumbs>
 
+    <span style="display: flex; align-items: center">
+      <v-icon class="mr-2">mdi-file-outline</v-icon>
+      <h2>{{ file.display_name }}</h2>
+    </span>
+
     <div v-if="file.is_deleted">
       <v-alert
         type="error"
         text="This file has been deleted"
         icon="mdi-alert"
+        class="mt-3"
       ></v-alert>
     </div>
 
@@ -53,8 +58,7 @@ limitations under the License.
           <template v-slot:activator="{ props }">
             <v-btn
               variant="flat"
-              color="info"
-              class="text-none"
+              class="text-none mr-2 custom-border-color"
               prepend-icon="mdi-plus"
               append-icon="mdi-chevron-down"
               v-bind="props"
