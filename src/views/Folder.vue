@@ -322,19 +322,6 @@ limitations under the License.
     </v-card>
   </v-dialog>
 
-  <!-- Folder -->
-  <v-hover v-if="!folder.is_deleted" v-slot="{ isHovering, props }">
-    <h2 v-bind="props" @dblclick="showRenameFolderDialog = true">
-      {{ folder.display_name }}
-      <v-icon
-        v-if="isHovering"
-        size="x-small"
-        @click="showRenameFolderDialog = !showRenameFolderDialog"
-        >mdi-pencil</v-icon
-      >
-    </h2>
-  </v-hover>
-  <h2 v-else>{{ folder.display_name }}</h2>
   <v-breadcrumbs density="compact" class="ml-n4 mt-n1">
     <small>
       <v-breadcrumbs-item :to="{ name: 'home' }"> Home </v-breadcrumbs-item>
@@ -348,6 +335,23 @@ limitations under the License.
       </v-breadcrumbs-item>
     </small>
   </v-breadcrumbs>
+
+  <!-- Folder -->
+  <span style="display: flex; align-items: center">
+    <v-icon class="mr-3" color="info">mdi-folder</v-icon>
+    <v-hover v-if="!folder.is_deleted" v-slot="{ isHovering, props }">
+      <h2 v-bind="props" @dblclick="showRenameFolderDialog = true">
+        {{ folder.display_name }}
+        <v-icon
+          v-if="isHovering"
+          size="x-small"
+          @click="showRenameFolderDialog = !showRenameFolderDialog"
+          >mdi-pencil</v-icon
+        >
+      </h2>
+    </v-hover>
+    <h2 v-else>{{ folder.display_name }}</h2>
+  </span>
 
   <div v-if="folder.is_deleted">
     <v-alert

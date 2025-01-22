@@ -15,8 +15,8 @@ limitations under the License.
 -->
 <template>
   <span>
-    <v-icon v-if="taskStatus === 'SUCCESS'" color="success"
-      >mdi-check-circle-outline
+    <v-icon size="small" v-if="taskStatus === 'SUCCESS'" color="success"
+      >mdi-check-circle
     </v-icon>
     <v-icon
       v-if="

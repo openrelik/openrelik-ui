@@ -49,7 +49,7 @@ limitations under the License.
         </v-card>
       </v-menu>
       <template v-if="node.isRoot">
-        <div class="py-1">
+        <div>
           <div
             v-for="(file, index) in showAllFiles
               ? workflow.files
@@ -57,7 +57,6 @@ limitations under the License.
             :key="file.id"
             :class="file.is_deleted ? 'red-text' : ''"
             :title="file.display_name"
-            style="font-size: 0.9em"
             class="file-container"
           >
             <v-icon
@@ -68,7 +67,9 @@ limitations under the License.
             <v-icon v-else size="small" class="mr-1" style="margin-top: -3px"
               >mdi-file-outline</v-icon
             >
-            <div class="truncate">{{ file.display_name }}</div>
+            <div class="truncate">
+              <span style="font-size: 0.9em">{{ file.display_name }}</span>
+            </div>
           </div>
 
           <div
@@ -96,13 +97,9 @@ limitations under the License.
             :task-status="celeryTask.status_short"
           ></task-status-icon>
           {{ node.display_name }}
-          <div v-if="celeryTask.runtime">
-            <small class="ml-1"
-              >Runtime:
-              <strong>{{ celeryTask.runtime.toFixed(1) }}</strong>
-              seconds</small
-            >
-          </div>
+          <span v-if="celeryTask.runtime">
+            <small class="">({{ celeryTask.runtime.toFixed(1) }}s)</small>
+          </span>
           <div v-if="celeryTask.file_reports && celeryTask.file_reports.length">
             <small class="ml-1">
               Reports:
@@ -122,7 +119,6 @@ limitations under the License.
               icon
               variant="text"
               size="x-small"
-              class="text-none"
               @click.stop="showTaskConfigForm = true"
             >
               <v-icon>mdi-cog-outline</v-icon>
@@ -134,7 +130,7 @@ limitations under the License.
             icon
             variant="text"
             size="x-small"
-            class="text-none ml-1"
+            class="ml-1"
           >
             <v-icon color="grey-lighten-1" size="x-large">mdi-plus</v-icon>
           </v-btn>

@@ -32,9 +32,33 @@ limitations under the License.
         prepend-icon="mdi-play"
         variant="flat"
         color="info"
-        class="text-none mt-4"
+        class="text-none mt-4 mr-2"
         @click="runWorkflow"
         >Run this workflow</v-btn
+      >
+      <v-btn
+        v-if="workflow.tasks.length"
+        prepend-icon="mdi-content-copy"
+        variant="outlined"
+        class="text-none mt-4 custom-border-color"
+        @click="$emit('copy-workflow')"
+        >Copy workflow</v-btn
+      >
+      <v-btn
+        v-if="workflow.tasks.length"
+        prepend-icon="mdi-content-copy"
+        variant="outlined"
+        class="text-none mt-4 ml-2 custom-border-color"
+        @click="$emit('save-workflow-as-template')"
+        >Save workflow as template</v-btn
+      >
+      <v-btn
+        v-if="!workflow.tasks.length"
+        prepend-icon="mdi-trash-can-outline"
+        variant="outlined"
+        class="text-none mt-4 custom-border-color"
+        @click="$emit('delete-workflow')"
+        >Cancel</v-btn
       >
     </div>
   </div>

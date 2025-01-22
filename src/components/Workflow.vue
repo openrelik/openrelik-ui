@@ -107,32 +107,14 @@ limitations under the License.
             </span>
           </v-hover>
         </v-toolbar-title>
-        <v-spacer></v-spacer>
-        <div v-if="showControls" class="mr-2">
-          <v-btn
-            v-if="workflow.tasks && workflow.tasks.length"
-            icon
-            @click="showNewTemplateDialog = true"
-            ><v-icon>mdi-content-save-outline</v-icon></v-btn
-          >
-          <v-btn
-            v-if="workflow.tasks && workflow.tasks.length"
-            icon
-            @click="copyWorkflow(workflow)"
-            ><v-icon>mdi-content-copy</v-icon></v-btn
-          >
-          <v-btn
-            v-if="!workflow.tasks.length"
-            icon
-            @click="deleteWorkflow(workflow)"
-            ><v-icon>mdi-trash-can-outline</v-icon></v-btn
-          >
-        </div>
       </v-toolbar>
       <v-divider></v-divider>
       <workflow-tree
         :workflow="workflow"
         @workflow-started="runWorkflow()"
+        @delete-workflow="deleteWorkflow()"
+        @copy-workflow="copyWorkflow()"
+        @save-workflow-as-template="showNewTemplateDialog = true"
       ></workflow-tree>
       <div v-if="!showControls" class="pa-4">
         <router-link
@@ -231,7 +213,9 @@ export default {
         });
     },
     deleteWorkflow() {
-      if (confirm("Are you sure you want to delete this workflow?")) {
+      if (
+        confirm("Are you sure you want to cancel and delete this workflow?")
+      ) {
         RestApiClient.deleteWorkflow(this.workflow)
           .then(() => {
             this.$emit("workflow-deleted", this.workflow);
