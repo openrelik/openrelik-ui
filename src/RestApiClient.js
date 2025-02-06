@@ -307,21 +307,6 @@ export default {
         });
     });
   },
-  async createCloudDiskFile(diskName, folderId) {
-    const requestBody = {
-      disk_name: diskName,
-      folder_id: folderId,
-    };
-    return new Promise((resolve, reject) => {
-      RestApiClient.post("/files/cloud/", requestBody)
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
-  },
   async deleteFile(file) {
     return new Promise((resolve, reject) => {
       RestApiClient.delete("/files/" + file.id)

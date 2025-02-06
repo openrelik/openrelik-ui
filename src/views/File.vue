@@ -122,39 +122,15 @@ limitations under the License.
                 :color="$vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'"
                 density="compact"
               >
-                <v-icon v-if="isCloudDisk" class="ml-4 mr-n2"
-                  >mdi-cloud-outline</v-icon
-                >
                 <v-toolbar-title
                   style="font-size: 18px"
-                  :text="isCloudDisk ? 'Cloud disk' : 'Basic properties'"
+                  text="Basic properties"
                 >
                 </v-toolbar-title>
               </v-toolbar>
               <v-divider></v-divider>
 
-              <v-table v-if="isCloudDisk" density="compact">
-                <tbody>
-                  <tr>
-                    <td>Cloud Provider</td>
-                    <td>{{ systemConfig.active_cloud.display_name }}</td>
-                  </tr>
-                  <tr>
-                    <td>Cloud Project</td>
-                    <td>{{ systemConfig.active_cloud.project_name }}</td>
-                  </tr>
-                  <tr>
-                    <td>Cloud Zone</td>
-                    <td>{{ systemConfig.active_cloud.zone }}</td>
-                  </tr>
-                  <tr>
-                    <td>Cloud Disk Name</td>
-                    <td>{{ file.filename }}</td>
-                  </tr>
-                </tbody>
-              </v-table>
-
-              <v-table v-else density="compact">
+              <v-table density="compact">
                 <tbody>
                   <tr>
                     <td>MD5</td>
@@ -420,9 +396,6 @@ export default {
         "application/javascript",
       ];
       return textFileTypes.includes(this.file.magic_mime);
-    },
-    isCloudDisk() {
-      return this.file.data_type.startsWith("cloud:");
     },
     allowedPreview() {
       // Render unescaped HTML content in sandboxed iframe if data_type is in server side
