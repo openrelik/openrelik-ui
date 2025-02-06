@@ -93,50 +93,6 @@ limitations under the License.
     </v-card>
   </v-dialog>
 
-  <!-- Add cloud disk dialog -->
-  <v-dialog v-if="isCloudEnabled" v-model="showAddCloudDisk" width="800">
-    <v-card width="800" class="mx-auto">
-      <v-card-text>
-        <h3>Add cloud disk</h3>
-        <v-list-subheader class="mb-4">
-          <v-icon size="small" color="success" class="mt-n1"
-            >mdi-check-circle-outline</v-icon
-          >
-          Connected to
-          <strong>{{ systemConfig.active_cloud.display_name }}</strong>
-          on project
-          <strong>{{ systemConfig.active_cloud.project_name }}</strong> in zone
-          <strong>{{ systemConfig.active_cloud.zone }}</strong>
-        </v-list-subheader>
-        <v-form @submit.prevent="addCloudDisk">
-          <v-text-field
-            v-model="newCloudDiskName"
-            label="Enter cloud disk name"
-            variant="outlined"
-            required
-          ></v-text-field>
-          <v-btn
-            :disabled="!newCloudDiskName"
-            type="submit"
-            color="primary"
-            variant="text"
-            class="text-none"
-            >Add</v-btn
-          >
-          <v-btn
-            variant="text"
-            class="text-none"
-            @click="
-              newCloudDiskName = '';
-              showAddCloudDisk = false;
-            "
-            >Cancel</v-btn
-          >
-        </v-form>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
-
   <!-- Share folder dialog -->
   <v-dialog v-model="showSharingDialog" width="400">
     <v-card width="500" class="mx-auto">
@@ -380,14 +336,6 @@ limitations under the License.
         @click="showUpload = !showUpload"
         >Upload files</v-btn
       >
-      <v-btn
-        v-if="!isWorkflowFolder && isCloudEnabled && canEdit"
-        variant="outlined"
-        class="text-none mr-2 custom-border-color"
-        prepend-icon="mdi-cloud-plus-outline"
-        @click="showAddCloudDisk = !showAddCloudDisk"
-        >Add cloud disk</v-btn
-      >
       <v-menu v-if="files.length && canEdit">
         <template v-slot:activator="{ props }">
           <v-btn
@@ -506,11 +454,9 @@ export default {
       myRole: { role: "" },
       selectedFiles: [],
       showUpload: false,
-      showAddCloudDisk: false,
       showNewFolderDialog: false,
       showRenameFolderDialog: false,
       showSharingDialog: false,
-      newCloudDiskName: "",
       newFolderForm: {
         name: "",
       },
@@ -539,12 +485,6 @@ export default {
         return;
       }
       return this.folder.workflows.length;
-    },
-    isCloudEnabled() {
-      if (!this.systemConfig) {
-        return;
-      }
-      return Object.keys(this.systemConfig.active_cloud).length > 0;
     },
     canEdit() {
       return this.myRole.role === "Owner" || this.myRole.role === "Editor";
@@ -677,16 +617,6 @@ export default {
           params: { folderId: this.folder.parent.id },
         });
       });
-    },
-    addCloudDisk() {
-      RestApiClient.createCloudDiskFile(
-        this.newCloudDiskName,
-        this.folder.id
-      ).then((response) => {
-        this.refreshFileListing();
-      });
-      this.showAddCloudDisk = false;
-      this.newCloudDiskName = "";
     },
   },
 
