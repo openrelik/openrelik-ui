@@ -26,40 +26,59 @@ limitations under the License.
           :update-workflow="updateWorkflow"
         ></tree-node>
       </ul>
+    </div>
 
-      <v-btn
-        v-if="!workflow.tasks.length && workflowSpec.workflow.tasks.length"
-        prepend-icon="mdi-play"
-        variant="flat"
-        color="info"
-        class="text-none mt-4 mr-2"
-        @click="runWorkflow"
-        >Run this workflow</v-btn
-      >
-      <v-btn
-        v-if="workflow.tasks.length"
-        prepend-icon="mdi-content-copy"
-        variant="outlined"
-        class="text-none mt-4 custom-border-color"
-        @click="$emit('copy-workflow')"
-        >Copy workflow</v-btn
-      >
-      <v-btn
-        v-if="workflow.tasks.length"
-        prepend-icon="mdi-content-copy"
-        variant="outlined"
-        class="text-none mt-4 ml-2 custom-border-color"
-        @click="$emit('save-workflow-as-template')"
-        >Save workflow as template</v-btn
-      >
-      <v-btn
-        v-if="!workflow.tasks.length"
-        prepend-icon="mdi-trash-can-outline"
-        variant="outlined"
-        class="text-none mt-4 custom-border-color"
-        @click="$emit('delete-workflow')"
-        >Cancel</v-btn
-      >
+    <div style="border-top: 1px solid rgb(var(--v-theme-custom-border-color)">
+      <div class="pa-4">
+        <v-btn
+          v-if="!workflow.tasks.length && workflowSpec.workflow.tasks.length"
+          prepend-icon="mdi-play"
+          variant="flat"
+          color="info"
+          class="text-none mr-2"
+          @click="runWorkflow"
+          >Run this workflow</v-btn
+        >
+        <v-btn
+          v-if="workflow.tasks.length"
+          prepend-icon="mdi-content-copy"
+          variant="outlined"
+          class="text-none custom-border-color"
+          :class="
+            $vuetify.theme.name === 'dark'
+              ? 'dark-grey-background'
+              : 'white-background'
+          "
+          @click="$emit('copy-workflow')"
+          >Copy workflow</v-btn
+        >
+        <v-btn
+          v-if="workflow.tasks.length"
+          prepend-icon="mdi-content-save-outline"
+          variant="outlined"
+          class="text-none ml-2 custom-border-color"
+          :class="
+            $vuetify.theme.name === 'dark'
+              ? 'dark-grey-background'
+              : 'white-background'
+          "
+          @click="$emit('save-workflow-as-template')"
+          >Save workflow as template</v-btn
+        >
+        <v-btn
+          v-if="!workflow.tasks.length"
+          prepend-icon="mdi-trash-can-outline"
+          variant="outlined"
+          class="text-none custom-border-color"
+          :class="
+            $vuetify.theme.name === 'dark'
+              ? 'dark-grey-background'
+              : 'white-background'
+          "
+          @click="$emit('delete-workflow')"
+          >Cancel</v-btn
+        >
+      </div>
     </div>
   </div>
 </template>

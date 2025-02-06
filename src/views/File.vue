@@ -231,7 +231,7 @@ limitations under the License.
               @click="generateFileSummary()"
             >
               <v-icon class="mr-2">mdi-shimmer</v-icon>
-              Generate summary</v-btn
+              Generate AI summary</v-btn
             >
             <!-- File summary -->
             <file-summary

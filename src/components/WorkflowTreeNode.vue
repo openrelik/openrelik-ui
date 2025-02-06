@@ -70,6 +70,16 @@ limitations under the License.
             <div class="truncate">
               <span style="font-size: 0.9em">{{ file.display_name }}</span>
             </div>
+
+            <v-btn
+              v-if="!workflow.tasks.length && workflow.files.length === 1"
+              icon
+              variant="text"
+              size="x-small"
+              class="ml-1"
+            >
+              <v-icon color="grey-lighten-1" size="x-large">mdi-plus</v-icon>
+            </v-btn>
           </div>
 
           <div
@@ -279,12 +289,6 @@ export default {
 </script>
 
 <style scoped>
-.white-background {
-  background-color: white;
-}
-.dark-grey-background {
-  background-color: #181818;
-}
 .red-text {
   color: red;
 }

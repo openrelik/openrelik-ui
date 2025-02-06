@@ -18,6 +18,13 @@ limitations under the License.
     border: 1px solid rgb(var(--v-theme-custom-border-color));
 }
 
+.white-background {
+  background-color: white;
+}
+.dark-grey-background {
+  background-color: #181818;
+}
+
 .markdown-body {
     -ms-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
