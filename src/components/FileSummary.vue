@@ -14,16 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <template>
-  <v-card variant="outlined" class="mt-4 custom-border-color">
-    <v-toolbar
-      :color="$vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'"
-      density="compact"
-    >
+  <v-card variant="flat" class="mt-4 background-color">
+    <v-toolbar color="transparent" density="compact">
       <v-toolbar-title style="font-size: 18px">
         <v-icon size="small" class="mr-2">mdi-shimmer</v-icon>
-        Generated summary
+        AI summary
       </v-toolbar-title>
+
       <v-spacer></v-spacer>
+
       <span v-if="fileSummary.status_short === 'complete'" class="mr-4">
         <small>
           Generated with
@@ -101,3 +100,20 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.background-color {
+  background: linear-gradient(
+    90deg,
+    rgba(47, 79, 145, 0.2),
+    rgba(52, 92, 184, 0.2),
+    rgba(70, 109, 210, 0.2),
+    rgba(101, 132, 223, 0.2),
+    rgba(134, 158, 234, 0.2),
+    rgba(156, 147, 226, 0.2),
+    rgba(187, 159, 219, 0.2),
+    rgba(205, 171, 212, 0.2),
+    rgba(206, 182, 202, 0.2)
+  );
+}
+</style>
