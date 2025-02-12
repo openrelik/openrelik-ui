@@ -490,7 +490,7 @@ export default {
   },
   async generateFileSummary(fileId) {
     return new Promise((resolve, reject) => {
-      RestApiClient.post("/files/" + fileId + "/summaries/")
+      RestApiClient.post("/files/" + fileId + "/summaries")
         .then((response) => {
           resolve(response.data);
         })
@@ -527,7 +527,7 @@ export default {
   },
   async deleteUserApiKey(apiKeyId) {
     return new Promise((resolve, reject) => {
-      RestApiClient.delete(`/users/me/apikeys/${apiKeyId}/`)
+      RestApiClient.delete(`/users/me/apikeys/${apiKeyId}`)
         .then((response) => {
           resolve(response.data);
         })
