@@ -14,11 +14,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <template>
-  <v-card variant="outlined" class="mt-4 custom-border-color">
+  <v-dialog v-model="showPromptModal" width="90%">
+    <v-card width="90%" class="mx-auto pa-4">
+      <v-card-title>Prompt</v-card-title>
+      <v-card-text>
+        {{ fileSummary.llm_model_prompt }}
+      </v-card-text>
+    </v-card>
+  </v-dialog>
+  <v-card
+    variant="outlined"
+    class="mt-4"
+    :class="
+      $vuetify.theme.name === 'dark'
+        ? 'ai-background-dark'
+        : 'ai-background-light'
+    "
+  >
     <v-toolbar color="transparent" density="compact">
       <v-toolbar-title style="font-size: 18px">
         <v-icon size="small" class="mr-2">mdi-shimmer</v-icon>
         AI summary
+        <small class="ml-3" style="font-size: 0.7em"
+          >(AI can make mistakes so always double-check)</small
+        >
       </v-toolbar-title>
 
       <v-spacer></v-spacer>
@@ -30,6 +49,13 @@ limitations under the License.
           <strong>{{ fileSummary.llm_model_provider }}</strong> in
           {{ fileSummary.runtime }}s
         </small>
+        <v-icon
+          size="small"
+          class="ml-2 text-none"
+          title="Show prompt"
+          @click="showPromptModal = true"
+          >mdi-information-outline</v-icon
+        >
       </span>
     </v-toolbar>
     <v-divider></v-divider>
@@ -63,6 +89,7 @@ export default {
       fileSummary: this.initialSummary,
       polling: null,
       pollingInterval: 3000,
+      showPromptModal: false,
     };
   },
   computed: {},
@@ -100,3 +127,50 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.ai-background-light {
+  border: 1px solid transparent !important;
+  background-image: linear-gradient(white, white),
+    linear-gradient(
+      90deg,
+      #8ab4f8 0%,
+      #81c995 20%,
+      #f8c665 40%,
+      #ec7764 60%,
+      #b39ddb 80%,
+      #8ab4f8 100%
+    );
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+  background-size: 300% 100%;
+  animation: borderBeamIridescent-subtle 15s linear infinite;
+}
+
+.ai-background-dark {
+  border: 1px solid transparent !important;
+  background-image: linear-gradient(#181818, #181818),
+    linear-gradient(
+      90deg,
+      #6d8dc2 0%,
+      #578564 20%,
+      #a58545 40%,
+      #944b40 60%,
+      #7b6c97 80%,
+      #5f7ba8 100%
+    );
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+  background-size: 300% 100%;
+  animation: borderBeamIridescent-subtle 15s linear infinite;
+}
+
+@keyframes borderBeamIridescent-subtle {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+</style>
