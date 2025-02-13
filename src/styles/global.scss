@@ -14,21 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-.ai-background-color {
-  background: linear-gradient(
-    90deg,
-    rgba(47, 79, 145, 0.1),
-    rgba(52, 92, 184, 0.1),
-    rgba(70, 109, 210, 0.1),
-    rgba(101, 132, 223, 0.1),
-    rgba(134, 158, 234, 0.1),
-    rgba(156, 147, 226, 0.1),
-    rgba(187, 159, 219, 0.1),
-    rgba(205, 171, 212, 0.1),
-    rgba(206, 182, 202, 0.1)
-  );
-}
-
 .custom-border-color {
     border: 1px solid rgb(var(--v-theme-custom-border-color));
 }

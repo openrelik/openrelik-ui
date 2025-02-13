@@ -203,7 +203,7 @@ limitations under the License.
                 file.filesize < genAISizeLimit
               "
               variant="outlined"
-              class="text-none mt-4 custom-border-color ai-background-color"
+              class="text-none mt-4 custom-border-color"
               @click="generateFileSummary()"
             >
               <v-icon class="mr-2">mdi-shimmer</v-icon>

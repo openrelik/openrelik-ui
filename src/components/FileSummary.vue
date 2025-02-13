@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <template>
-  <v-card variant="flat" class="mt-4 ai-background-color">
+  <v-card variant="outlined" class="mt-4 custom-border-color">
     <v-toolbar color="transparent" density="compact">
       <v-toolbar-title style="font-size: 18px">
         <v-icon size="small" class="mr-2">mdi-shimmer</v-icon>
