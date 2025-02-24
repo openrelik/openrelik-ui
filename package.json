@@ -1,6 +1,6 @@
 {
   "name": "openrelik-ui",
-  "version": "2024.12.12",
+  "version": "0.5.0",
   "scripts": {
     "dev": "cross-env NODE_OPTIONS='--no-warnings' vite",
     "build": "vite build",
