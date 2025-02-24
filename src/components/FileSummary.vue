@@ -32,16 +32,14 @@ limitations under the License.
     "
   >
     <v-toolbar color="transparent" density="compact">
-      <v-toolbar-title style="font-size: 18px">
+      <div class="ml-4" style="font-size: 18px">
         <v-icon size="small" class="mr-2">mdi-shimmer</v-icon>
         AI summary
-        <small class="ml-3" style="font-size: 0.7em"
-          >(AI can make mistakes so always double-check)</small
-        >
-      </v-toolbar-title>
-
+      </div>
+      <small class="ml-3" style="font-size: 0.7em"
+        >(AI can make mistakes so always double-check)</small
+      >
       <v-spacer></v-spacer>
-
       <span v-if="fileSummary.status_short === 'complete'" class="mr-4">
         <small>
           Generated with
