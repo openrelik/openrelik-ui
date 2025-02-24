@@ -416,7 +416,6 @@ export default {
   },
   async runWorkflow(workflow, workflowSpec) {
     const requestBody = {
-      workflow_id: workflow.id,
       workflow_spec: workflowSpec,
     };
     return new Promise((resolve, reject) => {

@@ -20,14 +20,11 @@ limitations under the License.
     </v-app-bar-title>
     <template v-slot:prepend>
       <v-img
-        :src="
-          $vuetify.theme.name === 'dark'
-            ? '/logo-dark-round.png'
-            : '/logo-light-round.png'
-        "
-        width="30"
-        height="30"
-        class="ml-4 mr-3"
+        src="/logo-light-round.png"
+        :width="$vuetify.theme.name === 'dark' ? '25' : '30'"
+        :height="$vuetify.theme.name === 'dark' ? '25' : '30'"
+        :class="$vuetify.theme.name === 'dark' ? 'mr-4' : 'mr-3'"
+        class="ml-4"
         style="cursor: pointer"
         @click="navigate('/')"
       >
