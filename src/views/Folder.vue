@@ -20,28 +20,12 @@ limitations under the License.
       <v-card-title>New folder</v-card-title>
       <div class="pa-4">
         <v-form @submit.prevent @keyup.enter="createFolder()">
-          <v-text-field
-            v-model="newFolderForm.name"
-            variant="outlined"
-            label="Folder name"
-            autofocus
-          ></v-text-field>
+          <v-text-field v-model="newFolderForm.name" variant="outlined" label="Folder name" autofocus></v-text-field>
         </v-form>
 
-        <v-btn
-          variant="text"
-          color="primary"
-          class="text-none"
-          :disabled="!newFolderForm.name"
-          @click="createFolder()"
-          >Create</v-btn
-        >
-        <v-btn
-          variant="text"
-          class="text-none"
-          @click="showNewFolderDialog = false"
-          >Cancel</v-btn
-        >
+        <v-btn variant="text" color="primary" class="text-none" :disabled="!newFolderForm.name"
+          @click="createFolder()">Create</v-btn>
+        <v-btn variant="text" class="text-none" @click="showNewFolderDialog = false">Cancel</v-btn>
       </div>
     </v-card>
   </v-dialog>
@@ -50,32 +34,13 @@ limitations under the License.
     <v-card width="400" class="mx-auto">
       <v-card-title class="pt-4">Rename folder</v-card-title>
       <div class="pa-4">
-        <v-form
-          @submit.prevent
-          @keyup.enter="renameFolder(newFolderNameForm.displayName)"
-        >
-          <v-text-field
-            v-model="newFolderNameForm.displayName"
-            variant="outlined"
-            label="Folder name"
-            autofocus
-            @focus="$event.target.select()"
-          ></v-text-field>
+        <v-form @submit.prevent @keyup.enter="renameFolder(newFolderNameForm.displayName)">
+          <v-text-field v-model="newFolderNameForm.displayName" variant="outlined" label="Folder name" autofocus
+            @focus="$event.target.select()"></v-text-field>
         </v-form>
-        <v-btn
-          variant="text"
-          color="primary"
-          class="text-none"
-          :disabled="!newFolderNameForm.displayName"
-          @click="renameFolder(newFolderNameForm.displayName)"
-          >Save</v-btn
-        >
-        <v-btn
-          variant="text"
-          class="text-none ml-1"
-          @click="showRenameFolderDialog = false"
-          >Cancel</v-btn
-        >
+        <v-btn variant="text" color="primary" class="text-none" :disabled="!newFolderNameForm.displayName"
+          @click="renameFolder(newFolderNameForm.displayName)">Save</v-btn>
+        <v-btn variant="text" class="text-none ml-1" @click="showRenameFolderDialog = false">Cancel</v-btn>
       </div>
     </v-card>
   </v-dialog>
@@ -83,12 +48,8 @@ limitations under the License.
   <v-dialog v-model="showUpload" width="800" persistent>
     <v-card width="800" class="mx-auto">
       <div class="pa-4">
-        <upload-file
-          v-if="showUpload"
-          :folder-id="folderId"
-          @file-uploaded="updateFilesArray($event)"
-          @close-dialog="this.showUpload = false"
-        ></upload-file>
+        <upload-file v-if="showUpload" :folder-id="folderId" @file-uploaded="updateFilesArray($event)"
+          @close-dialog="this.showUpload = false"></upload-file>
       </div>
     </v-card>
   </v-dialog>
@@ -99,9 +60,7 @@ limitations under the License.
       <v-card-text>
         <h3>Add cloud disk</h3>
         <v-list-subheader class="mb-4">
-          <v-icon size="small" color="success" class="mt-n1"
-            >mdi-check-circle-outline</v-icon
-          >
+          <v-icon size="small" color="success" class="mt-n1">mdi-check-circle-outline</v-icon>
           Connected to
           <strong>{{ systemConfig.active_cloud.display_name }}</strong>
           on project
@@ -109,29 +68,14 @@ limitations under the License.
           <strong>{{ systemConfig.active_cloud.zone }}</strong>
         </v-list-subheader>
         <v-form @submit.prevent="addCloudDisk">
-          <v-text-field
-            v-model="newCloudDiskName"
-            label="Enter cloud disk name"
-            variant="outlined"
-            required
-          ></v-text-field>
-          <v-btn
-            :disabled="!newCloudDiskName"
-            type="submit"
-            color="primary"
-            variant="text"
-            class="text-none"
-            >Add</v-btn
-          >
-          <v-btn
-            variant="text"
-            class="text-none"
-            @click="
-              newCloudDiskName = '';
-              showAddCloudDisk = false;
-            "
-            >Cancel</v-btn
-          >
+          <v-text-field v-model="newCloudDiskName" label="Enter cloud disk name" variant="outlined"
+            required></v-text-field>
+          <v-btn :disabled="!newCloudDiskName" type="submit" color="primary" variant="text"
+            class="text-none">Add</v-btn>
+          <v-btn variant="text" class="text-none" @click="
+            newCloudDiskName = '';
+          showAddCloudDisk = false;
+          ">Cancel</v-btn>
         </v-form>
       </v-card-text>
     </v-card>
@@ -144,104 +88,47 @@ limitations under the License.
       <div class="pa-4">
         <v-row no-gutters="">
           <v-col cols="8" class="pr-3">
-            <v-autocomplete
-              v-model="selectedUsers"
-              :items="searchUserResult"
-              density="compact"
-              variant="outlined"
-              placeholder="Add people"
-              item-title="display_name"
-              item-value="username"
-              return-object
-              chips
-              closable-chips
-              multiple
-              no-filter
-              hide-no-data
-              clear-on-select
-              @update:search="searchUsers($event)"
-            >
+            <v-autocomplete v-model="selectedUsers" :items="searchUserResult" density="compact" variant="outlined"
+              placeholder="Add people" item-title="display_name" item-value="username" return-object chips
+              closable-chips multiple no-filter hide-no-data clear-on-select @update:search="searchUsers($event)">
               <template v-slot:chip="{ props, item }">
-                <v-chip
-                  v-bind="props"
-                  :prepend-avatar="
-                    item.raw.profile_picture_url
-                      ? item.raw.profile_picture_url
-                      : ''
-                  "
-                  :prepend-icon="
-                    item.raw.profile_picture_url ? '' : 'mdi-account'
-                  "
-                ></v-chip>
+                <v-chip v-bind="props" :prepend-avatar="item.raw.profile_picture_url
+                  ? item.raw.profile_picture_url
+                  : ''
+                  " :prepend-icon="item.raw.profile_picture_url ? '' : 'mdi-account'
+                    "></v-chip>
               </template>
               <template v-slot:item="{ props, item }">
-                <v-list-item
-                  v-bind="props"
-                  :prepend-avatar="
-                    item.raw.profile_picture_url
-                      ? item.raw.profile_picture_url
-                      : '/user-placeholder.png'
-                  "
-                  :title="item.raw.display_name"
-                  :subtitle="item.raw.username"
-                ></v-list-item>
+                <v-list-item v-bind="props" :prepend-avatar="item.raw.profile_picture_url
+                  ? item.raw.profile_picture_url
+                  : '/user-placeholder.png'
+                  " :title="item.raw.display_name" :subtitle="item.raw.username"></v-list-item>
               </template>
             </v-autocomplete>
           </v-col>
           <v-col cols="4">
-            <v-select
-              v-model="selectedUsersRole"
-              variant="outlined"
-              density="compact"
-              :disabled="!selectedUsers.length"
-              :items="['Editor', 'Viewer']"
-            ></v-select>
+            <v-select v-model="selectedUsersRole" variant="outlined" density="compact" :disabled="!selectedUsers.length"
+              :items="['Editor', 'Viewer']"></v-select>
           </v-col>
         </v-row>
 
         <v-row no-gutters>
           <v-col cols="8" class="pr-3">
-            <v-autocomplete
-              v-model="selectedGroups"
-              :items="appStore.groups"
-              variant="outlined"
-              density="compact"
-              placeholder="Add groups"
-              item-title="name"
-              item-value="id"
-              return-object
-              chips
-              closable-chips
-              multiple
-              no-filter
-              hide-no-data
-              clear-on-select
-              hide-details
-            >
+            <v-autocomplete v-model="selectedGroups" :items="appStore.groups" variant="outlined" density="compact"
+              placeholder="Add groups" item-title="name" item-value="id" return-object chips closable-chips multiple
+              no-filter hide-no-data clear-on-select hide-details>
               <template v-slot:chip="{ props, item }">
-                <v-chip
-                  v-bind="props"
-                  prepend-icon="mdi-account-multiple"
-                ></v-chip>
+                <v-chip v-bind="props" prepend-icon="mdi-account-multiple"></v-chip>
               </template>
               <template v-slot:item="{ props, item }">
-                <v-list-item
-                  v-bind="props"
-                  prepend-icon="mdi-account-multiple"
-                  :title="item.raw.name"
-                  :subtitle="item.raw.description"
-                ></v-list-item>
+                <v-list-item v-bind="props" prepend-icon="mdi-account-multiple" :title="item.raw.name"
+                  :subtitle="item.raw.description"></v-list-item>
               </template>
             </v-autocomplete>
           </v-col>
           <v-col cols="4">
-            <v-select
-              v-model="selectedGroupsRole"
-              variant="outlined"
-              density="compact"
-              :disabled="!selectedGroups.length"
-              :items="['Editor', 'Viewer']"
-            ></v-select>
+            <v-select v-model="selectedGroupsRole" variant="outlined" density="compact"
+              :disabled="!selectedGroups.length" :items="['Editor', 'Viewer']"></v-select>
           </v-col>
         </v-row>
 
@@ -251,36 +138,19 @@ limitations under the License.
             <tbody>
               <tr v-for="user_role in folder.user_roles" :key="user_role.id">
                 <td>
-                  <v-avatar
-                    v-if="user_role.user.profile_picture_url"
-                    size="x-small"
-                    class="mr-1"
-                  >
-                    <v-img
-                      :src="user_role.user.profile_picture_url"
-                      referrerpolicy="no-referrer"
-                      alt="Profile Picture"
-                    />
+                  <v-avatar v-if="user_role.user.profile_picture_url" size="x-small" class="mr-1">
+                    <v-img :src="user_role.user.profile_picture_url" referrerpolicy="no-referrer"
+                      alt="Profile Picture" />
                   </v-avatar>
                   <v-avatar size="x-small" class="mr-1" v-else>
-                    <v-img
-                      src="/user-placeholder.png"
-                      referrerpolicy="no-referrer"
-                      alt="Profile Picture"
-                    />
+                    <v-img src="/user-placeholder.png" referrerpolicy="no-referrer" alt="Profile Picture" />
                   </v-avatar>
                   {{ user_role.user.display_name }}
                 </td>
                 <td>{{ user_role.role }}</td>
                 <td class="text-right">
-                  <v-btn
-                    v-if="user_role.role != 'Owner'"
-                    size="small"
-                    variant="tonal"
-                    class="text-none"
-                    @click="deleteUserRole(user_role.id)"
-                    >Remove access</v-btn
-                  >
+                  <v-btn v-if="user_role.role != 'Owner'" size="small" variant="tonal" class="text-none"
+                    @click="deleteUserRole(user_role.id)">Remove access</v-btn>
                 </td>
               </tr>
               <tr v-for="group_role in folder.group_roles" :key="group_role.id">
@@ -290,13 +160,8 @@ limitations under the License.
                 </td>
                 <td>{{ group_role.role }}</td>
                 <td class="text-right">
-                  <v-btn
-                    size="small"
-                    variant="tonal"
-                    class="text-none"
-                    @click="deleteGroupRole(group_role.id)"
-                    >Remove access</v-btn
-                  >
+                  <v-btn size="small" variant="tonal" class="text-none" @click="deleteGroupRole(group_role.id)">Remove
+                    access</v-btn>
                 </td>
               </tr>
             </tbody>
@@ -304,19 +169,8 @@ limitations under the License.
         </div>
 
         <v-card-actions class="mt-2">
-          <v-btn
-            variant="text"
-            color="primary"
-            class="text-none"
-            @click="shareFolder()"
-            >Save</v-btn
-          >
-          <v-btn
-            variant="text"
-            class="text-none"
-            @click="showSharingDialog = false"
-            >Cancel</v-btn
-          >
+          <v-btn variant="text" color="primary" class="text-none" @click="shareFolder()">Save</v-btn>
+          <v-btn variant="text" class="text-none" @click="showSharingDialog = false">Cancel</v-btn>
         </v-card-actions>
       </div>
     </v-card>
@@ -326,21 +180,15 @@ limitations under the License.
   <v-hover v-if="!folder.is_deleted" v-slot="{ isHovering, props }">
     <h2 v-bind="props" @dblclick="showRenameFolderDialog = true">
       {{ folder.display_name }}
-      <v-icon
-        v-if="isHovering"
-        size="x-small"
-        @click="showRenameFolderDialog = !showRenameFolderDialog"
-        >mdi-pencil</v-icon
-      >
+      <v-icon v-if="isHovering" size="x-small"
+        @click="showRenameFolderDialog = !showRenameFolderDialog">mdi-pencil</v-icon>
     </h2>
   </v-hover>
   <h2 v-else>{{ folder.display_name }}</h2>
   <v-breadcrumbs density="compact" class="ml-n4 mt-n1">
     <small>
       <v-breadcrumbs-item :to="{ name: 'home' }"> Home </v-breadcrumbs-item>
-      <v-breadcrumbs-divider
-        v-if="folder && folder.parent"
-      ></v-breadcrumbs-divider>
+      <v-breadcrumbs-divider v-if="folder && folder.parent"></v-breadcrumbs-divider>
       <breadcrumbs :folder="folder.parent"></breadcrumbs>
       <v-breadcrumbs-divider></v-breadcrumbs-divider>
       <v-breadcrumbs-item>
@@ -350,51 +198,25 @@ limitations under the License.
   </v-breadcrumbs>
 
   <div v-if="folder.is_deleted">
-    <v-alert
-      type="error"
-      text="This folder has been deleted"
-      icon="mdi-alert"
-    ></v-alert>
+    <v-alert type="error" text="This folder has been deleted" icon="mdi-alert"></v-alert>
   </div>
   <div v-if="no_access">You don't have access to this folder.</div>
   <div v-else>
     <!-- Button row -->
     <div class="mt-3">
-      <v-btn
-        v-if="!isWorkflowFolder && canEdit"
-        variant="outlined"
-        class="text-none custom-border-color"
-        prepend-icon="mdi-folder-plus-outline"
-        @click="showNewFolderDialog = true"
-        >New folder</v-btn
-      >
-      <v-btn
-        v-if="!isWorkflowFolder && canEdit"
-        variant="outlined"
-        class="text-none mx-2 custom-border-color"
-        prepend-icon="mdi-upload"
-        @click="showUpload = !showUpload"
-        >Upload files</v-btn
-      >
-      <v-btn
-        v-if="!isWorkflowFolder && isCloudEnabled && canEdit"
-        variant="outlined"
-        class="text-none mr-2 custom-border-color"
-        prepend-icon="mdi-cloud-plus-outline"
-        @click="showAddCloudDisk = !showAddCloudDisk"
-        >Add cloud disk</v-btn
-      >
+      <v-btn v-if="!isWorkflowFolder && canEdit" variant="outlined" class="text-none custom-border-color"
+        prepend-icon="mdi-folder-plus-outline" @click="showNewFolderDialog = true">New folder</v-btn>
+      <v-btn v-if="!isWorkflowFolder && canEdit" variant="outlined" class="text-none mx-2 custom-border-color"
+        prepend-icon="mdi-upload" @click="showUpload = !showUpload">Upload files</v-btn>
+      <v-btn v-if="!isWorkflowFolder && isCloudEnabled && canEdit" variant="outlined"
+        class="text-none mr-2 custom-border-color" prepend-icon="mdi-cloud-plus-outline"
+        @click="showAddCloudDisk = !showAddCloudDisk">Add cloud disk</v-btn>
       <v-menu v-if="files.length && canEdit">
         <template v-slot:activator="{ props }">
-          <v-btn
-            :variant="selectedFiles.length ? 'flat' : 'outlined'"
+          <v-btn :variant="selectedFiles.length ? 'flat' : 'outlined'"
             :color="selectedFiles.length ? 'info' : 'default'"
-            :class="selectedFiles.length ? '' : 'custom-border-color'"
-            class="text-none mr-2"
-            prepend-icon="mdi-plus"
-            append-icon="mdi-chevron-down"
-            v-bind="props"
-            >Create workflow
+            :class="selectedFiles.length ? '' : 'custom-border-color'" class="text-none mr-2" prepend-icon="mdi-plus"
+            append-icon="mdi-chevron-down" v-bind="props">Create workflow
           </v-btn>
         </template>
         <v-card width="400">
@@ -404,25 +226,15 @@ limitations under the License.
           <v-list v-else>
             <v-list-item @click="createWorkflow()">
               <v-list-item-title>
-                <v-icon size="small" style="margin-top: -3px" class="mr-1"
-                  >mdi-plus</v-icon
-                >
-                <strong>New workflow</strong></v-list-item-title
-              >
+                <v-icon size="small" style="margin-top: -3px" class="mr-1">mdi-plus</v-icon>
+                <strong>New workflow</strong></v-list-item-title>
             </v-list-item>
             <div v-if="appStore.workflowTemplates.length">
               <v-divider></v-divider>
-              <v-list-subheader
-                v-if="appStore.workflowTemplates.length"
-                class="mt-2"
-                >Templates</v-list-subheader
-              >
+              <v-list-subheader v-if="appStore.workflowTemplates.length" class="mt-2">Templates</v-list-subheader>
 
-              <v-list-item
-                @click="createWorkflow(template.id)"
-                v-for="template in appStore.workflowTemplates"
-                :key="template.id"
-              >
+              <v-list-item @click="createWorkflow(template.id)" v-for="template in appStore.workflowTemplates"
+                :key="template.id">
                 <v-list-item-title>
                   <v-icon>mdi-plus</v-icon> {{ template.display_name }}
                 </v-list-item-title>
@@ -431,44 +243,23 @@ limitations under the License.
           </v-list>
         </v-card>
       </v-menu>
-      <v-btn
-        v-if="canEdit"
-        variant="outlined"
-        class="text-none mr-2 custom-border-color"
-        prepend-icon="mdi-account-plus-outline"
-        @click="showSharingDialog = !showSharingDialog"
-        >Share</v-btn
-      >
+      <v-btn v-if="canEdit" variant="outlined" class="text-none mr-2 custom-border-color"
+        prepend-icon="mdi-account-plus-outline" @click="showSharingDialog = !showSharingDialog">Share</v-btn>
     </div>
 
     <div class="mt-4">
-      <workflow
-        v-for="workflow in folder.workflows"
-        :key="workflow.id"
-        :initial-workflow="workflow"
-        :show-controls="true"
-        @workflow-updated="refreshFileListing()"
-        @workflow-deleted="deleteWorkflow()"
-        @workflow-renamed="renameFolder($event)"
-      >
+      <workflow v-for="workflow in folder.workflows" :key="workflow.id" :initial-workflow="workflow"
+        :show-controls="true" @workflow-updated="refreshFileListing()" @workflow-deleted="deleteWorkflow()"
+        @workflow-renamed="renameFolder($event)">
       </workflow>
 
       <div class="mt-4">
-        <v-card-title
-          v-if="isWorkflowFolder && files.length"
-          class="ml-n4 mt-3"
-        >
+        <v-card-title v-if="isWorkflowFolder && files.length" class="ml-n4 mt-3">
           Workflow results
         </v-card-title>
 
-        <folder-list
-          :items="items"
-          :is-loading="isLoading"
-          :folder="folder"
-          @file-deleted="removeFile($event)"
-          @folder-deleted="removeFolder($event)"
-          @selected-files="selectedFiles = $event"
-        ></folder-list>
+        <folder-list :items="items" :is-loading="isLoading" :folder="folder" @file-deleted="removeFile($event)"
+          @folder-deleted="removeFolder($event)" @selected-files="selectedFiles = $event"></folder-list>
       </div>
     </div>
   </div>
@@ -539,6 +330,9 @@ export default {
     isCloudEnabled() {
       if (!this.systemConfig) {
         return;
+      }
+      if (!this.systemConfig.active_cloud) {
+        return false;
       }
       return Object.keys(this.systemConfig.active_cloud).length > 0;
     },
