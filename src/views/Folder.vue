@@ -87,6 +87,7 @@ limitations under the License.
           v-if="showUpload"
           :folder-id="folderId"
           @file-uploaded="updateFilesArray($event)"
+          @file-upload-error="showUploadError($event)"
           @close-dialog="this.showUpload = false"
         ></upload-file>
       </div>
@@ -616,6 +617,13 @@ export default {
           name: "folder",
           params: { folderId: this.folder.parent.id },
         });
+      });
+    },
+    showUploadError(message) {
+      this.showUpload = false;
+      this.$eventBus.emit("showSnackbar", {
+        message: message.message.detail + ": " + message.file.fileName,
+        color: "error",
       });
     },
   },
