@@ -113,6 +113,9 @@ export default {
       // the identifier need to be reproducable between browser reloads.
       // Idea: Pre-create a File in the database and use the UUID or ID of that.
       testChunks: false,
+      maxChunkRetries: 10,
+      chunkRetryInterval: 500,
+      permanentErrors: [400, 404, 409, 415, 429, 500, 501],
       withCredentials: true,
       headers: { "X-CSRF-Token": csrfToken },
       generateUniqueIdentifier: (file, event) => {
@@ -169,6 +172,10 @@ export default {
 
     this.resumable.on("fileError", (file, message) => {
       console.error("File upload error:", file.fileName, message);
+      this.$emit("file-upload-error", {
+        file: file,
+        message: JSON.parse(message),
+      });
     });
 
     this.resumable.assignBrowse(this.$refs.fileInput.$el);
