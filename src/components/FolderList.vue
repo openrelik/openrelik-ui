@@ -23,7 +23,7 @@ limitations under the License.
       disable-sort
       item-key="uuid"
       item-selectable="selectable"
-      items-per-page="100"
+      items-per-page="10"
       select-strategy="all"
       no-data-text="No files or folders to show"
       return-object
@@ -62,11 +62,7 @@ limitations under the License.
       <!-- Display name -->
       <template v-slot:item.display_name="{ item: item }">
         <span v-if="item.magic_mime">
-          <v-icon v-if="item.data_type.startsWith('cloud:')" class="mr-2 mt-n1"
-            >mdi-cloud-outline</v-icon
-          >
-          <v-icon v-else class="mr-2 mt-n1">mdi-file-outline</v-icon>
-
+          <v-icon class="mr-2 mt-n1">mdi-file-outline</v-icon>
           <router-link
             style="text-decoration: none; color: inherit"
             :to="{ name: 'file', params: { fileId: item.id } }"
@@ -75,14 +71,7 @@ limitations under the License.
           </router-link>
         </span>
         <span v-else>
-          <!-- TODO: Consider different icon if it is a workflow folder. -->
-          <v-icon v-if="!item.has_workflows" class="mr-3 mt-n1" color="info">
-            mdi-folder</v-icon
-          >
-          <v-icon v-if="item.has_workflows" class="mr-3 mt-n1" color="info">
-            mdi-folder</v-icon
-          >
-
+          <v-icon class="mr-3 mt-n1" color="info"> mdi-folder</v-icon>
           <router-link
             style="text-decoration: none; color: inherit"
             :to="{ name: 'folder', params: { folderId: item.id } }"

@@ -29,6 +29,7 @@ limitations under the License.
         ? 'ai-background-dark'
         : 'ai-background-light'
     "
+    class="mb-4"
   >
     <v-toolbar color="transparent" density="compact">
       <div class="ml-4" style="font-size: 18px">
