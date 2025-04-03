@@ -44,6 +44,14 @@ limitations under the License.
           <span v-else> {{ value }} </span>
         </ul>
       </template>
+
+      <v-card v-if="task.task_report" class="mt-2" variant="outlined">
+        <v-card-text
+          class="markdown-body"
+          v-html="toHtml(task.task_report.markdown)"
+        ></v-card-text>
+      </v-card>
+
       <ul v-if="task.file_reports.length">
         <br />
         <strong>File reports ({{ task.file_reports.length }})</strong>
@@ -133,6 +141,8 @@ limitations under the License.
 
 <script>
 import settings from "@/settings";
+import DOMPurify from "dompurify";
+import { marked } from "marked";
 
 export default {
   name: "ProcessingResult",
@@ -160,6 +170,9 @@ export default {
       const downloadUrl =
         settings.apiServerUrl + "/api/v1/files/" + fileId + "/download_stream";
       window.open(downloadUrl);
+    },
+    toHtml(markdown) {
+      return DOMPurify.sanitize(marked(markdown));
     },
   },
 };
