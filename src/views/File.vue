@@ -117,7 +117,6 @@ limitations under the License.
             :reverse-transition="false"
           >
             <!-- Content-->
-
             <v-btn
               v-if="
                 systemConfig.active_llms.length &&
@@ -208,7 +207,16 @@ limitations under the License.
             :reverse-transition="false"
           >
             <!-- Details -->
-            <v-card variant="flat">
+            <v-card variant="outlined" class="custom-border-color">
+              <v-toolbar
+                :color="$vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'"
+                density="compact"
+              >
+                <v-toolbar-title style="font-size: 18px">
+                  Details
+                </v-toolbar-title>
+              </v-toolbar>
+              <v-divider></v-divider>
               <v-table density="compact">
                 <tbody>
                   <tr>
@@ -275,8 +283,8 @@ limitations under the License.
             :reverse-transition="false"
           >
             <v-card
-              variant="flat"
               v-if="!file.workflows.length"
+              variant="flat"
               color="transparent"
             >
               <div
