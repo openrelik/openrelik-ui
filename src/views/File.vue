@@ -213,7 +213,7 @@ limitations under the License.
                 density="compact"
               >
                 <v-toolbar-title style="font-size: 18px">
-                  Details
+                  Basic properties
                 </v-toolbar-title>
               </v-toolbar>
               <v-divider></v-divider>
