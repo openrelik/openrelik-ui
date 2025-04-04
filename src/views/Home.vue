@@ -49,52 +49,36 @@ limitations under the License.
         <v-btn
           variant="outlined"
           class="text-none custom-border-color mt-2"
+          style="height: 40px"
           prepend-icon="mdi-folder-plus-outline"
           @click="showNewFolderDialog = true"
           >New folder</v-btn
         >
       </v-col>
-      <v-col>
-        <v-tabs v-model="activeTab">
-          <v-tab
-            v-for="tab in tabs"
-            :key="tab.value"
-            :value="tab.value"
-            class="text-none"
-            :prepend-icon="tab.icon"
-            @click="updateRoute(tab.routeName)"
-            >{{ tab.name }}</v-tab
-          >
-        </v-tabs>
+      <v-col cols="6">
+        <v-text-field
+          v-model="searchTerm"
+          variant="outlined"
+          density="compact"
+          label="Search folders"
+          prepend-inner-icon="mdi-magnify"
+          hide-details
+          clearable
+          class="mt-2"
+          @keyup.enter="getFolders()"
+          @click:clear="getFolders()"
+        ></v-text-field>
       </v-col>
     </v-row>
     <br />
+    <div v-if="folders.length">
+      <folder-list
+        :items="folders"
+        :is-home-view="true"
+        @folder-deleted="removeFolder($event)"
+      ></folder-list>
+    </div>
   </v-card>
-
-  <v-tabs-window v-model="activeTab">
-    <v-tabs-window-item
-      :value="1"
-      :transition="false"
-      :reverse-transition="false"
-    >
-      <folder-list
-        :items="folders"
-        :is-home-view="true"
-        @folder-deleted="removeFolder($event)"
-      ></folder-list>
-    </v-tabs-window-item>
-    <v-tabs-window-item
-      :value="2"
-      :transition="false"
-      :reverse-transition="false"
-    >
-      <folder-list
-        :items="folders"
-        :is-home-view="true"
-        @folder-deleted="removeFolder($event)"
-      ></folder-list>
-    </v-tabs-window-item>
-  </v-tabs-window>
 </template>
 
 <script>
@@ -115,23 +99,7 @@ export default {
       newFolderForm: {
         name: "",
       },
-      activeTab: null,
-      tabs: [
-        {
-          name: "My Folders",
-          value: 0,
-          routeName: "myFolders",
-          route: "my-folders",
-          icon: "mdi-folder-multiple-outline",
-        },
-        {
-          name: "Shared With Me",
-          value: 1,
-          routeName: "sharedWithMe",
-          route: "shared-with-me",
-          icon: "mdi-folder-account-outline",
-        },
-      ],
+      searchTerm: "",
     };
   },
   computed: {},
@@ -157,33 +125,22 @@ export default {
     },
     getFolders() {
       this.folders = [];
-      if (this.activeTab === 0) {
-        RestApiClient.getRootFolders().then((response) => {
-          this.folders = response;
-        });
-      } else if (this.activeTab === 1) {
-        RestApiClient.getSharedFolders().then((response) => {
-          this.folders = response;
-        });
+      if (this.searchTerm) {
+        this.$router.push({ query: { q: this.searchTerm } });
+      } else {
+        this.$router.push({ query: {} });
       }
-    },
-    updateRoute(routeName) {
-      this.$router.replace({
-        name: routeName,
+      RestApiClient.getAllFolders(this.searchTerm).then((response) => {
+        this.folders = response;
       });
-      this.getFolders();
-    },
-    setActiveTab() {
-      const tabIndex = this.tabs.findIndex(
-        (tab) => tab.routeName === this.$route.name
-      );
-      this.activeTab = tabIndex;
-      this.getFolders();
     },
   },
 
   mounted() {
-    this.setActiveTab();
+    if (this.$route.query.q) {
+      this.searchTerm = this.$route.query.q;
+    }
+    this.getFolders();
     // If there is a URL parameter 'redirect' then redirect the user to it. This will
     // preserve any URL that the user clicked when not authenticated. When the user has
     // authenticated they will be redirected to the original location they were trying

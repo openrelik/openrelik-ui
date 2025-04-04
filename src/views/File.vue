@@ -54,7 +54,7 @@ limitations under the License.
         >
 
         <!-- Create workflow -->
-        <v-menu>
+        <v-menu v-if="canEdit">
           <template v-slot:activator="{ props }">
             <v-btn
               variant="flat"
@@ -100,7 +100,7 @@ limitations under the License.
 
       <!-- Tabs -->
       <div class="mt-4">
-        <v-tabs v-model="activeTab">
+        <v-tabs v-model="activeTab" class="mb-4">
           <v-tab
             v-for="tab in tabs"
             :key="tab.value"
@@ -116,20 +116,107 @@ limitations under the License.
             :transition="false"
             :reverse-transition="false"
           >
-            <!-- Details -->
-            <v-card variant="outlined" class="mt-4 custom-border-color">
+            <!-- Content-->
+            <v-btn
+              v-if="
+                systemConfig.active_llms.length &&
+                isTextFormat &&
+                file.summaries &&
+                !file.summaries.length &&
+                file.filesize < genAISizeLimit
+              "
+              variant="outlined"
+              class="text-none custom-border-color"
+              @click="generateFileSummary()"
+            >
+              <v-icon class="mr-2">mdi-shimmer</v-icon>
+              Generate AI summary</v-btn
+            >
+
+            <!-- File summary -->
+            <file-summary
+              v-for="summary in file.summaries"
+              :initial-summary="summary"
+            ></file-summary>
+
+            <div
+              v-if="file.filesize > fileSizeLimit || !isTextFormat"
+              style="font-family: monospace; font-size: 0.9em"
+              class="ml-4"
+            >
+              <strong v-if="file.filesize > fileSizeLimit">
+                The selected file exceeds the maximum size allowed for preview.
+              </strong>
+              <strong v-else>
+                This file format isn't currently supported for preview.
+              </strong>
+              <br />
+              To examine the file, please
+              <span
+                style="text-decoration: underline; cursor: pointer"
+                @click="downloadFileTab()"
+                >download</span
+              >
+              it to your local machine.
+            </div>
+
+            <!-- File content iframe -->
+            <v-card
+              v-if="isTextFormat && file.filesize < fileSizeLimit"
+              variant="outlined"
+              class="mt-4 custom-border-color"
+            >
               <v-toolbar
                 :color="$vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'"
                 density="compact"
               >
-                <v-toolbar-title
-                  style="font-size: 18px"
-                  text="Basic properties"
-                >
+                <v-toolbar-title style="font-size: 18px">
+                  File content
+                  <v-btn
+                    v-if="allowedPreview"
+                    variant="text"
+                    size="small"
+                    class="ml-3 text-none"
+                    :text="showFilePreview ? 'Raw' : 'Preview'"
+                    @click="showFilePreview = !showFilePreview"
+                  >
+                  </v-btn>
                 </v-toolbar-title>
               </v-toolbar>
               <v-divider></v-divider>
 
+              <div style="width: 100%; overflow: hidden">
+                <iframe
+                  sandbox
+                  :src="
+                    getIframeSrc({
+                      unsafe: allowedPreview && showFilePreview,
+                    })
+                  "
+                  frameborder="0"
+                  scrolling="yes"
+                  style="width: 100%; height: 65vh"
+                ></iframe>
+              </div>
+            </v-card>
+          </v-tabs-window-item>
+
+          <v-tabs-window-item
+            :value="1"
+            :transition="false"
+            :reverse-transition="false"
+          >
+            <!-- Details -->
+            <v-card variant="outlined" class="custom-border-color">
+              <v-toolbar
+                :color="$vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'"
+                density="compact"
+              >
+                <v-toolbar-title style="font-size: 18px">
+                  Basic properties
+                </v-toolbar-title>
+              </v-toolbar>
+              <v-divider></v-divider>
               <v-table density="compact">
                 <tbody>
                   <tr>
@@ -188,91 +275,6 @@ limitations under the License.
               </v-table>
             </v-card>
           </v-tabs-window-item>
-          <v-tabs-window-item
-            :value="1"
-            :transition="false"
-            :reverse-transition="false"
-          >
-            <!-- Content-->
-            <v-btn
-              v-if="
-                systemConfig.active_llms.length &&
-                isTextFormat &&
-                file.summaries &&
-                !file.summaries.length &&
-                file.filesize < genAISizeLimit
-              "
-              variant="outlined"
-              class="text-none mt-4 custom-border-color"
-              @click="generateFileSummary()"
-            >
-              <v-icon class="mr-2">mdi-shimmer</v-icon>
-              Generate AI summary</v-btn
-            >
-            <!-- File summary -->
-            <file-summary
-              v-for="summary in file.summaries"
-              :initial-summary="summary"
-            ></file-summary>
-            <!-- File content iframe -->
-            <v-card variant="outlined" class="mt-4 custom-border-color">
-              <v-toolbar
-                :color="$vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'"
-                density="compact"
-              >
-                <v-toolbar-title style="font-size: 18px">
-                  File content
-                  <v-btn
-                    v-if="allowedPreview"
-                    variant="text"
-                    size="small"
-                    class="ml-3 text-none"
-                    :text="showFilePreview ? 'Raw' : 'Preview'"
-                    @click="showFilePreview = !showFilePreview"
-                  >
-                  </v-btn>
-                </v-toolbar-title>
-              </v-toolbar>
-              <v-divider></v-divider>
-
-              <div
-                style="width: 100%; overflow: hidden"
-                v-if="isTextFormat && file.filesize < fileSizeLimit"
-              >
-                <iframe
-                  sandbox
-                  :src="
-                    getIframeSrc({ unsafe: allowedPreview && showFilePreview })
-                  "
-                  frameborder="0"
-                  scrolling="yes"
-                  style="width: 100%; height: 65vh"
-                ></iframe>
-              </div>
-              <div v-else>
-                <v-card-text>
-                  <div style="font-family: monospace">
-                    <strong v-if="file.filesize > fileSizeLimit">
-                      The selected file exceeds the maximum size allowed for
-                      preview.
-                    </strong>
-                    <strong v-else>
-                      This file format isn't currently supported for preview.
-                    </strong>
-
-                    <br />
-                    To examine the file, please
-                    <span
-                      style="text-decoration: underline; cursor: pointer"
-                      @click="downloadFileTab()"
-                      >download</span
-                    >
-                    it to your local machine.
-                  </div>
-                </v-card-text>
-              </div>
-            </v-card>
-          </v-tabs-window-item>
 
           <!-- Workflows -->
           <v-tabs-window-item
@@ -282,31 +284,27 @@ limitations under the License.
           >
             <v-card
               v-if="!file.workflows.length"
-              variant="outlined"
-              class="mt-4 custom-border-color"
+              variant="flat"
+              color="transparent"
             >
-              <v-toolbar
-                :color="$vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'"
-                density="compact"
+              <div
+                style="font-family: monospace; font-size: 0.9em"
+                class="ml-4"
               >
-                <v-toolbar-title style="font-size: 18px">
-                  Workflows
-                </v-toolbar-title>
-              </v-toolbar>
-              <v-divider></v-divider>
-              <v-card-text style="font-family: monospace">
                 <strong>
-                  This file doesn't have any associated workflows yet.</strong
-                >
+                  This file hasn't been used as input to any workflows yet.
+                </strong>
                 <br />
-                Let's
-                <span
-                  style="text-decoration: underline; cursor: pointer"
-                  @click="createWorkflow()"
-                  >create one</span
-                >
-                to get started.
-              </v-card-text>
+                <span v-if="canEdit">
+                  Let's
+                  <span
+                    style="text-decoration: underline; cursor: pointer"
+                    @click="createWorkflow()"
+                    >create a workflow</span
+                  >
+                  to get started.
+                </span>
+              </div>
             </v-card>
 
             <span style="font-family: monospace"></span>
@@ -353,6 +351,7 @@ export default {
   data() {
     return {
       appStore: useAppStore(),
+      myRole: { role: "" },
       file: null,
       fileContent: null,
       showFilePreview: true,
@@ -363,16 +362,16 @@ export default {
       activeTab: null,
       tabs: [
         {
-          name: "Details",
-          value: "0",
-          routeName: "fileDetails",
-          route: "details",
-        },
-        {
           name: "Content",
-          value: "1",
+          value: "0",
           routeName: "fileContent",
           route: "content",
+        },
+        {
+          name: "Details",
+          value: "1",
+          routeName: "fileDetails",
+          route: "details",
         },
         {
           name: "Workflows",
@@ -404,6 +403,12 @@ export default {
         this.file.data_type
       );
     },
+    canEdit() {
+      return this.myRole.role === "Owner" || this.myRole.role === "Editor";
+    },
+    isOwner() {
+      return this.myRole.role === "Owner";
+    },
   },
 
   methods: {
@@ -420,6 +425,11 @@ export default {
       }
 
       return url;
+    },
+    getFileFolderRole() {
+      RestApiClient.getMyFolderRole(this.file.folder.id).then((response) => {
+        this.myRole = response;
+      });
     },
     generateFileSummary() {
       RestApiClient.generateFileSummary(this.file.id).then((response) => {
@@ -475,9 +485,13 @@ export default {
       });
     },
     fetchFileData() {
-      RestApiClient.getFile(this.fileId).then((response) => {
-        this.file = response;
-      });
+      RestApiClient.getFile(this.fileId)
+        .then((response) => {
+          this.file = response;
+        })
+        .then(() => {
+          this.getFileFolderRole();
+        });
     },
   },
   mounted() {

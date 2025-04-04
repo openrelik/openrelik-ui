@@ -317,7 +317,7 @@ limitations under the License.
       icon="mdi-alert"
     ></v-alert>
   </div>
-  <div v-if="no_access">You don't have access to this folder.</div>
+  <div v-if="no_access" class="mt-2">You don't have access to this folder.</div>
   <div v-else>
     <!-- Button row -->
     <div class="mt-3">

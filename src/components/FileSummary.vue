@@ -24,12 +24,12 @@ limitations under the License.
   </v-dialog>
   <v-card
     variant="outlined"
-    class="mt-4"
     :class="
       $vuetify.theme.name === 'dark'
         ? 'ai-background-dark'
         : 'ai-background-light'
     "
+    class="mb-4"
   >
     <v-toolbar color="transparent" density="compact">
       <div class="ml-4" style="font-size: 18px">

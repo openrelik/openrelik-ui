@@ -31,9 +31,9 @@ export const useAppStore = defineStore("app", {
       const response = await RestApiClient.getSystemConfig();
       this.systemConfig = await response;
       const llmNameLocalStorage = localStorage.getItem("llm");
-      const llmNameSystemConfig =  null;
+      let llmNameSystemConfig = null;
       if (this.systemConfig.active_llms.length > 0) {
-        llmNameSystemConfig =  this.systemConfig.active_llms[0].name;
+        llmNameSystemConfig = this.systemConfig.active_llms[0].name;
       }
       const llmName = llmNameLocalStorage || llmNameSystemConfig;
 

@@ -202,6 +202,22 @@ export default {
         });
     });
   },
+  async getAllFolders(searchTerm = null) {
+    return new Promise((resolve, reject) => {
+      let url = "/folders/all/";
+      let params = {};
+      if (searchTerm) {
+        params["q"] = searchTerm;
+      }
+      RestApiClient.get(url, { params })
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
   async getFolders(folderId) {
     return new Promise((resolve, reject) => {
       let url = "/folders/" + folderId + "/folders/";
