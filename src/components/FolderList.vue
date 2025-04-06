@@ -71,7 +71,22 @@ limitations under the License.
           </router-link>
         </span>
         <span v-else>
-          <v-icon class="mr-3 mt-n1" color="info"> mdi-folder</v-icon>
+          <v-icon
+            v-if="item.workflows.length"
+            class="mr-3 mt-n1"
+            color="blue-grey"
+          >
+            mdi-folder-play</v-icon
+          >
+          <v-icon
+            v-else-if="item.user.id !== currentUser.id"
+            class="mr-3 mt-n1"
+            color="info"
+          >
+            mdi-folder-account</v-icon
+          >
+          <v-icon v-else class="mr-3 mt-n1" color="info">mdi-folder</v-icon>
+
           <router-link
             style="text-decoration: none; color: inherit"
             :to="{ name: 'folder', params: { folderId: item.id } }"
@@ -86,8 +101,9 @@ limitations under the License.
         <span
           v-if="file.filesize || file.filesize === 0"
           :title="file.filesize"
-          >{{ $filters.formatBytes(file.filesize) }}</span
         >
+          {{ $filters.formatBytes(file.filesize) }}
+        </span>
       </template>
 
       <!-- Only show select box for files. -->
@@ -160,16 +176,16 @@ export default {
       headers: [
         { title: "Name", key: "display_name" },
         { title: "", key: "data-table-select" },
-        { title: "Created", key: "created_at" },
+        { title: "Owner", key: "user" },
+        { title: "Last modified", key: "updated_at" },
         { title: "Size", key: "filesize" },
         { title: "Type", key: "magic_mime" },
-        { title: "Owner", key: "user" },
         { title: "Actions", key: "actions", sortable: false, width: "140px" },
       ],
       homeViewHeaders: [
         { title: "Name", key: "display_name" },
-        { title: "Created", key: "created_at" },
         { title: "Owner", key: "user" },
+        { title: "Last modified", key: "updated_at" },
         { title: "Actions", key: "actions", sortable: false, width: "140px" },
       ],
     };

@@ -413,6 +413,23 @@ export default {
         });
     });
   },
+  async generateWorkflowName(workflow) {
+    return new Promise((resolve, reject) => {
+      RestApiClient.get(
+        "/folders/" +
+          workflow.folder.id +
+          "/workflows/" +
+          workflow.id +
+          "/generate_name/"
+      )
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
   async copyWorkflow(workflow) {
     return new Promise((resolve, reject) => {
       RestApiClient.post(

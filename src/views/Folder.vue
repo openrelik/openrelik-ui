@@ -45,6 +45,7 @@ limitations under the License.
       </div>
     </v-card>
   </v-dialog>
+
   <!-- Rename folder dialog -->
   <v-dialog v-model="showRenameFolderDialog" width="400">
     <v-card width="400" class="mx-auto">
@@ -79,6 +80,7 @@ limitations under the License.
       </div>
     </v-card>
   </v-dialog>
+
   <!-- Upload files dialog -->
   <v-dialog v-model="showUpload" width="800" persistent>
     <v-card width="800" class="mx-auto">
@@ -295,7 +297,22 @@ limitations under the License.
 
   <!-- Folder -->
   <span style="display: flex; align-items: center">
-    <v-icon class="mr-3" color="info">mdi-folder</v-icon>
+    <v-icon
+      v-if="folder.workflows && folder.workflows.length"
+      class="mr-3"
+      color="blue-grey"
+    >
+      mdi-folder-play</v-icon
+    >
+    <v-icon
+      v-else-if="folder.user && folder.user.id !== currentUser.id"
+      class="mr-3"
+      color="info"
+    >
+      mdi-folder-account</v-icon
+    >
+    <v-icon v-else class="mr-3" color="info">mdi-folder</v-icon>
+
     <v-hover v-if="!folder.is_deleted" v-slot="{ isHovering, props }">
       <h2 v-bind="props" @dblclick="showRenameFolderDialog = true">
         {{ folder.display_name }}
@@ -402,7 +419,7 @@ limitations under the License.
         :show-controls="true"
         @workflow-updated="refreshFileListing()"
         @workflow-deleted="deleteWorkflow()"
-        @workflow-renamed="renameFolder($event)"
+        @workflow-renamed="renameFolderFromWorkflow($event)"
       >
       </workflow>
 
@@ -429,6 +446,7 @@ limitations under the License.
 
 <script>
 import RestApiClient from "@/RestApiClient";
+import { useUserStore } from "@/stores/user";
 import { useAppStore } from "@/stores/app";
 import FolderList from "@/components/FolderList";
 import UploadFile from "@/components/UploadFile";
@@ -467,6 +485,7 @@ export default {
       isLoading: false,
       no_access: false,
       appStore: useAppStore(),
+      userStore: useUserStore(),
       selectedUsers: [],
       selectedUsersRole: "Editor",
       selectedGroups: [],
@@ -477,6 +496,9 @@ export default {
   computed: {
     systemConfig() {
       return this.appStore.systemConfig;
+    },
+    currentUser() {
+      return this.userStore.user;
     },
     items() {
       return this.folders.concat(this.files);
@@ -536,6 +558,14 @@ export default {
         this.showRenameFolderDialog = false;
       });
     },
+    renameFolderFromWorkflow(newName) {
+      // Only rename the folder if it is untitled
+      if (this.folder.display_name === "Untitled workflow") {
+        this.renameFolder(newName);
+        return;
+      }
+      return;
+    },
     shareFolder() {
       RestApiClient.shareFolder(
         this.folder.id,
@@ -594,8 +624,8 @@ export default {
           }
         });
     },
-    getMyFolderRole(folderID) {
-      RestApiClient.getMyFolderRole(this.folderId).then((response) => {
+    getMyFolderRole(folderId) {
+      RestApiClient.getMyFolderRole(folderId).then((response) => {
         this.myRole = response;
       });
     },
