@@ -50,7 +50,10 @@ limitations under the License.
       <v-card width="400" class="mx-auto">
         <v-card-title class="pt-4">Rename workflow</v-card-title>
         <div class="pa-4">
-          <v-form @submit.prevent @keyup.enter="renameWorkflow()">
+          <v-form
+            @submit.prevent
+            @keyup.enter="renameWorkflow(newWorkflowNameForm.displayName)"
+          >
             <v-text-field
               v-model="newWorkflowNameForm.displayName"
               variant="outlined"
@@ -64,7 +67,7 @@ limitations under the License.
             color="primary"
             class="text-none"
             :disabled="!newWorkflowNameForm.displayName"
-            @click="renameWorkflow()"
+            @click="renameWorkflow(newWorkflowNameForm.displayName)"
             >Save</v-btn
           >
           <v-btn
@@ -164,6 +167,9 @@ export default {
     };
   },
   computed: {
+    systemConfig() {
+      return this.appStore.systemConfig;
+    },
     hasActiveProcessingTask() {
       return this.workflow.tasks.some(
         (task) =>
@@ -228,16 +234,15 @@ export default {
           });
       }
     },
-    renameWorkflow() {
-      const newName = this.newWorkflowNameForm.displayName;
-      const requestBody = { display_name: newName };
-      if (!newName) {
+    renameWorkflow(newWorkflowName) {
+      const requestBody = { display_name: newWorkflowName };
+      if (!newWorkflowName) {
         return;
       }
       RestApiClient.updateWorkflow(this.workflow, requestBody).then(() => {
-        this.workflow.display_name = newName;
+        this.workflow.display_name = newWorkflowName;
         this.showRenameWorkflowDialog = false;
-        this.$emit("workflow-renamed", newName);
+        this.$emit("workflow-renamed", newWorkflowName);
       });
     },
     createWorkflowTemplate() {
@@ -254,6 +259,16 @@ export default {
       });
     },
     runWorkflow() {
+      // Generate a workflow name if it is not set
+      // and if there are active LLMs configured.
+      if (this.systemConfig.active_llms.length) {
+        if (this.workflow.display_name === "Untitled workflow") {
+          this.workflow.display_name = "Generating workflow name..";
+          RestApiClient.generateWorkflowName(this.workflow).then((response) => {
+            this.renameWorkflow(response.generated_name);
+          });
+        }
+      }
       this.pollDataCount = 0;
       this.pollData(this.fastPolling);
     },
