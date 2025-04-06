@@ -311,7 +311,7 @@ limitations under the License.
     >
       mdi-folder-account</v-icon
     >
-    <v-icon v-else class="mr-3" color="info"> mdi-folder</v-icon>
+    <v-icon v-else class="mr-3" color="info">mdi-folder</v-icon>
 
     <v-hover v-if="!folder.is_deleted" v-slot="{ isHovering, props }">
       <h2 v-bind="props" @dblclick="showRenameFolderDialog = true">

@@ -263,7 +263,7 @@ export default {
       // and if there are active LLMs configured.
       if (this.systemConfig.active_llms.length) {
         if (this.workflow.display_name === "Untitled workflow") {
-          this.workflow.display_name = "Generating workflow name..";
+          this.workflow.display_name = "Generating workflow name...";
           RestApiClient.generateWorkflowName(this.workflow).then((response) => {
             this.renameWorkflow(response.generated_name);
           });

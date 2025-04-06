@@ -85,7 +85,7 @@ limitations under the License.
           >
             mdi-folder-account</v-icon
           >
-          <v-icon v-else class="mr-3 mt-n1" color="info"> mdi-folder</v-icon>
+          <v-icon v-else class="mr-3 mt-n1" color="info">mdi-folder</v-icon>
 
           <router-link
             style="text-decoration: none; color: inherit"
