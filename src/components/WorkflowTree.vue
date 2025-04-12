@@ -287,7 +287,7 @@ export default {
     border-radius: 4px;
     cursor: pointer;
     min-width: 100px;
-    max-width: 300px;
+    max-width: 500px;
   }
   span.node-content:hover {
     background-color: rgb(var(--v-theme-custom-hover-color));
