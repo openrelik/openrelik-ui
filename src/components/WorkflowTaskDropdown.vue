@@ -14,28 +14,51 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <template>
-  <v-menu activator="parent">
-    <v-list two-line>
-      <v-list-item
-        v-for="celery_task in sortedCeleryTasks"
-        @click="addTask(celery_task)"
-        prepend-icon="mdi-plus"
-      >
-        <v-list-item-title> {{ celery_task.display_name }}</v-list-item-title>
-        <v-list-item-subtitle>
-          {{ celery_task.description }}
-        </v-list-item-subtitle>
-      </v-list-item>
-      <template v-if="!isRootNode">
-        <v-divider class="mt-3"></v-divider>
-        <v-list-item
-          @click="removeTask"
-          prepend-icon="mdi-trash-can-outline"
-          style="color: red"
-          >Remove task</v-list-item
+  <v-menu
+    activator="parent"
+    :close-on-content-click="false"
+    location="bottom"
+    location-strategy="connected"
+    v-model="showMenu"
+  >
+    <v-card width="800px">
+      <v-card-text>
+        <v-text-field
+          v-model="search"
+          variant="outlined"
+          label="Search for tasks to run"
+          append-inner-icon="mdi-magnify"
+          width="100%"
+          autofocus
+        ></v-text-field>
+
+        <v-data-table
+          :items="sortedCeleryTasks"
+          :headers="headers"
+          :search.sync="search"
+          density="comfortable"
+          item-key="task_name"
+          items-per-page="-1"
+          height="300px"
+          hide-default-footer
+          hide-default-header
+          hover
         >
-      </template>
-    </v-list>
+          <template v-slot:item.actions="{ item }">
+            <v-btn
+              variant="flat"
+              size="small"
+              @click="addTask(item)"
+              class="text-none"
+              color="info"
+            >
+              <v-icon size="small"> mdi-plus </v-icon>
+              Add task
+            </v-btn>
+          </template>
+        </v-data-table>
+      </v-card-text>
+    </v-card>
   </v-menu>
 </template>
 
@@ -48,6 +71,13 @@ export default {
   data() {
     return {
       appStore: useAppStore(),
+      headers: [
+        { title: "", key: "display_name", sortable: false },
+        { title: "", key: "description", sortable: false },
+        { title: "", key: "actions", sortable: false, width: "140px" },
+      ],
+      search: "",
+      showMenu: false,
     };
   },
   computed: {
@@ -66,6 +96,7 @@ export default {
     addTask(celery_task) {
       celery_task.type = "task";
       this.$emit("add-task", celery_task);
+      this.showMenu = false;
     },
     removeTask() {
       this.$emit("remove-task");
