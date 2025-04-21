@@ -164,7 +164,7 @@ limitations under the License.
             <v-card
               v-if="isTextFormat && file.filesize < fileSizeLimit"
               variant="outlined"
-              class="mt-4 custom-border-color"
+              class="custom-border-color"
             >
               <v-toolbar
                 :color="$vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'"

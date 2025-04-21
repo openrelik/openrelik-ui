@@ -31,7 +31,8 @@ limitations under the License.
     <div style="border-top: 1px solid rgb(var(--v-theme-custom-border-color)">
       <div class="pa-4">
         <v-btn
-          v-if="!workflow.tasks.length && workflowSpec.workflow.tasks.length"
+          v-if="!workflow.tasks.length"
+          :disabled="!workflowSpec.workflow.tasks.length"
           prepend-icon="mdi-play"
           variant="flat"
           color="info"
@@ -42,8 +43,9 @@ limitations under the License.
         <v-btn
           v-if="workflow.tasks.length"
           prepend-icon="mdi-content-copy"
-          variant="outlined"
-          class="text-none custom-border-color"
+          variant="flat"
+          color="info"
+          class="text-none"
           :class="
             $vuetify.theme.name === 'dark'
               ? 'dark-grey-background'
@@ -287,7 +289,7 @@ export default {
     border-radius: 4px;
     cursor: pointer;
     min-width: 100px;
-    max-width: 300px;
+    max-width: 500px;
   }
   span.node-content:hover {
     background-color: rgb(var(--v-theme-custom-hover-color));

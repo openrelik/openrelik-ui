@@ -134,6 +134,18 @@ limitations under the License.
               <v-icon>mdi-cog-outline</v-icon>
             </v-btn>
           </span>
+          <v-btn
+            v-if="!workflow.tasks.length"
+            icon
+            variant="text"
+            size="x-small"
+            class="ml-1"
+            @click="removeTask(node)"
+          >
+            <v-icon color="grey-lighten-1" size="x-large"
+              >mdi-trash-can-outline</v-icon
+            >
+          </v-btn>
 
           <v-btn
             v-if="!workflow.tasks.length"
