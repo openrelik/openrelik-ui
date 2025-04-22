@@ -31,14 +31,20 @@ limitations under the License.
     "
     class="mb-4"
   >
-    <v-toolbar color="transparent" density="compact">
-      <div class="ml-4" style="font-size: 18px">
-        <v-icon size="small" class="mr-2">mdi-shimmer</v-icon>
-        AI summary
-      </div>
+    <v-toolbar
+      color="transparent"
+      density="compact"
+      @click="showSummary = !showSummary"
+      style="cursor: pointer"
+    >
+      <v-icon class="ml-4">{{
+        showSummary ? "mdi-chevron-down" : "mdi-chevron-right"
+      }}</v-icon>
+      <div class="ml-2" style="font-size: 18px">Summary</div>
       <small class="ml-3" style="font-size: 0.7em"
         >(AI can make mistakes so always double-check)</small
       >
+
       <v-spacer></v-spacer>
       <span v-if="fileSummary.status_short === 'complete'" class="mr-4">
         <small>
@@ -47,28 +53,33 @@ limitations under the License.
           <strong>{{ fileSummary.llm_model_provider }}</strong> in
           {{ fileSummary.runtime }}s
         </small>
+        {{ fileSummary.status_short }}
         <v-icon
           size="small"
           class="ml-2 text-none"
           title="Show prompt"
-          @click="showPromptModal = true"
+          @click.stop="showPromptModal = true"
           >mdi-information-outline</v-icon
         >
       </span>
     </v-toolbar>
     <v-divider></v-divider>
-    <v-skeleton-loader
-      max-width="500px"
-      color="transparent"
-      v-if="fileSummary.status_short === 'in_progress'"
-      loading
-      type="paragraph"
-    ></v-skeleton-loader>
-    <v-card-text
-      v-else
-      class="markdown-body"
-      v-html="toHtml(fileSummary.summary)"
-    ></v-card-text>
+    <v-expand-transition>
+      <div v-show="showSummary">
+        <v-skeleton-loader
+          v-if="fileSummary.status_short === 'in_progress'"
+          max-width="500px"
+          color="transparent"
+          loading
+          type="paragraph"
+        ></v-skeleton-loader>
+        <v-card-text
+          v-if="fileSummary.status_short === 'complete'"
+          class="markdown-body"
+          v-html="toHtml(fileSummary.summary)"
+        ></v-card-text>
+      </div>
+    </v-expand-transition>
   </v-card>
 </template>
 
@@ -88,6 +99,7 @@ export default {
       polling: null,
       pollingInterval: 3000,
       showPromptModal: false,
+      showSummary: true,
     };
   },
   computed: {},

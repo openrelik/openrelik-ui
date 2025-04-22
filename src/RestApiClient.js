@@ -531,6 +531,18 @@ export default {
         });
     });
   },
+  async getFileChatResponse(fileId, promptText) {
+    return new Promise((resolve, reject) => {
+      const requestBody = { prompt: promptText };
+      RestApiClient.post("/files/" + fileId + "/chat", requestBody)
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
   async getUserApiKeys() {
     return new Promise((resolve, reject) => {
       RestApiClient.get("/users/me/apikeys/")

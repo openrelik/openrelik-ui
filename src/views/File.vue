@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <template>
-  <div v-if="file">
+  <div v-if="file" style="height: calc(100vh - 100px)">
     <v-breadcrumbs density="compact" class="ml-n4 mt-n1">
       <small>
         <v-breadcrumbs-item :to="{ name: 'home' }"> Home </v-breadcrumbs-item>
@@ -27,11 +27,13 @@ limitations under the License.
       </small>
     </v-breadcrumbs>
 
+    <!-- Display name -->
     <span style="display: flex; align-items: center">
       <v-icon class="mr-2">mdi-file-outline</v-icon>
       <h2>{{ file.display_name }}</h2>
     </span>
 
+    <!-- Show if file is deleted -->
     <div v-if="file.is_deleted">
       <v-alert
         type="error"
@@ -52,7 +54,6 @@ limitations under the License.
           @click="downloadFileTab()"
           >Download</v-btn
         >
-
         <!-- Create workflow -->
         <v-menu v-if="canEdit">
           <template v-slot:activator="{ props }">
@@ -111,34 +112,12 @@ limitations under the License.
           >
         </v-tabs>
         <v-tabs-window v-model="activeTab">
+          <!-- Content-->
           <v-tabs-window-item
             :value="0"
             :transition="false"
             :reverse-transition="false"
           >
-            <!-- Content-->
-            <v-btn
-              v-if="
-                systemConfig.active_llms.length &&
-                isTextFormat &&
-                file.summaries &&
-                !file.summaries.length &&
-                file.filesize < genAISizeLimit
-              "
-              variant="outlined"
-              class="text-none custom-border-color"
-              @click="generateFileSummary()"
-            >
-              <v-icon class="mr-2">mdi-shimmer</v-icon>
-              Generate AI summary</v-btn
-            >
-
-            <!-- File summary -->
-            <file-summary
-              v-for="summary in file.summaries"
-              :initial-summary="summary"
-            ></file-summary>
-
             <div
               v-if="file.filesize > fileSizeLimit || !isTextFormat"
               style="font-family: monospace; font-size: 0.9em"
@@ -161,52 +140,128 @@ limitations under the License.
             </div>
 
             <!-- File content iframe -->
-            <v-card
-              v-if="isTextFormat && file.filesize < fileSizeLimit"
-              variant="outlined"
-              class="custom-border-color"
-            >
-              <v-toolbar
-                :color="$vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'"
-                density="compact"
-              >
-                <v-toolbar-title style="font-size: 18px">
-                  File content
-                  <v-btn
-                    v-if="allowedPreview"
-                    variant="text"
-                    size="small"
-                    class="ml-3 text-none"
-                    :text="showFilePreview ? 'Raw' : 'Preview'"
-                    @click="showFilePreview = !showFilePreview"
+            <v-row>
+              <v-col cols="8">
+                <v-card
+                  v-if="isTextFormat && file.filesize < fileSizeLimit"
+                  variant="outlined"
+                  class="custom-border-color d-flex flex-column"
+                  style="height: calc(100vh - 300px)"
+                >
+                  <v-toolbar
+                    :color="
+                      $vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'
+                    "
+                    density="compact"
                   >
-                  </v-btn>
-                </v-toolbar-title>
-              </v-toolbar>
-              <v-divider></v-divider>
+                    <v-toolbar-title style="font-size: 18px">
+                      File content
+                      <v-btn
+                        v-if="allowedPreview"
+                        variant="text"
+                        size="small"
+                        class="ml-3 text-none"
+                        :text="showFilePreview ? 'Raw' : 'Preview'"
+                        @click="showFilePreview = !showFilePreview"
+                      >
+                      </v-btn>
+                    </v-toolbar-title>
+                  </v-toolbar>
+                  <v-divider></v-divider>
 
-              <div style="width: 100%; overflow: hidden">
-                <iframe
-                  sandbox
-                  :src="
-                    getIframeSrc({
-                      unsafe: allowedPreview && showFilePreview,
-                    })
-                  "
-                  frameborder="0"
-                  scrolling="yes"
-                  style="width: 100%; height: 65vh"
-                ></iframe>
-              </div>
-            </v-card>
+                  <!-- File summary -->
+                  <div class="pt-4 px-4">
+                    <v-btn
+                      v-if="
+                        systemConfig.active_llms.length &&
+                        isTextFormat &&
+                        file.summaries &&
+                        !file.summaries.length &&
+                        file.filesize < genAISizeLimit
+                      "
+                      variant="outlined"
+                      class="text-none custom-border-color mb-4"
+                      @click="generateFileSummary()"
+                    >
+                      <v-icon class="mr-2">mdi-shimmer</v-icon>
+                      Generate Summary</v-btn
+                    >
+                    <file-summary
+                      v-for="summary in file.summaries"
+                      :initial-summary="summary"
+                    ></file-summary>
+                  </div>
+
+                  <iframe
+                    sandbox
+                    :src="
+                      getIframeSrc({
+                        unsafe: allowedPreview && showFilePreview,
+                      })
+                    "
+                    frameborder="0"
+                    scrolling="yes"
+                    style="width: 100%; height: 100%"
+                  ></iframe>
+                </v-card>
+              </v-col>
+              <v-col cols="4">
+                <v-card
+                  variant="outlined"
+                  class="custom-border-color d-flex flex-column"
+                  style="height: calc(100vh - 300px)"
+                >
+                  <v-toolbar
+                    :color="
+                      $vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'
+                    "
+                    density="compact"
+                  >
+                    <v-toolbar-title style="font-size: 18px">
+                      Assistant
+                    </v-toolbar-title>
+                  </v-toolbar>
+                  <v-divider></v-divider>
+                  <v-card-text
+                    style="
+                      height: 100%;
+                      overflow-y: auto;
+                      display: flex;
+                      flex-direction: column-reverse;
+                    "
+                  >
+                    <div
+                      v-for="message in chatMessages.slice().reverse()"
+                      :key="message"
+                    >
+                      {{ message }}
+                      <br /><br />
+                    </div>
+                  </v-card-text>
+                  <v-spacer></v-spacer>
+                  <v-divider></v-divider>
+                  <v-card-actions class="mb-n3 mx-2">
+                    <v-textarea
+                      v-model="chatPrompt"
+                      variant="solo"
+                      flat
+                      placeholder="Ask me anything about this file.."
+                      rows="1"
+                      auto-grow
+                      @keydown.enter.exact.prevent="sendChatPrompt()"
+                    ></v-textarea>
+                  </v-card-actions>
+                </v-card>
+              </v-col>
+            </v-row>
           </v-tabs-window-item>
 
+          <!-- Details -->
           <v-tabs-window-item
             :value="1"
             :transition="false"
             :reverse-transition="false"
           >
-            <!-- Details -->
             <v-card variant="outlined" class="custom-border-color">
               <v-toolbar
                 :color="$vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'"
@@ -360,6 +415,8 @@ export default {
       fileSizeLimit: 10485760,
       genAISizeLimit: 1048576,
       activeTab: null,
+      chatPrompt: "",
+      chatMessages: [],
       tabs: [
         {
           name: "Content",
@@ -492,6 +549,16 @@ export default {
         .then(() => {
           this.getFileFolderRole();
         });
+    },
+    sendChatPrompt() {
+      const prompt = this.chatPrompt;
+      this.chatMessages.push(this.chatPrompt);
+      this.chatPrompt = "";
+      RestApiClient.getFileChatResponse(this.fileId, prompt).then(
+        (response) => {
+          this.chatMessages.push(response);
+        }
+      );
     },
   },
   mounted() {
