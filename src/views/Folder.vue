@@ -314,7 +314,7 @@ limitations under the License.
     <v-icon v-else class="mr-3" color="info">mdi-folder</v-icon>
 
     <v-hover v-if="!folder.is_deleted" v-slot="{ isHovering, props }">
-      <h2 v-bind="props" @dblclick="showRenameFolderDialog = true">
+      <h3 v-bind="props" @dblclick="showRenameFolderDialog = true">
         {{ folder.display_name }}
         <v-icon
           v-if="isHovering"
@@ -322,7 +322,7 @@ limitations under the License.
           @click="showRenameFolderDialog = !showRenameFolderDialog"
           >mdi-pencil</v-icon
         >
-      </h2>
+      </h3>
     </v-hover>
     <h2 v-else>{{ folder.display_name }}</h2>
   </span>

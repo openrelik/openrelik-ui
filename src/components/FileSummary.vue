@@ -18,7 +18,7 @@ limitations under the License.
     <v-card width="90%" class="mx-auto pa-4">
       <v-card-title>Prompt</v-card-title>
       <v-card-text>
-        {{ fileSummary.llm_model_prompt }}
+        <div v-html="toHtml(fileSummary.llm_model_prompt)"></div>
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -41,7 +41,7 @@ limitations under the License.
         showSummary ? "mdi-chevron-down" : "mdi-chevron-right"
       }}</v-icon>
       <div class="ml-2" style="font-size: 18px">Summary</div>
-      <small class="ml-3" style="font-size: 0.7em"
+      <small class="ml-3 mt-2" style="font-size: 0.7em"
         >(AI can make mistakes so always double-check)</small
       >
 
@@ -53,7 +53,6 @@ limitations under the License.
           <strong>{{ fileSummary.llm_model_provider }}</strong> in
           {{ fileSummary.runtime }}s
         </small>
-        {{ fileSummary.status_short }}
         <v-icon
           size="small"
           class="ml-2 text-none"
@@ -76,6 +75,7 @@ limitations under the License.
         <v-card-text
           v-if="fileSummary.status_short === 'complete'"
           class="markdown-body"
+          style="font-size: 0.9em"
           v-html="toHtml(fileSummary.summary)"
         ></v-card-text>
       </div>
@@ -99,7 +99,7 @@ export default {
       polling: null,
       pollingInterval: 3000,
       showPromptModal: false,
-      showSummary: true,
+      showSummary: false,
     };
   },
   computed: {},

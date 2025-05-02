@@ -116,11 +116,18 @@ limitations under the License.
               <strong>{{ celeryTask.file_reports.length }}</strong> reports
             </small>
           </div>
-          <div v-if="hasHighPriorityReports && hasHighPriorityReports.length">
+          <div
+            v-if="
+              hasHighPriorityFileReports && hasHighPriorityFileReports.length
+            "
+          >
             <small class="ml-1 red-text">
               <strong>{{ hasHighPriorityReports.length }}</strong> report(s)
               with high priority findings
             </small>
+          </div>
+          <div v-if="hasHighPriorityTaskReport">
+            <small class="ml-1 red-text"> High priority findings </small>
           </div>
 
           <span v-if="hasTaskConfig">
@@ -266,7 +273,7 @@ export default {
         );
       });
     },
-    hasHighPriorityReports() {
+    hasHighPriorityFileReports() {
       if (
         !this.celeryTask.file_reports ||
         !this.celeryTask.file_reports.length
@@ -276,6 +283,12 @@ export default {
       return this.celeryTask.file_reports.filter(
         (report) => report.priority >= 40
       );
+    },
+    hasHighPriorityTaskReport() {
+      if (!this.celeryTask.task_report) {
+        return false;
+      }
+      return this.celeryTask.task_report.priority >= 40;
     },
     nodeIcon() {
       return this.celeryTask.status_short === "PROGRESS"
