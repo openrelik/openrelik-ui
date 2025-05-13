@@ -48,6 +48,7 @@ limitations under the License.
       <v-card v-if="task.task_report" class="mt-2" variant="outlined">
         <v-card-text
           class="markdown-body"
+          style="font-size: 0.9em"
           v-html="toHtml(task.task_report.markdown)"
         ></v-card-text>
       </v-card>

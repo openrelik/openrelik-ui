@@ -23,7 +23,7 @@ limitations under the License.
       disable-sort
       item-key="uuid"
       item-selectable="selectable"
-      items-per-page="10"
+      items-per-page="100"
       select-strategy="all"
       no-data-text="No files or folders to show"
       return-object

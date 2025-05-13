@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <template>
-  <div v-if="file">
+  <div v-if="file" style="height: calc(100vh - 100px)" class="mt-n5">
     <v-breadcrumbs density="compact" class="ml-n4 mt-n1">
       <small>
         <v-breadcrumbs-item :to="{ name: 'home' }"> Home </v-breadcrumbs-item>
@@ -25,13 +25,35 @@ limitations under the License.
           {{ file.display_name }}
         </v-breadcrumbs-item>
       </small>
+      <v-spacer></v-spacer>
+
+      <v-btn icon flat>
+        <v-icon
+          size="small"
+          @click="fullscreen = !fullscreen"
+          :icon="fullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
+        ></v-icon>
+      </v-btn>
+      <v-btn icon flat>
+        <v-icon
+          size="small"
+          @click="showChat = !showChat"
+          icon="mdi-star-four-points"
+        ></v-icon>
+      </v-btn>
     </v-breadcrumbs>
 
-    <span style="display: flex; align-items: center">
+    <!-- Display name -->
+    <div
+      v-if="!fullscreen"
+      style="display: flex; align-items: center"
+      class="mt-n2"
+    >
       <v-icon class="mr-2">mdi-file-outline</v-icon>
-      <h2>{{ file.display_name }}</h2>
-    </span>
+      <h3>{{ file.display_name }}</h3>
+    </div>
 
+    <!-- Show if file is deleted -->
     <div v-if="file.is_deleted">
       <v-alert
         type="error"
@@ -42,65 +64,9 @@ limitations under the License.
     </div>
 
     <div v-else>
-      <!-- Button row -->
-      <div class="mt-3">
-        <!-- Download -->
-        <v-btn
-          variant="outlined"
-          class="text-none mr-2 custom-border-color"
-          prepend-icon="mdi-download"
-          @click="downloadFileTab()"
-          >Download</v-btn
-        >
-
-        <!-- Create workflow -->
-        <v-menu v-if="canEdit">
-          <template v-slot:activator="{ props }">
-            <v-btn
-              variant="flat"
-              class="text-none mr-2 custom-border-color"
-              prepend-icon="mdi-plus"
-              append-icon="mdi-chevron-down"
-              v-bind="props"
-              >Create workflow
-            </v-btn>
-          </template>
-          <v-card width="400">
-            <v-list>
-              <v-list-item @click="createWorkflow()">
-                <v-list-item-title>
-                  <v-icon size="small" style="margin-top: -3px" class="mr-1"
-                    >mdi-plus</v-icon
-                  >
-                  <strong>New workflow</strong></v-list-item-title
-                >
-              </v-list-item>
-              <div v-if="appStore.workflowTemplates.length">
-                <v-divider></v-divider>
-                <v-list-subheader
-                  v-if="appStore.workflowTemplates.length"
-                  class="mt-2"
-                  >Templates</v-list-subheader
-                >
-
-                <v-list-item
-                  @click="createWorkflow(template.id)"
-                  v-for="template in appStore.workflowTemplates"
-                  :key="template.id"
-                >
-                  <v-list-item-title>
-                    <v-icon>mdi-plus</v-icon> {{ template.display_name }}
-                  </v-list-item-title>
-                </v-list-item>
-              </div>
-            </v-list>
-          </v-card>
-        </v-menu>
-      </div>
-
       <!-- Tabs -->
-      <div class="mt-4">
-        <v-tabs v-model="activeTab" class="mb-4">
+      <div class="mt-2">
+        <v-tabs v-if="!fullscreen" v-model="activeTab" class="mb-4">
           <v-tab
             v-for="tab in tabs"
             :key="tab.value"
@@ -109,36 +75,69 @@ limitations under the License.
             @click="updateRoute(tab.routeName)"
             >{{ tab.name }}</v-tab
           >
+          <!-- Button row -->
+          <div class="mt-2 ml-5">
+            <!-- Create workflow -->
+            <v-menu v-if="canEdit">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  variant="flat"
+                  class="text-none mr-2 custom-border-color"
+                  prepend-icon="mdi-plus"
+                  append-icon="mdi-chevron-down"
+                  v-bind="props"
+                  >Create workflow
+                </v-btn>
+              </template>
+              <v-card width="400">
+                <v-list>
+                  <v-list-item @click="createWorkflow()">
+                    <v-list-item-title>
+                      <v-icon size="small" style="margin-top: -3px" class="mr-1"
+                        >mdi-plus</v-icon
+                      >
+                      <strong>New workflow</strong></v-list-item-title
+                    >
+                  </v-list-item>
+                  <div v-if="appStore.workflowTemplates.length">
+                    <v-divider></v-divider>
+                    <v-list-subheader
+                      v-if="appStore.workflowTemplates.length"
+                      class="mt-2"
+                      >Templates</v-list-subheader
+                    >
+
+                    <v-list-item
+                      @click="createWorkflow(template.id)"
+                      v-for="template in appStore.workflowTemplates"
+                      :key="template.id"
+                    >
+                      <v-list-item-title>
+                        <v-icon>mdi-plus</v-icon> {{ template.display_name }}
+                      </v-list-item-title>
+                    </v-list-item>
+                  </div>
+                </v-list>
+              </v-card>
+            </v-menu>
+            <!-- Download -->
+            <v-btn
+              variant="outlined"
+              class="text-none mr-2 custom-border-color"
+              prepend-icon="mdi-download"
+              @click="downloadFileTab()"
+              >Download</v-btn
+            >
+          </div>
         </v-tabs>
+
         <v-tabs-window v-model="activeTab">
+          <!-- Content-->
           <v-tabs-window-item
             :value="0"
             :transition="false"
             :reverse-transition="false"
           >
-            <!-- Content-->
-            <v-btn
-              v-if="
-                systemConfig.active_llms.length &&
-                isTextFormat &&
-                file.summaries &&
-                !file.summaries.length &&
-                file.filesize < genAISizeLimit
-              "
-              variant="outlined"
-              class="text-none custom-border-color"
-              @click="generateFileSummary()"
-            >
-              <v-icon class="mr-2">mdi-shimmer</v-icon>
-              Generate AI summary</v-btn
-            >
-
-            <!-- File summary -->
-            <file-summary
-              v-for="summary in file.summaries"
-              :initial-summary="summary"
-            ></file-summary>
-
             <div
               v-if="file.filesize > fileSizeLimit || !isTextFormat"
               style="font-family: monospace; font-size: 0.9em"
@@ -161,62 +160,67 @@ limitations under the License.
             </div>
 
             <!-- File content iframe -->
-            <v-card
-              v-if="isTextFormat && file.filesize < fileSizeLimit"
-              variant="outlined"
-              class="custom-border-color"
-            >
-              <v-toolbar
-                :color="$vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'"
-                density="compact"
-              >
-                <v-toolbar-title style="font-size: 18px">
-                  File content
-                  <v-btn
-                    v-if="allowedPreview"
-                    variant="text"
-                    size="small"
-                    class="ml-3 text-none"
-                    :text="showFilePreview ? 'Raw' : 'Preview'"
-                    @click="showFilePreview = !showFilePreview"
-                  >
-                  </v-btn>
-                </v-toolbar-title>
-              </v-toolbar>
-              <v-divider></v-divider>
+            <v-row>
+              <v-col :cols="showChat && canGenerateSummary ? 8 : 12">
+                <v-card
+                  v-if="isTextFormat && file.filesize < fileSizeLimit"
+                  variant="outlined"
+                  class="custom-border-color d-flex flex-column"
+                  :style="{ height: `calc(100vh - ${headerHeight}px)` }"
+                >
+                  <!-- File summary -->
+                  <div class="pt-4 px-4">
+                    <file-summary
+                      v-for="summary in file.summaries"
+                      :initial-summary="summary"
+                    ></file-summary>
+                  </div>
 
-              <div style="width: 100%; overflow: hidden">
-                <iframe
-                  sandbox
-                  :src="
-                    getIframeSrc({
-                      unsafe: allowedPreview && showFilePreview,
-                    })
-                  "
-                  frameborder="0"
-                  scrolling="yes"
-                  style="width: 100%; height: 65vh"
-                ></iframe>
-              </div>
-            </v-card>
+                  <iframe
+                    sandbox
+                    :src="
+                      getIframeSrc({
+                        unsafe: allowedPreview && showFilePreview,
+                      })
+                    "
+                    frameborder="0"
+                    scrolling="yes"
+                    style="width: 100%; height: 100%"
+                  ></iframe>
+                </v-card>
+              </v-col>
+              <v-col cols="4" v-show="showChat && canGenerateSummary">
+                <v-card
+                  variant="outlined"
+                  class="custom-border-color d-flex flex-column"
+                  :style="{ height: `calc(100vh - ${headerHeight}px)` }"
+                >
+                  <v-toolbar color="transparent" density="compact" height="60">
+                    <v-toolbar-title style="font-size: 18px">
+                      <v-icon size="small" class="mr-2"
+                        >mdi-star-four-points</v-icon
+                      >
+                      Assistant
+                    </v-toolbar-title>
+                    <v-spacer></v-spacer>
+                    <v-btn icon size="small" @click="showChat = false">
+                      <v-icon>mdi-close</v-icon>
+                    </v-btn>
+                  </v-toolbar>
+                  <!-- <v-divider></v-divider> -->
+                  <file-chat :file="file"></file-chat>
+                </v-card>
+              </v-col>
+            </v-row>
           </v-tabs-window-item>
 
+          <!-- Details -->
           <v-tabs-window-item
             :value="1"
             :transition="false"
             :reverse-transition="false"
           >
-            <!-- Details -->
             <v-card variant="outlined" class="custom-border-color">
-              <v-toolbar
-                :color="$vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'"
-                density="compact"
-              >
-                <v-toolbar-title style="font-size: 18px">
-                  Basic properties
-                </v-toolbar-title>
-              </v-toolbar>
-              <v-divider></v-divider>
               <v-table density="compact">
                 <tbody>
                   <tr>
@@ -332,6 +336,7 @@ import WorkflowTree from "@/components/WorkflowTree.vue";
 import Breadcrumbs from "@/components/Breadcrumbs.vue";
 import Workflow from "@/components/Workflow.vue";
 import FileSummary from "@/components/FileSummary.vue";
+import FileChat from "@/components/FileChat.vue";
 import settings from "@/settings";
 
 export default {
@@ -347,6 +352,7 @@ export default {
     Breadcrumbs,
     Workflow,
     FileSummary,
+    FileChat,
   },
   data() {
     return {
@@ -358,8 +364,10 @@ export default {
       fileContentLoading: false,
       workflows: [],
       fileSizeLimit: 10485760,
-      genAISizeLimit: 1048576,
+      genAISizeLimit: 2097152,
       activeTab: null,
+      fullscreen: false,
+      showChat: true,
       tabs: [
         {
           name: "Content",
@@ -393,6 +401,8 @@ export default {
         "application/json",
         "text/csv",
         "application/javascript",
+        "application/x-ndjson",
+        "text/x-diff",
       ];
       return textFileTypes.includes(this.file.magic_mime);
     },
@@ -408,6 +418,22 @@ export default {
     },
     isOwner() {
       return this.myRole.role === "Owner";
+    },
+    canGenerateSummary() {
+      return (
+        this.systemConfig.active_llms.length &&
+        this.isTextFormat &&
+        this.file.filesize < this.genAISizeLimit
+      );
+    },
+    AIisEnabled() {
+      return (
+        this.systemConfig.active_llms.length &&
+        this.file.filesize < this.genAISizeLimit
+      );
+    },
+    headerHeight() {
+      return this.fullscreen ? 156 : 240;
     },
   },
 
@@ -432,6 +458,12 @@ export default {
       });
     },
     generateFileSummary() {
+      if (!this.canGenerateSummary) {
+        return;
+      }
+      if (this.file.summaries && this.file.summaries.length) {
+        return;
+      }
       RestApiClient.generateFileSummary(this.file.id).then((response) => {
         RestApiClient.getFile(this.fileId).then((response) => {
           this.file = response;
@@ -488,6 +520,7 @@ export default {
       RestApiClient.getFile(this.fileId)
         .then((response) => {
           this.file = response;
+          this.generateFileSummary();
         })
         .then(() => {
           this.getFileFolderRole();
