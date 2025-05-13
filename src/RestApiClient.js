@@ -508,7 +508,6 @@ export default {
         });
     });
   },
-
   async getFileSummary(fileId, summaryId) {
     return new Promise((resolve, reject) => {
       RestApiClient.get("/files/" + fileId + "/summaries/" + summaryId)
@@ -531,10 +530,20 @@ export default {
         });
     });
   },
-  async getFileChatResponse(fileId, promptText) {
+  async getFileSummary(fileId, summaryId) {
     return new Promise((resolve, reject) => {
-      const requestBody = { prompt: promptText };
-      RestApiClient.post("/files/" + fileId + "/chat", requestBody)
+      RestApiClient.get("/files/" + fileId + "/summaries/" + summaryId)
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async getFileChat(fileId) {
+    return new Promise((resolve, reject) => {
+      RestApiClient.get("/files/" + fileId + "/chat")
         .then((response) => {
           resolve(response.data);
         })

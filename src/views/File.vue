@@ -76,15 +76,7 @@ limitations under the License.
             >{{ tab.name }}</v-tab
           >
           <!-- Button row -->
-          <div class="mt-2 ml-3">
-            <!-- Download -->
-            <v-btn
-              variant="outlined"
-              class="text-none mr-2 custom-border-color"
-              prepend-icon="mdi-download"
-              @click="downloadFileTab()"
-              >Download</v-btn
-            >
+          <div class="mt-2 ml-5">
             <!-- Create workflow -->
             <v-menu v-if="canEdit">
               <template v-slot:activator="{ props }">
@@ -128,6 +120,14 @@ limitations under the License.
                 </v-list>
               </v-card>
             </v-menu>
+            <!-- Download -->
+            <v-btn
+              variant="outlined"
+              class="text-none mr-2 custom-border-color"
+              prepend-icon="mdi-download"
+              @click="downloadFileTab()"
+              >Download</v-btn
+            >
           </div>
         </v-tabs>
 
@@ -364,7 +364,7 @@ export default {
       fileContentLoading: false,
       workflows: [],
       fileSizeLimit: 10485760,
-      genAISizeLimit: 3145728,
+      genAISizeLimit: 2097152,
       activeTab: null,
       fullscreen: false,
       showChat: true,
@@ -402,6 +402,7 @@ export default {
         "text/csv",
         "application/javascript",
         "application/x-ndjson",
+        "text/x-diff",
       ];
       return textFileTypes.includes(this.file.magic_mime);
     },

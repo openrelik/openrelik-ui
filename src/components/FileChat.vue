@@ -70,6 +70,7 @@ limitations under the License.
 </template>
 
 <script>
+import RestApiClient from "@/RestApiClient";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 import settings from "../settings.js";
@@ -128,7 +129,7 @@ export default {
           settings.apiServerUrl +
             "/api/" +
             settings.apiServerVersion +
-            "/files/ws/" +
+            "/websockets/files/" +
             this.file.id +
             "/chat"
         );
@@ -150,12 +151,24 @@ export default {
         this.ws.onmessage = (event) => {
           this.loading = false;
           this.chatMessages.push({
-            role: "model",
+            role: "assistant",
             content: event.data,
           });
         };
       });
     },
+  },
+  mounted() {
+    this.chatMessages.push({
+      role: "assistant",
+      content: "Loading chat history...",
+    });
+    RestApiClient.getFileChat(this.file.id).then((response) => {
+      this.chatMessages = response.history.map((message) => ({
+        role: message.role,
+        content: message.content,
+      }));
+    });
   },
   unmounted() {
     // Close the WebSocket connection when the component is destroyed
