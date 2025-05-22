@@ -87,9 +87,6 @@ export default {
         },
         xaxis: {
           type: "datetime",
-          labels: {
-            format: "HH:mm:ss",
-          },
         },
         yaxis: {
           decimalsInFloat: false,
