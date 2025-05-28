@@ -96,7 +96,7 @@ limitations under the License.
     <v-card width="600" class="mx-auto pa-4">
       <v-card-title class="ml-2">API key created</v-card-title>
       <v-card-text
-        >⚠️ This is the only time your API key will be accessable. Please copy
+        >⚠️ This is the only time your API key will be accessible. Please copy
         it to your clipboard now and store it in a secure location. You'll need
         it to access the API and won't be able to retrieve it again later.
 

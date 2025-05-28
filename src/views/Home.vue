@@ -144,7 +144,7 @@ export default {
     // If there is a URL parameter 'redirect' then redirect the user to it. This will
     // preserve any URL that the user clicked when not authenticated. When the user has
     // authenticated they will be redirected to the original location they were trying
-    // to access. The 'redirect' paramter is set in the Login view.
+    // to access. The 'redirect' parameter is set in the Login view.
     const redirect_url = sessionStorage.getItem("redirect_url");
     if (redirect_url) {
       this.$router.replace(redirect_url);

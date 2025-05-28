@@ -110,7 +110,7 @@ export default {
       // Disable chunk integrity checks.
       // TODO: Implement check for already uploaded chunks to support resuming uploads.
       // This need a uniq identifier that is something else than a uuidv4() because
-      // the identifier need to be reproducable between browser reloads.
+      // the identifier need to be reproducible between browser reloads.
       // Idea: Pre-create a File in the database and use the UUID or ID of that.
       testChunks: false,
       maxChunkRetries: 10,
