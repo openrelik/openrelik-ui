@@ -396,15 +396,16 @@ export default {
     },
     isTextFormat() {
       const textFileTypes = [
-        "text/plain",
-        "text/html",
         "application/json",
-        "text/csv",
         "application/javascript",
         "application/x-ndjson",
-        "text/x-diff",
       ];
-      return textFileTypes.includes(this.file.magic_mime);
+
+      // Check if magic_mime starts with "text/" or is included in the specific application file types
+      return (
+        this.file.magic_mime.startsWith("text/") ||
+        textFileTypes.includes(this.file.magic_mime)
+      );
     },
     allowedPreview() {
       // Render unescaped HTML content in sandboxed iframe if data_type is in server side

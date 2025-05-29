@@ -41,7 +41,7 @@ limitations under the License.
         showSummary ? "mdi-chevron-down" : "mdi-chevron-right"
       }}</v-icon>
       <div class="ml-2" style="font-size: 18px">Summary</div>
-      <small class="ml-3 mt-2" style="font-size: 0.7em"
+      <small class="ml-3 mt-1" style="font-size: 0.7em"
         >(AI can make mistakes so always double-check)</small
       >
 
