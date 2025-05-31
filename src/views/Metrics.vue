@@ -125,7 +125,7 @@ export default {
           aggregate: false,
         },
         {
-          name: "Tasks recieved",
+          name: "Tasks received",
           metric: "celery_task_received_total",
           aggregate: false,
         },
