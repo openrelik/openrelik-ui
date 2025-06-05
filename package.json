@@ -1,6 +1,6 @@
 {
   "name": "openrelik-ui",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "scripts": {
     "dev": "cross-env NODE_OPTIONS='--no-warnings' vite",
     "build": "vite build",
