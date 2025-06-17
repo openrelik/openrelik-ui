@@ -122,7 +122,7 @@ limitations under the License.
             "
           >
             <small class="ml-1 red-text">
-              <strong>{{ hasHighPriorityReports.length }}</strong> report(s)
+              <strong>{{ hasHighPriorityFileReports.length }}</strong> report(s)
               with high priority findings
             </small>
           </div>
