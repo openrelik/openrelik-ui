@@ -281,6 +281,7 @@ limitations under the License.
     </v-card>
   </v-dialog>
 
+  <!-- Breadcrumbs -->
   <v-breadcrumbs density="compact" class="ml-n4 mt-n1">
     <small>
       <v-breadcrumbs-item :to="{ name: 'home' }"> Home </v-breadcrumbs-item>
@@ -408,6 +409,13 @@ limitations under the License.
         prepend-icon="mdi-account-plus-outline"
         @click="showSharingDialog = !showSharingDialog"
         >Share</v-btn
+      >
+      <v-btn
+        variant="outlined"
+        class="text-none mr-2 custom-border-color"
+        :to="{ name: 'investigation', params: { folderId: folderId } }"
+        prepend-icon="mdi-magnify"
+        >Investigate</v-btn
       >
     </div>
 
@@ -657,7 +665,6 @@ export default {
       });
     },
   },
-
   mounted() {
     this.isLoading = true;
     this.getFolder();

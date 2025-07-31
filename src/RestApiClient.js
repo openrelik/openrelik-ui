@@ -16,6 +16,7 @@ limitations under the License.
 
 import axios from "axios";
 import settings from "./settings.js";
+import Investigation from "./views/Investigation.vue";
 
 const RestApiClient = axios.create({
   baseURL: settings.apiServerUrl + "/api/" + settings.apiServerVersion + "/",
@@ -27,6 +28,67 @@ const RestApiBlobClient = axios.create({
   responseType: "blob",
   withCredentials: true,
 });
+
+function RestApiSSEClient(endpoint, requestBody) {
+  const url =
+    settings.apiServerUrl +
+    "/api/" +
+    settings.apiServerVersion +
+    "/" +
+    endpoint;
+
+  return new Observable((observer) => {
+    const controller = new AbortController();
+    const decoder = new TextDecoder("utf-8");
+    const csrfToken = sessionStorage.getItem("csrfToken");
+
+    fetch(url, {
+      method: "POST",
+      headers: {
+        Accept: "text/event-stream",
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken || "",
+      },
+      credentials: "include",
+      body: JSON.stringify(requestBody),
+      signal: controller.signal,
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`SSE request failed: ${response.statusText}`);
+        }
+
+        const reader = response.body?.getReader();
+        const read = () => {
+          reader
+            .read()
+            .then(({ done, value }) => {
+              if (done) {
+                observer.complete();
+                return;
+              }
+
+              const chunk = decoder.decode(value, { stream: true });
+              const lines = chunk
+                .split(/\r?\n/)
+                .filter((line) => line.startsWith("data:"));
+              lines.forEach((line) => {
+                const data = line.replace(/^data:\s*/, "");
+                observer.next(data);
+              });
+
+              read();
+            })
+            .catch((err) => observer.error(err));
+        };
+
+        read();
+      })
+      .catch((err) => observer.error(err));
+
+    return () => controller.abort(); // allow external unsubscribe
+  });
+}
 
 /**
  * Adds an interceptor to the provided Axios client that automatically refreshes
@@ -134,6 +196,9 @@ addCSRFInterceptor(RestApiClient);
 addCSRFInterceptor(RestApiBlobClient);
 
 export default {
+  sse(url, requestBody) {
+    return RestApiSSEClient(url, requestBody);
+  },
   async getUser() {
     return new Promise((resolve, reject) => {
       RestApiClient.get("/users/me/")
@@ -682,6 +747,24 @@ export default {
     };
     return new Promise((resolve, reject) => {
       RestApiClient.post("/metrics/tasks", requestBody)
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async getInvestigativeQuestions(folder_id, name, context) {
+    return new Promise((resolve, reject) => {
+      const requestBody = {
+        goal: name,
+        context: context,
+      };
+      RestApiClient.post(
+        "/folders/" + folder_id + "/investigations/questions",
+        requestBody
+      )
         .then((response) => {
           resolve(response.data);
         })
