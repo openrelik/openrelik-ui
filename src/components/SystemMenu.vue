@@ -19,6 +19,7 @@ limitations under the License.
       <v-icon v-bind="props" class="ml-3">mdi-dots-vertical</v-icon>
     </template>
     <v-list width="200">
+      <toggle-theme />
       <v-list-item :to="'/metrics'">
         <template v-slot:prepend>
           <v-icon size="small">mdi-chart-box</v-icon>
@@ -31,12 +32,16 @@ limitations under the License.
 
 <script>
 import { useTheme } from "vuetify";
+import ToggleTheme from "./ToggleTheme.vue";
 
 export default {
   data() {
     return {
       theme: useTheme(),
     };
+  },
+  components: {
+    ToggleTheme,
   },
   methods: {
     toggleTheme() {

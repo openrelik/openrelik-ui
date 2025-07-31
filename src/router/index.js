@@ -91,12 +91,6 @@ const routes = [
             component: File,
             props: true,
           },
-          {
-            path: "file/:fileId/workflows",
-            name: "fileWorkflows",
-            component: File,
-            props: true,
-          },
         ],
       },
     ],
