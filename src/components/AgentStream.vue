@@ -130,7 +130,8 @@ export default {
     },
     runAgent() {
       const requestBody = {
-        prompt: this.prompt,
+        question_prompt: this.prompt,
+        agent_name: "dfir_multi_agent",
       };
       this.agentMessages = [];
       this.loading = true;
