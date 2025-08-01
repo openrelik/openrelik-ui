@@ -118,7 +118,6 @@ limitations under the License.
       <profile-picture :user="user" :size="size" v-bind="props" />
     </template>
     <v-list width="200">
-      <toggle-theme />
       <v-list-item @click="showApiKeysDialog = !showApiKeysDialog">
         <template v-slot:prepend>
           <v-icon size="small">mdi-key-outline</v-icon>
@@ -141,7 +140,6 @@ import RestApiClient from "@/RestApiClient";
 import settings from "@/settings";
 import { useUserStore } from "@/stores/user";
 import ProfilePicture from "./ProfilePicture.vue";
-import ToggleTheme from "./ToggleTheme.vue";
 
 export default {
   props: {
@@ -149,7 +147,6 @@ export default {
   },
   components: {
     ProfilePicture,
-    ToggleTheme,
   },
   data() {
     return {

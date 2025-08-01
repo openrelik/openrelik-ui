@@ -279,47 +279,6 @@ limitations under the License.
               </v-table>
             </v-card>
           </v-tabs-window-item>
-
-          <!-- Workflows -->
-          <v-tabs-window-item
-            :value="2"
-            :transition="false"
-            :reverse-transition="false"
-          >
-            <v-card
-              v-if="!file.workflows.length"
-              variant="flat"
-              color="transparent"
-            >
-              <div
-                style="font-family: monospace; font-size: 0.9em"
-                class="ml-4"
-              >
-                <strong>
-                  This file hasn't been used as input to any workflows yet.
-                </strong>
-                <br />
-                <span v-if="canEdit">
-                  Let's
-                  <span
-                    style="text-decoration: underline; cursor: pointer"
-                    @click="createWorkflow()"
-                    >create a workflow</span
-                  >
-                  to get started.
-                </span>
-              </div>
-            </v-card>
-
-            <span style="font-family: monospace"></span>
-            <workflow
-              v-for="workflow in file.workflows"
-              :key="workflow.id"
-              :initial-workflow="workflow"
-              :show-controls="false"
-              class="mt-4"
-            ></workflow>
-          </v-tabs-window-item>
         </v-tabs-window>
       </div>
     </div>
@@ -362,7 +321,6 @@ export default {
       fileContent: null,
       showFilePreview: true,
       fileContentLoading: false,
-      workflows: [],
       fileSizeLimit: 10485760,
       genAISizeLimit: 2097152,
       activeTab: null,
@@ -380,12 +338,6 @@ export default {
           value: "1",
           routeName: "fileDetails",
           route: "details",
-        },
-        {
-          name: "Workflows",
-          value: "2",
-          routeName: "fileWorkflows",
-          route: "workflows",
         },
       ],
     };
