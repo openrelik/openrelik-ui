@@ -207,7 +207,6 @@ limitations under the License.
                       <v-icon>mdi-close</v-icon>
                     </v-btn>
                   </v-toolbar>
-                  <!-- <v-divider></v-divider> -->
                   <file-chat :file="file"></file-chat>
                 </v-card>
               </v-col>
