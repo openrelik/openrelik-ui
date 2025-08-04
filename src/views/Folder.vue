@@ -411,10 +411,11 @@ limitations under the License.
         >Share</v-btn
       >
       <v-btn
+        v-if="systemConfig && systemConfig.agents_enabled"
         variant="outlined"
         class="text-none mr-2 custom-border-color"
         :to="{ name: 'investigation', params: { folderId: folderId } }"
-        prepend-icon="mdi-magnify"
+        prepend-icon="mdi-star-four-points"
         >Investigate</v-btn
       >
     </div>

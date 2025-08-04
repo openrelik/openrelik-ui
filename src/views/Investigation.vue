@@ -14,12 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <template>
-  <div v-if="folder">
+  <div v-if="folder && systemConfig && !systemConfig.agents_enabled">
+    <v-alert type="warning" class="mt-4">
+      The Agent investigation feature is not enabled. Please configure and
+      enable it in the settings to use.
+    </v-alert>
+  </div>
+
+  <div v-if="folder && systemConfig && systemConfig.agents_enabled">
     <!-- Dialog for creating a new investigation -->
     <v-dialog v-model="newInvestigationDialog" persistent>
       <v-card width="600" class="mx-auto">
         <v-card-title>New Investigation</v-card-title>
-        <v-card-text>
+        <v-card-text class="pa-4">
           <v-form @submit.prevent="createInvestigation">
             <v-text-field
               v-model="investigation.display_name"
@@ -38,11 +45,13 @@ limitations under the License.
             ></v-textarea>
           </v-form>
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions class="pa-4">
           <v-btn
-            @click="createInvestigation()"
+            variant="text"
             color="primary"
             class="text-none"
+            @click="createInvestigation()"
+            :disabled="!investigation.display_name"
           >
             Create
           </v-btn>
@@ -194,6 +203,7 @@ limitations under the License.
 
 <script>
 import RestApiClient from "@/RestApiClient";
+import { useAppStore } from "@/stores/app";
 import Breadcrumbs from "@/components/Breadcrumbs.vue";
 import AgentStream from "@/components/AgentStream.vue";
 
@@ -210,6 +220,7 @@ export default {
   },
   data() {
     return {
+      appStore: useAppStore(),
       folder: null,
       newInvestigationDialog: true,
       newQuestionDialog: false,
@@ -228,6 +239,9 @@ export default {
     };
   },
   computed: {
+    systemConfig() {
+      return this.appStore.systemConfig;
+    },
     headerHeight() {
       return 180;
     },
