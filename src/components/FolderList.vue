@@ -96,7 +96,7 @@ limitations under the License.
         </span>
       </template>
 
-      <!-- Time -->
+      <!-- Filesize -->
       <template v-slot:item.filesize="{ item: file }">
         <span
           v-if="file.filesize || file.filesize === 0"
@@ -118,10 +118,10 @@ limitations under the License.
         </v-checkbox-btn>
       </template>
 
-      <!-- Filesize -->
-      <template v-slot:item.created_at="{ item }">
-        <span :title="item.created_at">{{
-          $filters.formatTime(item.created_at)
+      <!-- Time -->
+      <template v-slot:item.updated_at="{ item }">
+        <span :title="item.updated_at">{{
+          $filters.formatTime(item.updated_at)
         }}</span>
       </template>
 

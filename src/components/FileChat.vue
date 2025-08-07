@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <template>
-  <v-card-text>
+  <v-card-text class="pt-0">
     <v-alert closable>
       This is an <b>experimental feature</b>. AI can make mistakes so always
       double-check the responses.</v-alert

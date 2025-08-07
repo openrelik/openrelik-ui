@@ -98,8 +98,8 @@ limitations under the License.
 
     <!-- Main content with tab navigation -->
     <div v-else>
-      <!-- Tabs -->
       <div class="mt-2">
+        <!-- Tabs -->
         <v-tabs v-model="activeTab" class="mb-4">
           <v-tab
             v-for="tab in tabs"
@@ -166,15 +166,16 @@ limitations under the License.
         </v-tabs>
 
         <v-tabs-window v-model="activeTab">
-          <!-- Content-->
+          <!-- Tab 1 Content -->
           <v-tabs-window-item
-            :value="0"
+            value="0"
             :transition="false"
             :reverse-transition="false"
           >
             <div
               v-if="file.filesize > fileSizeLimit || !isTextFormat"
               style="font-family: monospace; font-size: 0.9em"
+              class="mt-2"
             >
               <strong v-if="file.filesize > fileSizeLimit">
                 The selected file exceeds the maximum size allowed for preview.
@@ -222,13 +223,13 @@ limitations under the License.
             </v-card>
           </v-tabs-window-item>
 
-          <!-- Details -->
+          <!-- Tab 2 Details -->
           <v-tabs-window-item
-            :value="1"
+            value="1"
             :transition="false"
             :reverse-transition="false"
           >
-            <v-card variant="outlined" class="custom-border-color">
+            <v-card variant="outlined" class="custom-border-color mt-2">
               <v-table density="compact">
                 <tbody>
                   <tr>

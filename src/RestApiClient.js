@@ -573,17 +573,6 @@ export default {
         });
     });
   },
-  async getFileSummary(fileId, summaryId) {
-    return new Promise((resolve, reject) => {
-      RestApiClient.get("/files/" + fileId + "/summaries/" + summaryId)
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
-  },
   async generateFileSummary(fileId) {
     return new Promise((resolve, reject) => {
       RestApiClient.post("/files/" + fileId + "/summaries")

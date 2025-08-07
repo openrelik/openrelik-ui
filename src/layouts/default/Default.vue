@@ -28,7 +28,11 @@ import DefaultView from "./View.vue";
 
 // Set theme to user saved value
 const theme = useTheme();
-theme.global.name.value = localStorage.getItem("theme") || "light";
+if (localStorage.getItem("theme")) {
+  theme.change(localStorage.getItem("theme"));
+} else {
+  theme.change("light");
+}
 
 // Set system config and Celery tasks
 const appStore = useAppStore();
