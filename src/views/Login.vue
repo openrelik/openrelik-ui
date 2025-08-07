@@ -180,7 +180,11 @@ export default {
   },
   mounted() {
     const theme = useTheme();
-    theme.global.name.value = localStorage.getItem("theme") || "light";
+    if (localStorage.getItem("theme")) {
+      theme.change(localStorage.getItem("theme"));
+    } else {
+      theme.change("light");
+    }
   },
   created() {
     const urlParams = new URLSearchParams(window.location.search);

@@ -15,7 +15,52 @@ limitations under the License.
 -->
 <template>
   <div v-if="file" style="height: calc(100vh - 100px)" class="mt-n5">
-    <v-breadcrumbs density="compact" class="ml-n4 mt-n1">
+    <!-- Chat Assistant panel -->
+    <v-navigation-drawer
+      v-if="canGenerateSummary"
+      :width="sidePanelWidth"
+      permanent
+      location="right"
+      v-model="showChat"
+    >
+      <v-divider></v-divider>
+      <v-card
+        variant="flat"
+        class="d-flex flex-column"
+        :style="{ height: `calc(100vh - 65px)` }"
+      >
+        <v-toolbar color="transparent">
+          <v-toolbar-title style="font-size: 18px">
+            <v-icon size="small" class="mr-2">mdi-star-four-points</v-icon>
+            Assistant
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-icon
+            @click="sidePanelWidth = sidePanelWidth > 450 ? 450 : 650"
+            variant="text"
+            size="small"
+            :icon="
+              sidePanelWidth > 450 ? 'mdi-arrow-collapse' : 'mdi-arrow-expand'
+            "
+            class="mr-5"
+          >
+          </v-icon>
+
+          <v-icon
+            @click.stop="showChat = false"
+            variant="text"
+            size="small"
+            icon="mdi-close"
+            class="mr-5"
+          >
+          </v-icon>
+        </v-toolbar>
+        <file-chat :file="file"></file-chat>
+      </v-card>
+    </v-navigation-drawer>
+
+    <!-- Breadcrumbs navigation -->
+    <v-breadcrumbs density="compact" class="ml-n4 mt-4">
       <small>
         <v-breadcrumbs-item :to="{ name: 'home' }"> Home </v-breadcrumbs-item>
         <v-breadcrumbs-divider v-if="file.folder"></v-breadcrumbs-divider>
@@ -26,30 +71,18 @@ limitations under the License.
         </v-breadcrumbs-item>
       </small>
       <v-spacer></v-spacer>
-
-      <v-btn icon flat>
-        <v-icon
-          size="small"
-          @click="fullscreen = !fullscreen"
-          :icon="fullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
-        ></v-icon>
-      </v-btn>
-      <v-btn icon flat>
-        <v-icon
-          size="small"
-          @click="showChat = !showChat"
-          icon="mdi-star-four-points"
-        ></v-icon>
-      </v-btn>
+      <v-icon
+        v-if="!showChat"
+        variant="text"
+        icon="mdi-star-four-points"
+        size="small"
+        @click.stop="showChat = !showChat"
+      ></v-icon>
     </v-breadcrumbs>
 
     <!-- Display name -->
-    <div
-      v-if="!fullscreen"
-      style="display: flex; align-items: center"
-      class="mt-n2"
-    >
-      <v-icon class="mr-2">mdi-file-outline</v-icon>
+    <div style="display: flex; align-items: center">
+      <v-icon class="mr-2 ml-n1">mdi-file-outline</v-icon>
       <h3>{{ file.display_name }}</h3>
     </div>
 
@@ -63,10 +96,11 @@ limitations under the License.
       ></v-alert>
     </div>
 
+    <!-- Main content with tab navigation -->
     <div v-else>
-      <!-- Tabs -->
       <div class="mt-2">
-        <v-tabs v-if="!fullscreen" v-model="activeTab" class="mb-4">
+        <!-- Tabs -->
+        <v-tabs v-model="activeTab" class="mb-4">
           <v-tab
             v-for="tab in tabs"
             :key="tab.value"
@@ -132,16 +166,16 @@ limitations under the License.
         </v-tabs>
 
         <v-tabs-window v-model="activeTab">
-          <!-- Content-->
+          <!-- Tab 1 Content -->
           <v-tabs-window-item
-            :value="0"
+            value="0"
             :transition="false"
             :reverse-transition="false"
           >
             <div
               v-if="file.filesize > fileSizeLimit || !isTextFormat"
               style="font-family: monospace; font-size: 0.9em"
-              class="ml-4"
+              class="mt-2"
             >
               <strong v-if="file.filesize > fileSizeLimit">
                 The selected file exceeds the maximum size allowed for preview.
@@ -160,66 +194,42 @@ limitations under the License.
             </div>
 
             <!-- File content iframe -->
-            <v-row>
-              <v-col :cols="showChat && canGenerateSummary ? 8 : 12">
-                <v-card
-                  v-if="isTextFormat && file.filesize < fileSizeLimit"
-                  variant="outlined"
-                  class="custom-border-color d-flex flex-column"
-                  :style="{ height: `calc(100vh - ${headerHeight}px)` }"
-                >
-                  <!-- File summary -->
-                  <div class="pt-4 px-4">
-                    <file-summary
-                      v-for="summary in file.summaries"
-                      :initial-summary="summary"
-                    ></file-summary>
-                  </div>
+            <v-card
+              v-if="isTextFormat && file.filesize < fileSizeLimit"
+              variant="flat"
+              class="d-flex flex-column pa-0"
+              :style="{ height: `calc(100vh - 215px)` }"
+              style="background: transparent"
+            >
+              <!-- File summary -->
+              <div class="mt-2">
+                <file-summary
+                  v-for="summary in file.summaries"
+                  :initial-summary="summary"
+                ></file-summary>
+              </div>
 
-                  <iframe
-                    sandbox
-                    :src="
-                      getIframeSrc({
-                        unsafe: allowedPreview && showFilePreview,
-                      })
-                    "
-                    frameborder="0"
-                    scrolling="yes"
-                    style="width: 100%; height: 100%"
-                  ></iframe>
-                </v-card>
-              </v-col>
-              <v-col cols="4" v-show="showChat && canGenerateSummary">
-                <v-card
-                  variant="outlined"
-                  class="custom-border-color d-flex flex-column"
-                  :style="{ height: `calc(100vh - ${headerHeight}px)` }"
-                >
-                  <v-toolbar color="transparent" density="compact" height="60">
-                    <v-toolbar-title style="font-size: 18px">
-                      <v-icon size="small" class="mr-2"
-                        >mdi-star-four-points</v-icon
-                      >
-                      Assistant
-                    </v-toolbar-title>
-                    <v-spacer></v-spacer>
-                    <v-btn icon size="small" @click="showChat = false">
-                      <v-icon>mdi-close</v-icon>
-                    </v-btn>
-                  </v-toolbar>
-                  <file-chat :file="file"></file-chat>
-                </v-card>
-              </v-col>
-            </v-row>
+              <iframe
+                sandbox
+                :src="
+                  getIframeSrc({
+                    unsafe: allowedPreview && showFilePreview,
+                  })
+                "
+                frameborder="0"
+                scrolling="yes"
+                style="width: 100%; height: 100%"
+              ></iframe>
+            </v-card>
           </v-tabs-window-item>
 
-          <!-- Details -->
+          <!-- Tab 2 Details -->
           <v-tabs-window-item
-            :value="1"
+            value="1"
             :transition="false"
             :reverse-transition="false"
           >
-            <v-card variant="outlined" class="custom-border-color">
+            <v-card variant="outlined" class="custom-border-color mt-2">
               <v-table density="compact">
                 <tbody>
                   <tr>
@@ -323,8 +333,8 @@ export default {
       fileSizeLimit: 10485760,
       genAISizeLimit: 2097152,
       activeTab: null,
-      fullscreen: false,
       showChat: true,
+      sidePanelWidth: 450,
       tabs: [
         {
           name: "Content",
@@ -383,9 +393,6 @@ export default {
         this.systemConfig.active_llms.length &&
         this.file.filesize < this.genAISizeLimit
       );
-    },
-    headerHeight() {
-      return this.fullscreen ? 156 : 240;
     },
   },
 

@@ -61,6 +61,16 @@ limitations under the License.
           >mdi-information-outline</v-icon
         >
       </span>
+      <span v-else class="mr-4">
+        <small class="mr-3">
+          <i>Generating summary</i>
+        </small>
+        <v-progress-circular
+          indeterminate
+          size="18"
+          width="2"
+        ></v-progress-circular>
+      </span>
     </v-toolbar>
     <v-divider></v-divider>
     <v-expand-transition>
@@ -75,7 +85,7 @@ limitations under the License.
         <v-card-text
           v-if="fileSummary.status_short === 'complete'"
           class="markdown-body"
-          style="font-size: 0.9em"
+          style="font-size: 0.9em; overflow: auto; max-height: 400px"
           v-html="toHtml(fileSummary.summary)"
         ></v-card-text>
       </div>

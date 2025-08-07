@@ -43,13 +43,5 @@ export default {
   components: {
     ToggleTheme,
   },
-  methods: {
-    toggleTheme() {
-      theme.global.name.value = theme.global.current.value.dark
-        ? "light"
-        : "dark";
-      localStorage.setItem("theme", theme.global.name.value);
-    },
-  },
 };
 </script>
