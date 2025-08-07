@@ -15,11 +15,11 @@ limitations under the License.
 -->
 <template>
   <div v-if="file" style="height: calc(100vh - 100px)" class="mt-n5">
-    <!-- Left side panel -->
+    <!-- Chat Assistant panel -->
     <v-navigation-drawer
       v-if="canGenerateSummary"
       :width="sidePanelWidth"
-      permanent=""
+      permanent
       location="right"
       v-model="showChat"
     >
@@ -59,6 +59,7 @@ limitations under the License.
       </v-card>
     </v-navigation-drawer>
 
+    <!-- Breadcrumbs navigation -->
     <v-breadcrumbs density="compact" class="ml-n4 mt-4">
       <small>
         <v-breadcrumbs-item :to="{ name: 'home' }"> Home </v-breadcrumbs-item>
@@ -95,6 +96,7 @@ limitations under the License.
       ></v-alert>
     </div>
 
+    <!-- Main content with tab navigation -->
     <div v-else>
       <!-- Tabs -->
       <div class="mt-2">
@@ -194,7 +196,7 @@ limitations under the License.
             <v-card
               v-if="isTextFormat && file.filesize < fileSizeLimit"
               variant="flat"
-              class="d-flex flex-column"
+              class="d-flex flex-column pa-0"
               :style="{ height: `calc(100vh - 215px)` }"
               style="background: transparent"
             >
