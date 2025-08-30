@@ -762,4 +762,46 @@ export default {
         });
     });
   },
+  async getSQLSchemas(file_id) {
+    return new Promise((resolve, reject) => {
+      RestApiClient.get("/files/" + file_id + "/sql/schemas")
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async runSQLQuery(file_id, sqlQuery) {
+    const requestBody = {
+      query: sqlQuery,
+    };
+    return new Promise((resolve, reject) => {
+      RestApiClient.post("/files/" + file_id + "/sql/query", requestBody)
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async generateSQLQuery(file_id, userRequest) {
+    const requestBody = {
+      user_request: userRequest,
+    };
+    return new Promise((resolve, reject) => {
+      RestApiClient.post(
+        "/files/" + file_id + "/sql/query/generate",
+        requestBody
+      )
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
 };

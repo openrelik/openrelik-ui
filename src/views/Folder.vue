@@ -282,7 +282,7 @@ limitations under the License.
   </v-dialog>
 
   <!-- Breadcrumbs -->
-  <v-breadcrumbs density="compact" class="ml-n4 mt-n1">
+  <v-breadcrumbs density="compact" class="ml-n4 mt-n3">
     <small>
       <v-breadcrumbs-item :to="{ name: 'home' }"> Home </v-breadcrumbs-item>
       <v-breadcrumbs-divider
