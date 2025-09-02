@@ -686,7 +686,11 @@ export default {
       this.sqlQuery = "";
       RestApiClient.generateSQLQuery(this.file.id, this.naturalLanguageQuery)
         .then((response) => {
-          this.sqlQuery = response.generated_query;
+          // Clean up the generated query by removing code block markers and newlines.
+          // TODO: Remove when this is fixed in the backend.
+          this.sqlQuery = response.generated_query
+            .replace(/^```\w*\s*|\s*```$|\n/g, " ")
+            .trim();
           this.sqlIsGenerating = false;
           this.runSQLQuery();
         })
