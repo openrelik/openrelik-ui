@@ -31,8 +31,10 @@ limitations under the License.
       </v-img>
     </template>
     <template v-slot:append>
-      <profile-menu size="30" />
       <system-menu />
+      <div class="mr-2 ml-5">
+        <profile-menu size="30" />
+      </div>
     </template>
   </v-app-bar>
 </template>
