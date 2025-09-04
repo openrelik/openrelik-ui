@@ -15,11 +15,18 @@ limitations under the License.
 -->
 <template>
   <span>
-    <v-icon size="small" v-if="taskStatus === 'SUCCESS'" color="success"
+    <v-icon
+      v-if="taskStatus === 'SUCCESS' && !hasOutputFiles"
+      size="small"
+      color="warning"
+      >mdi-check-circle
+    </v-icon>
+
+    <v-icon v-else-if="taskStatus === 'SUCCESS'" size="small" color="success"
       >mdi-check-circle
     </v-icon>
     <v-icon
-      v-if="
+      v-else-if="
         taskStatus === 'STARTED' ||
         taskStatus === 'RECEIVED' ||
         taskStatus === null
@@ -27,7 +34,7 @@ limitations under the License.
       color="grey-lighten-1"
       >mdi-history
     </v-icon>
-    <v-icon v-if="taskStatus === 'FAILURE'" color="error"
+    <v-icon v-else-if="taskStatus === 'FAILURE'" color="error"
       >mdi-alert-outline
     </v-icon>
 
@@ -43,9 +50,11 @@ limitations under the License.
 </template>
 
 <script>
+import { has } from "lodash";
+
 export default {
   name: "TaskProgressIcon",
-  props: { taskStatus: String },
+  props: { taskStatus: String, hasOutputFiles: Boolean },
 };
 </script>
 

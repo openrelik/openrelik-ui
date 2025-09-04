@@ -105,6 +105,7 @@ limitations under the License.
           <task-status-icon
             class="mr-1"
             :task-status="celeryTask.status_short"
+            :has-output-files="hasOutputFiles"
           ></task-status-icon>
           {{ node.display_name }}
           <span v-if="celeryTask.runtime">
@@ -289,6 +290,11 @@ export default {
         return false;
       }
       return this.celeryTask.task_report.priority >= 40;
+    },
+    hasOutputFiles() {
+      return !!(
+        this.celeryTask.output_files && this.celeryTask.output_files.length
+      );
     },
     nodeIcon() {
       return this.celeryTask.status_short === "PROGRESS"
