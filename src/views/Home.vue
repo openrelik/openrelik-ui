@@ -66,30 +66,29 @@ limitations under the License.
           clearable
           class="mt-2"
           @keyup.enter="getFolders()"
-          @click:clear="getFolders()"
         ></v-text-field>
       </v-col>
     </v-row>
     <br />
-    <div v-if="folders.length">
-      <folder-list
-        :items="folders"
-        :is-home-view="true"
+    <div v-if="folders.total_count">
+      <folder-list-root
+        :root-folders="folders"
         @folder-deleted="removeFolder($event)"
-      ></folder-list>
+        @get-folders="getFolders($event.page, $event.itemsPerPage)"
+      ></folder-list-root>
     </div>
   </v-card>
 </template>
 
 <script>
 import RestApiClient from "@/RestApiClient";
-import FolderList from "@/components/FolderList";
+import FolderListRoot from "@/components/FolderListRoot";
 import UploadFile from "@/components/UploadFile";
 
 export default {
   name: "home",
   components: {
-    FolderList,
+    FolderListRoot,
     UploadFile,
   },
   data() {
@@ -111,7 +110,7 @@ export default {
       RestApiClient.createFolder(this.newFolderForm.name).then((response) => {
         this.showNewFolderDialog = false;
         this.newFolderForm.name = "";
-        this.folders.unshift(response);
+        this.folders.folders.unshift(response);
         this.$router.push({
           name: "folder",
           params: { folderId: response.id },
@@ -119,23 +118,33 @@ export default {
       });
     },
     removeFolder(folder_to_remove) {
-      this.folders = this.folders.filter(
+      this.folders.folders = this.folders.folders.filter(
         (folder) => folder.id != folder_to_remove.id
       );
     },
-    getFolders() {
-      this.folders = [];
+    getFolders(page = null, itemsPerPage = null) {
+      this.folders = {};
       if (this.searchTerm) {
         this.$router.push({ query: { q: this.searchTerm } });
       } else {
         this.$router.push({ query: {} });
       }
-      RestApiClient.getAllFolders(this.searchTerm).then((response) => {
-        this.folders = response;
-      });
+      RestApiClient.getAllFolders(this.searchTerm, page, itemsPerPage).then(
+        (response) => {
+          this.folders = response;
+        }
+      );
     },
   },
-
+  watch: {
+    searchTerm(newVal) {
+      // Only call getFolders when the search term is cleared
+      // AND a 'q' query parameter exists in the URL
+      if (newVal === null && this.$route.query.q) {
+        this.getFolders();
+      }
+    },
+  },
   mounted() {
     if (this.$route.query.q) {
       this.searchTerm = this.$route.query.q;

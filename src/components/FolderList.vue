@@ -16,14 +16,14 @@ limitations under the License.
 <template>
   <div>
     <v-data-table
-      :headers="isHomeView ? homeViewHeaders : headers"
+      :headers="headers"
       :items="items"
       :loading="isLoading"
       v-model="selectedFiles"
       disable-sort
       item-key="uuid"
       item-selectable="selectable"
-      items-per-page="100"
+      items-per-page="50"
       select-strategy="all"
       no-data-text="No files or folders to show"
       return-object
@@ -161,10 +161,6 @@ export default {
     items: Array,
     isLoading: Boolean,
     folder: Object,
-    isHomeView: {
-      type: Boolean,
-      default: false,
-    },
   },
   components: {
     ProfilePicture,
@@ -180,12 +176,6 @@ export default {
         { title: "Last modified", key: "updated_at" },
         { title: "Size", key: "filesize" },
         { title: "Type", key: "magic_mime" },
-        { title: "Actions", key: "actions", sortable: false, width: "140px" },
-      ],
-      homeViewHeaders: [
-        { title: "Name", key: "display_name" },
-        { title: "Owner", key: "user" },
-        { title: "Last modified", key: "updated_at" },
         { title: "Actions", key: "actions", sortable: false, width: "140px" },
       ],
     };

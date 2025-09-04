@@ -41,7 +41,7 @@ export default {
   },
   computed: {
     avatarColor() {
-      if (this.user.auth_method != "local") {
+      if (this.user.profile_picture_url) {
         return;
       }
       const uuid = this.user.uuid;
