@@ -128,6 +128,10 @@ limitations under the License.
           }}
         </div>
       </ul>
+      <ul v-else>
+        <br />
+        No result files
+      </ul>
     </v-card-text>
   </div>
 
