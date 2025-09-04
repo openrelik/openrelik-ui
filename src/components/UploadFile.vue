@@ -177,8 +177,6 @@ export default {
         message: JSON.parse(message),
       });
     });
-
-    this.resumable.assignBrowse(this.$refs.fileInput.$el);
   },
   methods: {
     uploadFiles() {
