@@ -267,12 +267,18 @@ export default {
         });
     });
   },
-  async getAllFolders(searchTerm = null) {
+  async getAllFolders(searchTerm = null, page = null, itemsPerPage = null) {
     return new Promise((resolve, reject) => {
       let url = "/folders/all/";
       let params = {};
       if (searchTerm) {
         params["q"] = searchTerm;
+      }
+      if (page) {
+        params["page"] = page;
+      }
+      if (itemsPerPage) {
+        params["page_size"] = itemsPerPage;
       }
       RestApiClient.get(url, { params })
         .then((response) => {
