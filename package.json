@@ -10,7 +10,7 @@
   "dependencies": {
     "@mdi/font": "7.4.47",
     "apexcharts": "^4.1.0",
-    "axios": "^1.6.7",
+    "axios": "^1.12.0",
     "core-js": "^3.34.0",
     "dayjs": "^1.11.10",
     "dompurify": "^3.0.9",
