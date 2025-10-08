@@ -1,5 +1,5 @@
 <!--
-Copyright 2024 Google LLC
+Copyright 2024-2025 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -80,6 +80,57 @@ limitations under the License.
       </v-card>
     </v-dialog>
 
+    <v-dialog v-model="showWorkflowInfoDialog" width="50vh">
+      <v-card class="mx-auto pb-5" width="50vh" max-height="50vh">
+        <v-toolbar color="transparent" density="compact">
+          <v-toolbar-title style="font-size: 18px">
+            Workflow information
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-icon
+            size="small"
+            class="mr-4"
+            @click="showWorkflowInfoDialog = false"
+            >mdi-close</v-icon
+          >
+        </v-toolbar>
+
+        <v-card variant="outlined" class="mx-4 custom-border-color">
+          <v-table density="compact">
+            <tbody>
+              <tr>
+                <td>ID</td>
+                <td>{{ workflow.id }}</td>
+              </tr>
+              <tr>
+                <td>Number of tasks</td>
+                <td>{{ workflow.tasks.length }}</td>
+              </tr>
+              <tr v-if="workflow.template">
+                <td>Created from template</td>
+                <td>{{ workflow.template.display_name }}</td>
+              </tr>
+            </tbody>
+          </v-table>
+        </v-card>
+
+        <div v-if="workflow.template" class="pa-4" style="font-size: 0.9em">
+          <strong>Task configuration parameters</strong>
+          <br />Use the following parameters to recreate the workflow via the
+          API
+        </div>
+
+        <v-card
+          v-if="workflow.template"
+          variant="outlined"
+          class="pa-4 mx-4 mb-4 custom-border-color"
+          style="max-height: 400px; overflow: auto"
+        >
+          <pre style="font-size: 0.8em">{{ extractedTaskConfigs }}</pre>
+        </v-card>
+      </v-card>
+    </v-dialog>
+
     <v-card
       variant="outlined"
       class="custom-border-color"
@@ -110,6 +161,11 @@ limitations under the License.
             </span>
           </v-hover>
         </v-toolbar-title>
+        <v-spacer></v-spacer>
+
+        <v-icon size="small" @click="showWorkflowInfoDialog = true" class="mr-4"
+          >mdi-information-outline</v-icon
+        >
       </v-toolbar>
       <v-divider></v-divider>
       <workflow-tree
@@ -155,6 +211,7 @@ export default {
       workflow: this.initialWorkflow,
       showNewTemplateDialog: false,
       showRenameWorkflowDialog: false,
+      showWorkflowInfoDialog: false,
       newTemplateForm: {
         displayName: "",
       },
@@ -177,6 +234,32 @@ export default {
           task.status_short === "PROGRESS" ||
           task.status_short === "RECEIVED"
       );
+    },
+    inputFileIds() {
+      return this.workflow.files.map((file) => file.id);
+    },
+    extractedTaskConfigs() {
+      let result = {};
+      const data = JSON.parse(this.workflow.spec_json);
+      if (data?.workflow?.tasks) {
+        data.workflow.tasks.forEach((task) => {
+          if (task.task_config) {
+            task.task_config.forEach((configItem) => {
+              const key = configItem.param_name || configItem.name;
+              const value = Object.prototype.hasOwnProperty.call(
+                configItem,
+                "value"
+              )
+                ? configItem.value
+                : null;
+              if (key && value !== null) {
+                result[key] = value;
+              }
+            });
+          }
+        });
+      }
+      return result;
     },
   },
   methods: {
