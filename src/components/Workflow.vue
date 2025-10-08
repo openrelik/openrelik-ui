@@ -235,9 +235,6 @@ export default {
           task.status_short === "RECEIVED"
       );
     },
-    inputFileIds() {
-      return this.workflow.files.map((file) => file.id);
-    },
     extractedTaskConfigs() {
       let result = {};
       const data = JSON.parse(this.workflow.spec_json);
