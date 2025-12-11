@@ -70,30 +70,28 @@ limitations under the License.
       </v-col>
     </v-row>
     <br />
-    <div v-if="folders.total_count">
-      <folder-list-root
-        :root-folders="folders"
-        @folder-deleted="removeFolder($event)"
-        @get-folders="getFolders($event.page, $event.itemsPerPage)"
-      ></folder-list-root>
-    </div>
+    <br />
+    <folder-list-root
+      :root-folders="folders"
+      :is-loading="isLoading"
+      @folder-deleted="removeFolder($event)"
+      @get-folders="getFolders($event.page, $event.itemsPerPage)"
+    ></folder-list-root>
   </v-card>
 </template>
 
 <script>
 import RestApiClient from "@/RestApiClient";
 import FolderListRoot from "@/components/FolderListRoot";
-import UploadFile from "@/components/UploadFile";
 
 export default {
-  name: "home",
   components: {
     FolderListRoot,
-    UploadFile,
   },
   data() {
     return {
-      folders: [],
+      isLoading: false,
+      folders: { folders: [], total_count: 0 },
       showNewFolderDialog: false,
       newFolderForm: {
         name: "",
@@ -123,17 +121,19 @@ export default {
       );
     },
     getFolders(page = null, itemsPerPage = null) {
-      this.folders = {};
+      this.isLoading = true;
       if (this.searchTerm) {
         this.$router.push({ query: { q: this.searchTerm } });
       } else {
         this.$router.push({ query: {} });
       }
-      RestApiClient.getAllFolders(this.searchTerm, page, itemsPerPage).then(
-        (response) => {
+      RestApiClient.getAllFolders(this.searchTerm, page, itemsPerPage)
+        .then((response) => {
           this.folders = response;
-        }
-      );
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
     },
   },
   watch: {

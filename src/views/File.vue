@@ -371,7 +371,11 @@ limitations under the License.
           :transition="false"
           :reverse-transition="false"
         >
-          <v-card variant="outlined" class="custom-border-color mt-2">
+          <v-card
+            variant="outlined"
+            class="custom-border-color mt-2"
+            max-width="50%"
+          >
             <v-table density="compact">
               <tbody>
                 <tr>
