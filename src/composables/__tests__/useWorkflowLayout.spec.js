@@ -62,8 +62,7 @@ describe("useWorkflowLayout", () => {
     const { layout } = useWorkflowLayout();
     layout({ tasks: [] });
 
-    // 300 + 200/2 - 40 = 300 + 100 - 40 = 350
-    expect(mockNodes[0].y).toBe(350);
+    expect(mockNodes[0].y).toBe(360);
   });
 
   it("should not center input node if centerInputNode is false", () => {
