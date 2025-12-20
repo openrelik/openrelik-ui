@@ -43,6 +43,7 @@ export const useAppStore = defineStore("app", {
       this.activeLLM = llm;
     },
     async setRegisteredCeleryTasks() {
+      if (this.registeredCeleryTasks.length > 0) return;
       const response = await RestApiClient.getRegisteredCeleryTasks();
       this.registeredCeleryTasks = await response;
     },

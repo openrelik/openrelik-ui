@@ -31,11 +31,15 @@ limitations under the License.
       </v-img>
     </template>
     <template v-slot:append>
+      <v-btn icon @click="$refs.userSettings.open()" class="mr-n2">
+        <v-icon>mdi-cog-outline</v-icon>
+      </v-btn>
       <system-menu />
       <div class="mr-2 ml-5">
         <profile-menu size="30" />
       </div>
     </template>
+    <user-settings ref="userSettings" />
   </v-app-bar>
 </template>
 
@@ -44,11 +48,13 @@ import { useAppStore } from "@/stores/app";
 import settings from "@/settings";
 import ProfileMenu from "@/components/ProfileMenu.vue";
 import SystemMenu from "@/components/SystemMenu.vue";
+import UserSettings from "@/components/UserSettings.vue";
 
 export default {
   components: {
     ProfileMenu,
     SystemMenu,
+    UserSettings,
   },
   data() {
     return {

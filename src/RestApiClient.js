@@ -454,6 +454,17 @@ export default {
         });
     });
   },
+  async generateWorkflowReport(workflowId) {
+    return new Promise((resolve, reject) => {
+      RestApiClient.get("/workflows/" + workflowId + "/report/")
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
   async createWorkflow(file_ids, folder_id, templateId = null) {
     const requestBody = {
       file_ids: file_ids,

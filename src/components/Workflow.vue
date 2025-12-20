@@ -163,6 +163,7 @@ limitations under the License.
         </v-toolbar-title>
         <v-spacer></v-spacer>
 
+        <slot name="toolbar-actions"></slot>
         <v-icon size="small" @click="showWorkflowInfoDialog = true" class="mr-4"
           >mdi-information-outline</v-icon
         >
@@ -257,6 +258,11 @@ export default {
         });
       }
       return result;
+    },
+  },
+  watch: {
+    initialWorkflow(newVal) {
+      this.workflow = newVal;
     },
   },
   methods: {
