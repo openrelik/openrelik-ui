@@ -169,7 +169,7 @@ export default {
 
 .ai-background-dark {
   border: 1px solid transparent !important;
-  background-image: linear-gradient(#181818, #181818),
+  background-image: linear-gradient(#0f172a, #0f172a),
     linear-gradient(
       90deg,
       #6d8dc2 0%,
