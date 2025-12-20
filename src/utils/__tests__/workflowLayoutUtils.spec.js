@@ -81,7 +81,7 @@ describe("workflowLayoutUtils", () => {
       // Gap = Node 3 Y (290) - 10 (centering offset approx) - Group Bottom
       // Wait, let's just assert the gap is sufficient based on logic used in reasoning
       
-      const node2Bottom = n2.y + 50; // Approximating visual bottom from center? 
+ 
       // Actually layout Y is center - 40. 
       // Let's rely on the layout utils returning Y as 'nodeY' which is used for translate.
       

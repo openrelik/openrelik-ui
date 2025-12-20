@@ -111,12 +111,7 @@ describe("workflowGraphUtils", () => {
       { id: "node-3", label: "Task 3", data: { task_name: "t3", uuid: "uuid-3" } },
       { id: "node-4", label: "Callback", data: { task_name: "cb", uuid: "uuid-4" } },
     ];
-    const edges = [
-      { from: "node-1", to: "node-2" },
-      { from: "node-1", to: "node-3" },
-      { from: "node-2", to: "node-4" },
-      { from: "node-3", to: "node-4" },
-    ];
+
 
     it("should detect chords and build tree correctly", () => {
       const edgesWithRoot = [

@@ -3,7 +3,7 @@ import { mount } from "@vue/test-utils";
 import WorkflowCanvas from "../WorkflowCanvas.vue";
 import { createTestingPinia } from "@pinia/testing";
 import { useWorkflowStore } from "@/stores/workflow";
-import { useAppStore } from "@/stores/app";
+
 
 // Mock Child Components
 const WorkflowGroupLayerStub = {

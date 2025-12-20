@@ -121,7 +121,7 @@ describe("WorkflowTaskResult.vue", () => {
 
   it("renders output files list", () => {
     wrapper = createWrapper();
-    const files = wrapper.findAll(".file-item");
+
     // 2 files in mockData: one in output_files, and file_reports appear in a separate section
     // wait, file-item class is used for output files. 
     // Reports share similar structure but are in .report-item (which also has .file-item class?)

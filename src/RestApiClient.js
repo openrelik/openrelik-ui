@@ -14,9 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Ignore eslint error because Observable is not defined. ESLint does not recognize the
+// the Chrome native Observable type yet.
+/* global Observable */
+
 import axios from "axios";
 import settings from "./settings.js";
-import Investigation from "./views/Investigation.vue";
 
 const RestApiClient = axios.create({
   baseURL: settings.apiServerUrl + "/api/" + settings.apiServerVersion + "/",

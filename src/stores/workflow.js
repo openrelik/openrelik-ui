@@ -326,7 +326,7 @@ export const useWorkflowStore = defineStore("workflow", {
       // Loop through the task options in the object
       node.data.task_config.forEach((option) => {
         // Check if there's a corresponding value in the formData
-        if (formData.hasOwnProperty(option.name)) {
+        if (Object.prototype.hasOwnProperty.call(formData, option.name)) {
           // Update the option with the value from the formData
           option.value = formData[option.name];
         }

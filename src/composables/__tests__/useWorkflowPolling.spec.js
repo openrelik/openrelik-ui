@@ -68,6 +68,7 @@ describe("useWorkflowPolling", () => {
     const [result] = withSetup(() => useWorkflowPolling({ folderId, workflowId, isActive }));
     const { isPolling } = result;
 
+
     expect(isPolling.value).toBe(false);
 
     isActive.value = true;
@@ -91,7 +92,7 @@ describe("useWorkflowPolling", () => {
     const isActive = ref(true);
     const clearSpy = vi.spyOn(global, "clearInterval");
 
-    const [result, app] = withSetup(() => useWorkflowPolling({ folderId, workflowId, isActive }));
+    const [, app] = withSetup(() => useWorkflowPolling({ folderId, workflowId, isActive }));
     
     // Polling should have started (setInterval called)
     // Now unmount to trigger onBeforeUnmount

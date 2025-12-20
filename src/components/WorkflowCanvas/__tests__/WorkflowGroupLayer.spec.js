@@ -71,10 +71,8 @@ describe("WorkflowGroupLayer.vue", () => {
       // Left = 100 - 20 = 80
       // Top = 100 - 20 = 80
 
-      const group1Box = wrapper
-        .findAll(".group-wrapper")[0]
-        .find(".group-box");
-      const style = group1Box.attributes("style");
+
+
 
       // We can't guarantee order of keys in groups object, so let's find checking ID logic or assume order if list is stable.
       // Usually Object.values() order is insertion order for strings.
@@ -110,10 +108,7 @@ describe("WorkflowGroupLayer.vue", () => {
   describe("Rendering Elements", () => {
     it("shows ghost node (add button) when active", async () => {
       wrapper = createWrapper({ activeGroupId: "group-1" });
-      const groupWrapper = wrapper.findAll(".group-wrapper").find(el => {
-         // rough check, assuming order or verify specific DOM structure presence
-         return true; // effectively checking "any group has it" but we only activated group-1
-      });
+
       // Actually let's just find globally, only one should appear for group-1
       const ghostNode = wrapper.find(".ghost-node");
       expect(ghostNode.exists()).toBe(true);
