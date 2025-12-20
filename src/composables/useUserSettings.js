@@ -22,8 +22,8 @@ const defaultSettings = {
   AIEnabled: true,
   AIFileSummaries: true,
   AIFileChat: true,
-  WorkflowEditor: "new",
-  WorkflowChordCreation: true,
+  WorkflowEditor: "old",
+  WorkflowChordCreation: false,
 };
 
 const savedSettings = localStorage.getItem(SETTINGS_KEY);
