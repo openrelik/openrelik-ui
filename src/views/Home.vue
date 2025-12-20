@@ -70,7 +70,6 @@ limitations under the License.
       </v-col>
     </v-row>
     <br />
-    <br />
     <folder-list-root
       :root-folders="folders"
       :is-loading="isLoading"

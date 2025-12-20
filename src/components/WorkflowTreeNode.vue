@@ -30,7 +30,7 @@ limitations under the License.
     <span
       class="node-content"
       :class="
-        $vuetify.theme.name === 'dark'
+        $vuetify.theme.global.name === 'dark'
           ? 'dark-grey-background'
           : 'white-background'
       "

@@ -47,7 +47,7 @@ limitations under the License.
           color="info"
           class="text-none"
           :class="
-            $vuetify.theme.name === 'dark'
+            $vuetify.theme.global.name === 'dark'
               ? 'dark-grey-background'
               : 'white-background'
           "
@@ -60,7 +60,7 @@ limitations under the License.
           variant="outlined"
           class="text-none ml-2 custom-border-color"
           :class="
-            $vuetify.theme.name === 'dark'
+            $vuetify.theme.global.name === 'dark'
               ? 'dark-grey-background'
               : 'white-background'
           "
@@ -73,7 +73,7 @@ limitations under the License.
           variant="outlined"
           class="text-none custom-border-color"
           :class="
-            $vuetify.theme.name === 'dark'
+            $vuetify.theme.global.name === 'dark'
               ? 'dark-grey-background'
               : 'white-background'
           "

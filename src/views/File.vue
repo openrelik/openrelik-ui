@@ -17,7 +17,7 @@ limitations under the License.
   <div v-if="file">
     <!-- Chat Assistant panel -->
     <v-navigation-drawer
-      v-if="canGenerateSummary && !isSqlFormat"
+      v-if="canChat && !isSqlFormat"
       :width="sidePanelWidth"
       permanent
       location="right"
@@ -72,7 +72,7 @@ limitations under the License.
       </small>
       <v-spacer></v-spacer>
       <v-icon
-        v-if="!showChat"
+        v-if="!showChat && canChat"
         variant="text"
         icon="mdi-star-four-points"
         size="small"
@@ -212,6 +212,7 @@ limitations under the License.
               height: `calc(100vh - 215px - ${AIisEnabled ? '80' : '25'}px)`,
             }"
             style="background: transparent"
+            class="mt-4"
           >
             <iframe
               sandbox
@@ -452,9 +453,14 @@ import FileSummary from "@/components/FileSummary.vue";
 import FileChat from "@/components/FileChat.vue";
 import SqlTables from "@/components/SqlTables.vue";
 import settings from "@/settings";
+import { useUserSettings } from "@/composables/useUserSettings";
 
 export default {
   name: "File",
+  setup() {
+    const { settings: userSettings } = useUserSettings();
+    return { userSettings };
+  },
   props: {
     fileId: String,
   },
@@ -543,7 +549,7 @@ export default {
     isOwner() {
       return this.myRole.role === "Owner";
     },
-    canGenerateSummary() {
+    isFileCompatibleWithAI() {
       if (!this.systemConfig.active_llms.length) {
         return false;
       }
@@ -554,8 +560,24 @@ export default {
       // For other text-based files, we must check the size limit.
       return this.isTextFormat && this.file.filesize < this.genAISizeLimit;
     },
+    canGenerateSummary() {
+      return (
+        this.userSettings.AIEnabled &&
+        this.userSettings.AIFileSummaries &&
+        this.isFileCompatibleWithAI
+      );
+    },
+    canChat() {
+      return (
+        this.userSettings.AIEnabled &&
+        this.userSettings.AIFileChat &&
+        this.isFileCompatibleWithAI
+      );
+    },
     AIisEnabled() {
-      return this.systemConfig.active_llms.length;
+      return (
+        this.systemConfig.active_llms.length && this.userSettings.AIEnabled
+      );
     },
     firstSQLTable() {
       const tableNames = Object.keys(this.sqlSchemas);

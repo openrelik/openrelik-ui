@@ -16,7 +16,7 @@ limitations under the License.
 import mitt from "mitt";
 
 export default {
-  install: (app, options) => {
+  install: (app) => {
     app.config.globalProperties.$eventBus = mitt();
   },
 };
