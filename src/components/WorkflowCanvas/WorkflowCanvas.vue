@@ -121,7 +121,11 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(["content-resize", "workflow-updated"]);
+const emit = defineEmits([
+  "content-resize",
+  "workflow-updated",
+  "workflow-renamed",
+]);
 
 // Stores
 const workflowStore = useWorkflowStore();
