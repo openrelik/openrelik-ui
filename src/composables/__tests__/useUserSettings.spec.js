@@ -16,8 +16,8 @@ describe("useUserSettings", () => {
     expect(settings.AIEnabled).toBe(true);
     expect(settings.AIFileSummaries).toBe(true);
     expect(settings.AIFileChat).toBe(true);
-    expect(settings.WorkflowEditor).toBe("new");
-    expect(settings.WorkflowChordCreation).toBe(true);
+    expect(settings.WorkflowEditor).toBe("old");
+    expect(settings.WorkflowChordCreation).toBe(false);
   });
 
   it("should initialize with saved settings from localStorage", async () => {
@@ -61,7 +61,7 @@ describe("useUserSettings", () => {
     const { useUserSettings } = await import("../useUserSettings");
     const { settings } = useUserSettings();
 
-    expect(settings.WorkflowChordCreation).toBe(true); // New default
+    expect(settings.WorkflowChordCreation).toBe(false);
     expect(settings.AIEnabled).toBe(true);
   });
 });
