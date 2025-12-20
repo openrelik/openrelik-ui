@@ -40,6 +40,7 @@ limitations under the License.
       </v-sheet>
       <v-sheet
         v-else
+        color="transparent"
         style="font-size: 1em"
         class="markdown-body pa-2"
         v-html="toHtml(message.content)"
@@ -189,7 +190,7 @@ export default {
 }
 
 .jumping-dots .dot-1 {
-  background-color: #acacac;
+  background-color: rgb(var(--v-theme-primary));
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -198,7 +199,7 @@ export default {
 }
 
 .jumping-dots .dot-2 {
-  background-color: #acacac;
+  background-color: rgb(var(--v-theme-primary));
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -207,7 +208,7 @@ export default {
 }
 
 .jumping-dots .dot-3 {
-  background-color: #acacac;
+  background-color: rgb(var(--v-theme-primary));
   width: 6px;
   height: 6px;
   border-radius: 50%;

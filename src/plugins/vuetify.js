@@ -25,18 +25,19 @@ const relikDark = {
   dark: true,
   colors: {
     // Background colors
-    background: "#121212",
-    "surface-light": "#181818", // card appbar
-    "surface-bright": "#ccbfd6",
-    "surface-variant": "#a3a3a3",
+    background: "#0f172a",
+    surface: "#1e293b",
+    "surface-light": "#334155", // card appbar
+    "surface-bright": "#e2e8f0",
+    "surface-variant": "#475569",
 
     // Font colors
-    "on-background": "#cecece",
-    "on-surface": "#cecece",
-    "on-surface-light": "#cecece",
+    "on-background": "#e2e8f0",
+    "on-surface": "#e2e8f0",
+    "on-surface-light": "#e2e8f0",
 
     // Base colors
-    primary: "#2196F3",
+    primary: "#57BDE8",
     secondary: "#54B6B2",
     error: "#CF6679",
     info: "#5378be",
@@ -45,8 +46,8 @@ const relikDark = {
 
     // Custom colors
     // Access in templates with rgb(var(--v-theme-workflow-line-color))
-    "custom-hover-color": "#202020",
-    "custom-border-color": "#333333",
+    "custom-hover-color": "#1e293b",
+    "custom-border-color": "#334155",
   },
 };
 

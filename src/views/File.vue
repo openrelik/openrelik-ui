@@ -19,6 +19,7 @@ limitations under the License.
     <v-navigation-drawer
       v-if="canChat && !isSqlFormat"
       :width="sidePanelWidth"
+      color="background"
       permanent
       location="right"
       v-model="showChat"

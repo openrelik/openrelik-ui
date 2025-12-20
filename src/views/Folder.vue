@@ -553,7 +553,7 @@ limitations under the License.
         :style="containerStyle"
       >
         <v-toolbar
-          :color="$vuetify.theme.name === 'dark' ? '' : 'grey-lighten-4'"
+          :color="$vuetify.theme.name === 'dark' ? 'surface' : 'grey-lighten-4'"
           density="compact"
         >
           <v-toolbar-title style="font-size: 18px">
@@ -659,9 +659,7 @@ limitations under the License.
 
         <v-card-actions
           :class="
-            $vuetify.theme.name === 'dark'
-              ? 'bg-grey-darken-4'
-              : 'bg-grey-lighten-4'
+            $vuetify.theme.name === 'dark' ? 'bg-surface' : 'bg-grey-lighten-4'
           "
           class="py-4"
         >
@@ -1147,7 +1145,7 @@ export default {
 
 <style>
 .workflow-card {
-  background-color: #0f172a; /* Default (Dark) */
+  background-color: rgb(var(--v-theme-background));
   color: #e2e8f0;
 }
 
