@@ -1,5 +1,5 @@
 # Use the node image from official Docker Hub
-FROM node:21-bookworm-slim AS build-stage
+FROM node:22-bookworm-slim AS build-stage
 # set the working directory
 WORKDIR /app
 # Copy the working directory in the container
