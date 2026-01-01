@@ -106,6 +106,12 @@ const emit = defineEmits(["select-node"]);
 const investigationStore = useInvestigationStore();
 const investigationData = computed(() => {
   const sessionData = investigationStore.sessionData || {};
+  const treeRoots = investigationStore.tree || [];
+
+  // Filter roots to finding Questions, or just assume roots are the top level items we want.
+  // In the DAG, Questions are roots.
+  const questions = treeRoots.filter((node) => node.type === "QUESTION");
+
   return {
     type: "INVESTIGATION_ROOT",
     id: sessionData.id || "CASE-UUID",
@@ -113,55 +119,7 @@ const investigationData = computed(() => {
     status: sessionData.status || "IN_PROGRESS",
     final_verdict: sessionData.final_verdict || "PENDING",
     observations: sessionData.observations || [],
-    questions: (sessionData.questions || []).map((q) => {
-      // Find all leads for this question
-      const questionLeads = (sessionData.leads || []).filter(
-        (l) => l.question_id === q.id
-      );
-
-      // Find all hypotheses for this question
-      const allHypotheses = (sessionData.hypotheses || []).filter(
-        (h) => h.question_id === q.id
-      );
-
-      // Group hypotheses by lead_id
-      const hypothesesByLeadId = allHypotheses.reduce((acc, h) => {
-        const leadId = h.lead_id || "orphan";
-        if (!acc[leadId]) acc[leadId] = [];
-        acc[leadId].push({
-          ...h,
-          type: "HYPOTHESIS",
-          label: h.hypothesis,
-        });
-        return acc;
-      }, {});
-
-      // Create nodes for each lead
-      const leadNodes = questionLeads.map((lead) => ({
-        type: "SECTION", // Use SECTION to map to folder icon
-        id: lead.id,
-        label: lead.lead,
-        children: hypothesesByLeadId[lead.id] || [],
-      }));
-
-      // Get orphan hypotheses (those not belonging to any known lead)
-      // Note: We also include hypotheses that might reference a lead_id that doesn't exist in questionLeads
-      // but simpler check is just 'orphan' key + any keys not in questionLeads.
-      // For now, let's just take 'orphan' bucket.
-      const orphanHypotheses = hypothesesByLeadId["orphan"] || [];
-
-      // Combine Leads and Orphan Hypotheses
-      // We might want orphans first or last. Let's put leads first.
-      const children = [...leadNodes, ...orphanHypotheses];
-
-      return {
-        ...q,
-        type: "QUESTION",
-        label: q.question,
-        id: q.id,
-        children: children,
-      };
-    }),
+    questions: questions,
   };
 });
 

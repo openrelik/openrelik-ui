@@ -17,6 +17,7 @@ limitations under the License.
 // Utilities
 import { defineStore } from "pinia";
 import RestApiClient from "@/RestApiClient";
+import { Graph } from "@/utils/investigationGraphUtils";
 
 export const useInvestigationStore = defineStore("investigation", {
   state: () => ({
@@ -26,6 +27,52 @@ export const useInvestigationStore = defineStore("investigation", {
     sessionData: {},
     isListening: false,
   }),
+  getters: {
+    graph: (state) => {
+      const data = state.sessionData || {};
+      const graph = new Graph();
+      
+      // 1. Add Questions (Roots)
+      (data.questions || []).forEach((q) => {
+        graph.addNode(q.id, { ...q, type: "QUESTION", label: q.question });
+      });
+
+      // 2. Add Leads (Children of Questions)
+      (data.leads || []).forEach((l) => {
+        graph.addNode(l.id, { ...l, type: "SECTION", label: l.lead });
+        if (l.question_id) {
+          graph.addEdge(l.question_id, l.id);
+        }
+      });
+
+      // 3. Add Hypotheses (Children of Leads or Questions)
+      (data.hypotheses || []).forEach((h) => {
+        graph.addNode(h.id, { ...h, type: "HYPOTHESIS", label: h.hypothesis });
+        
+        if (h.lead_id) {
+          graph.addEdge(h.lead_id, h.id);
+        } else if (h.question_id) {
+          graph.addEdge(h.question_id, h.id);
+        }
+      });
+
+      // 4. Add Tasks (Children of Hypotheses)
+      (data.tasks || []).forEach((t) => {
+        graph.addNode(t.id, { ...t, type: "TASK", label: t.task });
+        if (t.hypothesis_id) {
+          graph.addEdge(t.hypothesis_id, t.id);
+        }
+      });
+
+      return graph;
+    },
+    tree: (state) => {
+        // Return the forest (array of trees)
+        // We can filter roots here if we only want questions at the top level, 
+        // but the graph logic handles roots fairly well.
+        return state.graph.toTree();
+    }
+  },
   actions: {
     async createSession(folderId) {
       const response = await RestApiClient.createAgentSession(folderId);

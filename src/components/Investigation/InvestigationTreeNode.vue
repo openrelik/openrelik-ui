@@ -123,43 +123,9 @@ const isExpanded = ref(false); // Expand more levels by default
 const isActive = computed(() => props.node.id === props.activeId);
 
 const nodeChildren = computed(() => {
-  // FLATTENING LOGIC
-  if (props.node.type === "QUESTION") {
-    // New Schema: Direct Hypotheses children
-    if (props.node.children && props.node.children.length > 0) {
-      return props.node.children;
-    }
+  // If the node comes from the DAG, the relationships are already in 'children'.
 
-    // Legacy: Inject Section Headers for Leads and flatten Hypotheses
-    const items = [];
-    (props.node.leads || []).forEach((lead) => {
-      items.push({
-        type: "SECTION_HEADER",
-        label: lead.label,
-        children: lead.hypotheses || [],
-      });
-      items.push(...(lead.hypotheses || []));
-    });
-    return items;
-  }
-
-  if (props.node.type === "SECTION_HEADER") return []; // Section headers don't render children themselves, they are markers
-
-  if (props.node.type === "HYPOTHESIS") {
-    // Flatten Approaches into Tasks
-    const allTasks = [];
-    (props.node.approaches || []).forEach((approach) => {
-      (approach.tasks || []).forEach((task) => {
-        allTasks.push({
-          ...task,
-          approachLabel: approach.label,
-        });
-      });
-    });
-    return allTasks;
-  }
-
-  // Findings are now summarized or rendered as last level
+  // Findings (if any) are generally leaf content for Tasks.
   if (props.node.type === "TASK") return props.node.findings || [];
 
   return props.node.children || [];
