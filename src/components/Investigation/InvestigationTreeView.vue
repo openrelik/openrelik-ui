@@ -1,0 +1,261 @@
+<template>
+  <div class="investigation-tree-view fill-height d-flex flex-column">
+    <div
+      class="tree-header d-flex align-center"
+      :class="{ 'light-theme-bar': isLightTheme }"
+    >
+      <!-- Logo in Fullscreen -->
+      <div v-if="isFullscreen" class="pl-4 d-flex align-center">
+        <v-img
+          src="/logo-light-round.png"
+          :width="$vuetify.theme.name === 'dark' ? '20' : '25'"
+          :height="$vuetify.theme.name === 'dark' ? '20' : '25'"
+          :class="$vuetify.theme.name === 'dark' ? 'mr-1' : 'mr-2'"
+        />
+      </div>
+
+      <div class="text-body-2 font-weight-bold py-3 px-3 d-flex align-center">
+        {{ investigationData.label }}
+      </div>
+    </div>
+
+    <div class="tree-content flex-grow-1 overflow-y-auto pa-2">
+      <template v-if="investigationData">
+        <!-- Root Meta Files -->
+
+        <InvestigationTreeNode
+          :node="{
+            type: 'MD_FILE',
+            label: 'Investigative Plan',
+            id: 'meta-plan',
+          }"
+          :depth="0"
+          :active-id="activeHypothesisId"
+          @node-click="handleNodeClick"
+        />
+
+        <InvestigationTreeNode
+          :node="{
+            type: 'MD_FILE',
+            label: 'Conclusion',
+            id: 'meta-conclusion',
+          }"
+          :depth="0"
+          :active-id="activeHypothesisId"
+          @node-click="handleNodeClick"
+        />
+
+        <v-divider class="my-2 mx-n2" opacity="0.1" />
+
+        <!-- Questions Section Header -->
+        <div class="questions-header d-flex align-center mb-1">
+          <div class="questions-header-text">Questions</div>
+        </div>
+
+        <!-- Questions Section -->
+        <InvestigationTreeNode
+          v-for="question in investigationData.questions"
+          :key="question.id"
+          :node="question"
+          :depth="0"
+          :active-id="activeHypothesisId"
+          @node-click="handleNodeClick"
+          @add-hypothesis="handleAddHypothesis"
+        />
+      </template>
+    </div>
+
+    <!-- Context Menu Placeholder -->
+    <v-menu
+      v-model="contextMenu.show"
+      :style="{ top: `${contextMenu.y}px`, left: `${contextMenu.x}px` }"
+      absolute
+    >
+      <v-list density="compact">
+        <v-list-item
+          prepend-icon="mdi-plus"
+          title="Add Hypothesis"
+          @click="addHypothesisAction"
+        />
+      </v-list>
+    </v-menu>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, reactive, inject } from "vue";
+import { useThemeInfo } from "@/composables/useThemeInfo";
+import { useInvestigationStore } from "@/stores/investigation";
+import InvestigationTreeNode from "./InvestigationTreeNode.vue";
+
+const { isLightTheme } = useThemeInfo();
+// Default to empty objects if not provided (safe fallback)
+const { isFullscreen } = inject("agent-fullscreen", {
+  isFullscreen: ref(false),
+});
+
+const props = defineProps({
+  activeHypothesisId: {
+    type: String,
+    default: null,
+  },
+});
+
+const emit = defineEmits(["select-node"]);
+
+const investigationStore = useInvestigationStore();
+const investigationData = computed(() => {
+  const sessionData = investigationStore.sessionData || {};
+  return {
+    type: "INVESTIGATION_ROOT",
+    id: sessionData.id || "CASE-UUID",
+    label: sessionData.label || "Current Investigation",
+    status: sessionData.status || "IN_PROGRESS",
+    final_verdict: sessionData.final_verdict || "PENDING",
+    observations: sessionData.observations || [],
+    questions: (sessionData.questions || []).map((q) => {
+      // Find all leads for this question
+      const questionLeads = (sessionData.leads || []).filter(
+        (l) => l.question_id === q.id
+      );
+
+      // Find all hypotheses for this question
+      const allHypotheses = (sessionData.hypotheses || []).filter(
+        (h) => h.question_id === q.id
+      );
+
+      // Group hypotheses by lead_id
+      const hypothesesByLeadId = allHypotheses.reduce((acc, h) => {
+        const leadId = h.lead_id || "orphan";
+        if (!acc[leadId]) acc[leadId] = [];
+        acc[leadId].push({
+          ...h,
+          type: "HYPOTHESIS",
+          label: h.hypothesis,
+        });
+        return acc;
+      }, {});
+
+      // Create nodes for each lead
+      const leadNodes = questionLeads.map((lead) => ({
+        type: "SECTION", // Use SECTION to map to folder icon
+        id: lead.id,
+        label: lead.lead,
+        children: hypothesesByLeadId[lead.id] || [],
+      }));
+
+      // Get orphan hypotheses (those not belonging to any known lead)
+      // Note: We also include hypotheses that might reference a lead_id that doesn't exist in questionLeads
+      // but simpler check is just 'orphan' key + any keys not in questionLeads.
+      // For now, let's just take 'orphan' bucket.
+      const orphanHypotheses = hypothesesByLeadId["orphan"] || [];
+
+      // Combine Leads and Orphan Hypotheses
+      // We might want orphans first or last. Let's put leads first.
+      const children = [...leadNodes, ...orphanHypotheses];
+
+      return {
+        ...q,
+        type: "QUESTION",
+        label: q.question,
+        id: q.id,
+        children: children,
+      };
+    }),
+  };
+});
+
+const contextMenu = reactive({
+  show: false,
+  x: 0,
+  y: 0,
+  targetNode: null,
+});
+
+const handleNodeClick = (node) => {
+  emit("select-node", node);
+};
+
+const handleAddQuestion = () => {
+  console.log("Action: Add Question");
+};
+
+const handleAddHypothesis = (node) => {
+  // In a real app, this would show a dialog
+  console.log("Add hypothesis to:", node.label);
+  contextMenu.targetNode = node;
+  contextMenu.show = true;
+  // Mocking coordinates for simplicity in this demo environment
+  contextMenu.x = 100;
+  contextMenu.y = 100;
+};
+
+const addHypothesisAction = () => {
+  console.log("Action: Add Hypothesis to", contextMenu.targetNode?.label);
+  contextMenu.show = false;
+};
+</script>
+
+<style scoped>
+.investigation-tree-view {
+  background-color: rgb(var(--v-theme-background));
+  height: 100%;
+}
+
+.tree-header {
+  background-color: transparent;
+  border-bottom: 1px solid rgb(var(--v-theme-custom-border-color));
+  border-top: 1px solid rgb(var(--v-theme-custom-border-color));
+}
+
+.light-theme-bar {
+  background-color: transparent !important;
+}
+
+.tree-content {
+  scrollbar-width: thin;
+}
+
+.questions-header {
+  height: 28px;
+}
+
+.questions-header-text {
+  color: rgba(var(--v-theme-on-surface), 0.4);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  padding-left: 8px;
+}
+
+.section-header-text {
+  color: rgba(var(--v-theme-on-surface), 0.4);
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  padding-left: 8px;
+}
+
+.add-question-btn {
+  color: rgba(var(--v-theme-on-surface), 0.4);
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.add-question-btn:hover {
+  opacity: 1;
+}
+
+.tree-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tree-content::-webkit-scrollbar-thumb {
+  background-color: rgba(var(--v-theme-on-surface), 0.1);
+  border-radius: 3px;
+}
+
+.tree-content::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(var(--v-theme-on-surface), 0.2);
+}
+</style>

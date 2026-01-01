@@ -26,7 +26,6 @@ import Home from "@/views/Home.vue";
 import Folder from "@/views/Folder.vue";
 import File from "@/views/File.vue";
 import Metrics from "@/views/Metrics.vue";
-import Investigation from "@/views/Investigation.vue";
 
 // Import Pinia stores
 import { useUserStore } from "@/stores/user";
@@ -65,6 +64,7 @@ const routes = [
         component: Metrics,
         props: true,
       },
+
       {
         path: "/folder/:folderId",
         children: [
@@ -95,7 +95,7 @@ const routes = [
           {
             path: "investigation",
             name: "investigation",
-            component: Investigation,
+            component: () => import("@/views/Investigation.vue"),
             props: true,
           },
         ],

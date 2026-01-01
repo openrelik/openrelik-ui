@@ -44,6 +44,7 @@ function RestApiSSEClient(endpoint, requestBody) {
     const controller = new AbortController();
     const decoder = new TextDecoder("utf-8");
     const csrfToken = sessionStorage.getItem("csrfToken");
+    let buffer = "";
 
     fetch(url, {
       method: "POST",
@@ -72,13 +73,17 @@ function RestApiSSEClient(endpoint, requestBody) {
               }
 
               const chunk = decoder.decode(value, { stream: true });
-              const lines = chunk
-                .split(/\r?\n/)
-                .filter((line) => line.startsWith("data:"));
-              lines.forEach((line) => {
-                const data = line.replace(/^data:\s*/, "");
-                observer.next(data);
-              });
+              buffer += chunk;
+              const lines = buffer.split(/\r?\n/);
+              // Only process complete lines
+              buffer = lines.pop();
+
+              lines
+                .filter((line) => line.startsWith("data:"))
+                .forEach((line) => {
+                  const data = line.replace(/^data:\s*/, "");
+                  if (data) observer.next(data);
+                });
 
               read();
             })
@@ -816,6 +821,17 @@ export default {
         "/files/" + file_id + "/sql/query/generate",
         requestBody
       )
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async createAgentSession(folderId) {
+    return new Promise((resolve, reject) => {
+      RestApiClient.post("/folders/" + folderId + "/investigations/init")
         .then((response) => {
           resolve(response.data);
         })
