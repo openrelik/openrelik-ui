@@ -55,4 +55,13 @@ describe('investigationGraphUtils', () => {
     const tree = graph.toTree();
     expect(tree).toHaveLength(2);
   });
+
+  it('should track parents', () => {
+    const graph = new Graph();
+    graph.addEdge('parent', 'child');
+    
+    const parents = graph.getParents('child');
+    expect(parents).toHaveLength(1);
+    expect(parents[0].id).toBe('parent');
+  });
 });

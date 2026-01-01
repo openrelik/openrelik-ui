@@ -71,6 +71,43 @@ export const useInvestigationStore = defineStore("investigation", {
         // We can filter roots here if we only want questions at the top level, 
         // but the graph logic handles roots fairly well.
         return state.graph.toTree();
+    },
+    taskList: (state) => {
+      const graph = state.graph; // Accessing other getter
+      if (!graph) return [];
+
+      const allNodes = Array.from(graph.nodes.values());
+      const tasks = allNodes.filter((n) => n.type === "TASK");
+
+      return tasks.map((task) => {
+        // Traverse up to find context
+        const parents = graph.getParents(task.id);
+        const hypothesis = parents.find((p) => p.type === "HYPOTHESIS");
+        
+        let lead = null;
+        let question = null;
+
+        if (hypothesis) {
+          const hypParents = graph.getParents(hypothesis.id);
+          lead = hypParents.find((p) => p.type === "SECTION"); // Lead is SECTION
+          
+          // Question can be parent of Lead OR directly parent of Hypothesis (orphan)
+          if (lead) {
+            const leadParents = graph.getParents(lead.id);
+            question = leadParents.find((p) => p.type === "QUESTION");
+          } else {
+            // Orphan hypothesis
+            question = hypParents.find((p) => p.type === "QUESTION");
+          }
+        }
+
+        return {
+          ...task,
+          hypothesis,
+          lead,
+          question,
+        };
+      });
     }
   },
   actions: {

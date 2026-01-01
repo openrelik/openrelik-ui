@@ -18,22 +18,12 @@
       <div
         class="custom-tab px-4 py-3 text-body-2 cursor-pointer"
         :class="{
-          'active-tab': tab === 'conclusion',
-          'light-theme-active-tab': isLightTheme && tab === 'conclusion',
-        }"
-        @click="tab = 'conclusion'"
-      >
-        Conclusion
-      </div>
-      <div
-        class="custom-tab px-4 py-3 text-body-2 cursor-pointer"
-        :class="{
           'active-tab': tab === 'tasks',
           'light-theme-active-tab': isLightTheme && tab === 'tasks',
         }"
         @click="tab = 'tasks'"
       >
-        Active Tasks
+        Tasks ({{ taskCount || 0 }})
       </div>
       <div
         class="custom-tab px-4 py-3 text-body-2 cursor-pointer"
@@ -43,17 +33,7 @@
         }"
         @click="tab = 'graph'"
       >
-        Live Graph
-      </div>
-      <div
-        class="custom-tab px-4 py-3 text-body-2 cursor-pointer"
-        :class="{
-          'active-tab': tab === 'state',
-          'light-theme-active-tab': isLightTheme && tab === 'state',
-        }"
-        @click="tab = 'state'"
-      >
-        State
+        Graph
       </div>
       <!-- Spacer to fill the rest of the bar -->
       <div class="flex-grow-1"></div>
@@ -67,43 +47,8 @@
         </div>
       </div>
 
-      <div v-if="tab === 'state'" class="fill-height">
-        <div class="pa-4 d-flex flex-column fill-height" v-if="sessionData">
-          <v-sheet
-            rounded="lg"
-            border
-            class="pa-3 flex-grow-1"
-            style="
-              background-color: rgba(var(--v-theme-on-surface), 0.03);
-              overflow: auto;
-            "
-          >
-            <pre
-              class="text-caption"
-              style="font-family: monospace; white-space: pre-wrap; margin: 0"
-              >{{ sessionData }}</pre
-            >
-          </v-sheet>
-        </div>
-        <div v-else class="pa-4">
-          <p class="text-body-2 text-medium-emphasis">
-            No session data available.
-          </p>
-        </div>
-      </div>
-
-      <div v-if="tab === 'conclusion'" class="fill-height">
-        <div class="pa-4">
-          <h4 class="text-subtitle-1 mb-2">Conclusion</h4>
-          <p class="text-body-2 text-medium-emphasis">No conclusion yet.</p>
-        </div>
-      </div>
-
-      <div v-if="tab === 'tasks'" class="fill-height">
-        <div class="pa-4">
-          <h4 class="text-subtitle-1 mb-2">Active Tasks</h4>
-          <p class="text-body-2 text-medium-emphasis">No active tasks.</p>
-        </div>
+      <div v-show="tab === 'tasks'" class="fill-height">
+        <InvestigationTaskList />
       </div>
 
       <div v-if="tab === 'graph'" class="fill-height">
@@ -125,6 +70,7 @@ import DOMPurify from "dompurify";
 import { marked } from "marked";
 import { useInvestigationStore } from "@/stores/investigation";
 import { storeToRefs } from "pinia";
+import InvestigationTaskList from "./InvestigationTaskList.vue";
 
 const investigationStore = useInvestigationStore();
 const { sessionData } = storeToRefs(investigationStore);
@@ -146,6 +92,10 @@ const renderedPlan = computed(() => {
       .replace(/\n\s*```\s*$/i, "");
   }
   return DOMPurify.sanitize(marked(plan));
+});
+
+const taskCount = computed(() => {
+  return investigationStore.taskList?.length || 0;
 });
 </script>
 

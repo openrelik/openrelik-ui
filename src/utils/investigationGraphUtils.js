@@ -5,6 +5,7 @@ export class Graph {
   constructor() {
     this.nodes = new Map();
     this.edges = new Map(); // Adjacency list: parentId -> Set of childIds
+    this.reverseEdges = new Map(); // Adjacency list: childId -> Set of parentIds
     this.roots = new Set(); // Ids of root nodes
   }
 
@@ -17,6 +18,7 @@ export class Graph {
     if (!this.nodes.has(id)) {
       this.nodes.set(id, { id, ...data });
       this.edges.set(id, new Set());
+      this.reverseEdges.set(id, new Set());
       this.roots.add(id); // Initially a root until added as a child
     } else {
       // Merge data if node already exists (e.g. forward declaration)
@@ -39,7 +41,20 @@ export class Graph {
     }
 
     this.edges.get(parentId).add(childId);
+    this.reverseEdges.get(childId).add(parentId);
     this.roots.delete(childId); // No longer a root
+  }
+
+  /**
+   * Get parents of a node.
+   * @param {string} id
+   * @returns {Array<Object>}
+   */
+  getParents(id) {
+    if (!this.reverseEdges.has(id)) return [];
+    return Array.from(this.reverseEdges.get(id)).map((parentId) =>
+      this.nodes.get(parentId)
+    );
   }
 
   /**
