@@ -5,7 +5,8 @@
     :style="{
       transform: `translate(${x}px, ${y}px)`,
       width: `${width}px`,
-      height: `${height}px`,
+      minHeight: `${height}px`,
+      height: 'auto',
     }"
     @click="$emit('click', node)"
   >
@@ -59,7 +60,7 @@
       </span>
     </div>
 
-    <div class="node-content px-2 py-1 text-body-2 text-truncate-2-lines">
+    <div class="node-content px-2 py-1 text-body-2">
       {{ node.label }}
     </div>
   </div>
@@ -197,15 +198,5 @@ const getStatusColor = (status) => {
 
 .investigation-graph-node.task {
   border-left: 4px solid #4caf50; /* Green */
-}
-
-.text-truncate-2-lines {
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.3em;
-  max-height: 5.2em; /* 4 lines + buffer */
 }
 </style>

@@ -112,11 +112,20 @@ export const useInvestigationStore = defineStore("investigation", {
   },
   actions: {
     async createSession(folderId) {
-      const response = await RestApiClient.createAgentSession(folderId);
-      this.sessionId = response.session_id;
+      const storageKey = `openrelik_agent_session_${folderId}`;
+      const existingSessionId = localStorage.getItem(storageKey);
+
+      if (existingSessionId) {
+        this.sessionId = existingSessionId;
+      } else {
+        const response = await RestApiClient.createAgentSession(folderId);
+        this.sessionId = response.session_id;
+        localStorage.setItem(storageKey, this.sessionId);
+      }
+
       this.getSessionData(folderId);
     },
-    getSessionData(folderId) {
+    async getSessionData(folderId) {
       if (this.isListening) return;
       this.isListening = true;
       RestApiClient.sse(
@@ -125,6 +134,9 @@ export const useInvestigationStore = defineStore("investigation", {
         next: (data) => {
           data = JSON.parse(data);
           this.sessionData = data["state"];
+          if (this.chatMessages.length === 0) {
+            this.chatMessages = data["events"];
+          }
         },
         error: (err) => {
           console.error(err);
@@ -132,14 +144,14 @@ export const useInvestigationStore = defineStore("investigation", {
         },
       });
     },
-    async runAgent(folderId) {
+    async runAgent(folderId, userMessage) {
       const requestBody = {
         session_id: this.sessionId,
         agent_name: "dfir_multi_agent",
+        user_message: userMessage,
       };
       
       this.isLoading = true;
-      this.getSessionData(folderId);
 
       RestApiClient.sse(
         "folders/" + folderId + "/investigations/run",
@@ -155,7 +167,6 @@ export const useInvestigationStore = defineStore("investigation", {
         },
         complete: () => {
           this.isLoading = false;
-          console.log("done");
         },
       });
     },

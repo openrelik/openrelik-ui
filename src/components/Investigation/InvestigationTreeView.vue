@@ -26,7 +26,7 @@
         <InvestigationTreeNode
           :node="{
             type: 'MD_FILE',
-            label: 'Investigative Plan',
+            label: 'Investigation Plan',
             id: 'meta-plan',
           }"
           :depth="0"
@@ -37,8 +37,8 @@
         <InvestigationTreeNode
           :node="{
             type: 'MD_FILE',
-            label: 'Conclusion',
-            id: 'meta-conclusion',
+            label: 'Final Report',
+            id: 'meta-final-report',
           }"
           :depth="0"
           :active-id="activeHypothesisId"

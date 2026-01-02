@@ -13,7 +13,7 @@
         }"
         @click="tab = 'plan'"
       >
-        Investigative Plan
+        Investigation Plan
       </div>
       <div
         class="custom-tab px-4 py-3 text-body-2 cursor-pointer"
@@ -42,7 +42,7 @@
     <!-- Content Area -->
     <div class="flex-grow-1 overflow-y-auto scrollable-content">
       <div v-if="tab === 'plan'" class="fill-height">
-        <div class="px-4 py-4 markdown-body">
+        <div class="px-4 pb-4 markdown-body">
           <div v-html="renderedPlan"></div>
         </div>
       </div>
@@ -51,7 +51,7 @@
         <InvestigationTaskList />
       </div>
 
-      <div v-if="tab === 'graph'" class="fill-height">
+      <div v-show="tab === 'graph'" class="fill-height">
         <InvestigationGraph />
       </div>
     </div>

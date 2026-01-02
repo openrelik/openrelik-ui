@@ -132,7 +132,8 @@
             size="small"
             text="Create plan"
             class="text-none"
-            @click="runAgent()"
+            :loading="isCreatingSession"
+            @click="handleStart()"
           ></v-btn>
         </div>
       </transition>
@@ -195,6 +196,7 @@ const { isFullscreen, toggleFullscreen } = inject("agent-fullscreen", {
 
 const chatPrompt = ref("");
 const loading = ref(false);
+const isCreatingSession = ref(false);
 
 const isValidMessage = (m) => {
   if (!m) return false;
@@ -233,20 +235,53 @@ const isPlanEmpty = computed(() => {
 });
 
 const showStartButton = computed(() => {
-  return (
-    isPlanEmpty.value &&
+  if (investigationStore.isLoading) return false;
+
+  const noSession = !investigationStore.sessionId;
+  const sessionButNoPlan =
     investigationStore.sessionId &&
-    !investigationStore.isLoading &&
-    investigationStore.chatMessages.length === 0
-  );
+    isPlanEmpty.value &&
+    investigationStore.chatMessages.length === 0;
+
+  return noSession || sessionButNoPlan;
 });
 
 const toHtml = (markdown) => {
   return DOMPurify.sanitize(marked(markdown, { FORBID_TAGS: ["hr"] }));
 };
 
-const runAgent = () => {
-  investigationStore.runAgent(route.params.folderId);
+const handleStart = async () => {
+  if (!investigationStore.sessionId) {
+    if (route.params.folderId) {
+      isCreatingSession.value = true;
+      try {
+        await investigationStore.createSession(route.params.folderId);
+        // Also run agent to create the plan as expected
+        await investigationStore.runAgent(
+          route.params.folderId,
+          "Create the investigative plan."
+        );
+      } finally {
+        isCreatingSession.value = false;
+      }
+    }
+  } else {
+    investigationStore.runAgent(
+      route.params.folderId,
+      "Continue the investigation."
+    );
+  }
+};
+
+const sendMessage = async () => {
+  if (!chatPrompt.value.trim()) return;
+
+  // existing logic to add user message to chat UI could go here,
+  // but user said "Ignore the user message for now"
+  // so we will just trigger the agent.
+
+  await investigationStore.runAgent(route.params.folderId, chatPrompt.value);
+  chatPrompt.value = "";
 };
 </script>
 

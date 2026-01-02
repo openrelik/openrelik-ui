@@ -55,7 +55,7 @@ import Breadcrumbs from "@/components/Breadcrumbs.vue";
 import RestApiClient from "@/RestApiClient";
 import { useRoute } from "vue-router";
 import { useInvestigationStore } from "@/stores/investigation";
-import { onMounted, ref, provide, computed } from "vue";
+import { onMounted, onBeforeUnmount, ref, provide, computed } from "vue";
 
 const investigationStore = useInvestigationStore();
 
@@ -68,6 +68,13 @@ const toggleFullscreen = () => {
 };
 
 provide("agent-fullscreen", { isFullscreen, toggleFullscreen });
+
+const handleBeforeUnload = (event) => {
+  if (investigationStore.isLoading) {
+    event.preventDefault();
+    event.returnValue = "";
+  }
+};
 
 const containerStyle = computed(() => {
   if (isFullscreen.value) {
@@ -94,13 +101,23 @@ const containerStyle = computed(() => {
 });
 
 onMounted(async () => {
+  // Prevent navigation if the session is loading, to warn the user about unsaved changes
+  window.addEventListener("beforeunload", handleBeforeUnload);
   if (route.params.folderId) {
     try {
       folder.value = await RestApiClient.getFolder(route.params.folderId);
-      await investigationStore.createSession(route.params.folderId);
+
+      const storageKey = `openrelik_agent_session_${route.params.folderId}`;
+      if (localStorage.getItem(storageKey)) {
+        investigationStore.createSession(route.params.folderId);
+      }
     } catch (error) {
       console.error("Failed to load folder:", error);
     }
   }
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("beforeunload", handleBeforeUnload);
 });
 </script>

@@ -83,19 +83,17 @@
     </div>
 
     <!-- Children -->
-    <v-expand-transition>
-      <div v-if="isExpanded && hasChildren" class="node-children">
-        <InvestigationTreeNode
-          v-for="child in nodeChildren"
-          :key="child.id || child.label"
-          :node="child"
-          :depth="node.type === 'SECTION_HEADER' ? depth : depth + 1"
-          :active-id="activeId"
-          @node-click="$emit('node-click', $event)"
-          @add-hypothesis="$emit('add-hypothesis', $event)"
-        />
-      </div>
-    </v-expand-transition>
+    <div v-if="isExpanded && hasChildren" class="node-children">
+      <InvestigationTreeNode
+        v-for="child in nodeChildren"
+        :key="child.id || child.label"
+        :node="child"
+        :depth="node.type === 'SECTION_HEADER' ? depth : depth + 1"
+        :active-id="activeId"
+        @node-click="$emit('node-click', $event)"
+        @add-hypothesis="$emit('add-hypothesis', $event)"
+      />
+    </div>
   </div>
 </template>
 
@@ -138,7 +136,7 @@ const hasChildren = computed(
 const nodeIcon = computed(() => {
   switch (props.node.type) {
     case "SECTION":
-      return "mdi-folder-outline";
+      return "mdi-lightbulb-outline";
     case "MD_FILE":
       return "mdi-file-document-outline";
     case "OBSERVATION":
@@ -146,7 +144,7 @@ const nodeIcon = computed(() => {
     case "QUESTION":
       return "mdi-help-circle-outline";
     case "HYPOTHESIS":
-      return "mdi-lightbulb-outline";
+      return "mdi-flask-outline";
     case "TASK":
       return "mdi-clipboard-check-outline";
     case "FINDING":
