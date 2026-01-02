@@ -52,12 +52,7 @@
       </div>
 
       <div v-if="tab === 'graph'" class="fill-height">
-        <div class="pa-4">
-          <h4 class="text-subtitle-1 mb-2">Live Graph</h4>
-          <p class="text-body-2 text-medium-emphasis">
-            Graph view coming soon.
-          </p>
-        </div>
+        <InvestigationGraph />
       </div>
     </div>
   </div>
@@ -71,6 +66,7 @@ import { marked } from "marked";
 import { useInvestigationStore } from "@/stores/investigation";
 import { storeToRefs } from "pinia";
 import InvestigationTaskList from "./InvestigationTaskList.vue";
+import InvestigationGraph from "./InvestigationGraph.vue";
 
 const investigationStore = useInvestigationStore();
 const { sessionData } = storeToRefs(investigationStore);
