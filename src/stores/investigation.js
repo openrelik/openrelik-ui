@@ -26,6 +26,7 @@ export const useInvestigationStore = defineStore("investigation", {
     isLoading: false,
     sessionData: {},
     isListening: false,
+    pendingApproval: null,
   }),
   getters: {
     graph: (state) => {
@@ -144,13 +145,31 @@ export const useInvestigationStore = defineStore("investigation", {
         },
       });
     },
-    async runAgent(folderId, userMessage) {
+    async runAgent(
+      folderId,
+      userMessage,
+      functionName = null,
+      longRunningToolId = null,
+      invocationId = null
+    ) {
       const requestBody = {
         session_id: this.sessionId,
         agent_name: "dfir_multi_agent",
         user_message: userMessage,
       };
-      
+
+      if (functionName) {
+        requestBody["function_name"] = functionName;
+      }
+
+      if (longRunningToolId) {
+        requestBody["long_running_tool_id"] = longRunningToolId;
+      }
+
+      if (invocationId) {
+        requestBody["invocation_id"] = invocationId;
+      }
+
       this.isLoading = true;
 
       RestApiClient.sse(
@@ -159,16 +178,65 @@ export const useInvestigationStore = defineStore("investigation", {
       ).subscribe({
         next: (data) => {
           this.isLoading = true;
-          this.chatMessages.push(JSON.parse(data));
+          const parsedData = JSON.parse(data);
+          this.chatMessages.push(parsedData);
+
+          // Check for approval request
+          if (parsedData.content && parsedData.content.parts) {
+            const hasAskForApproval = parsedData.content.parts.some(
+              (part) =>
+                part.functionCall && part.functionCall.name === "ask_for_approval"
+            );
+
+            if (
+              hasAskForApproval &&
+              parsedData.longRunningToolIds &&
+              parsedData.longRunningToolIds.length > 0
+            ) {
+              this.pendingApproval = {
+                toolId: parsedData.longRunningToolIds[0],
+                invocationId: parsedData.invocationId,
+              };
+              this.isLoading = false;
+            }
+          }
         },
         error: (err) => {
           console.error(err);
           this.isLoading = false;
         },
         complete: () => {
-          this.isLoading = false;
+          if (!this.pendingApproval) {
+            this.isLoading = false;
+          }
         },
       });
+    },
+    async approveAction(folderId) {
+      if (!this.pendingApproval) return;
+
+      const { toolId, invocationId } = this.pendingApproval;
+      this.pendingApproval = null;
+      await this.runAgent(
+        folderId,
+        "{status: APPROVED}",
+        "ask_for_approval",
+        toolId,
+        invocationId
+      );
+    },
+    async rejectAction(folderId, reason = "no reason") {
+      if (!this.pendingApproval) return;
+
+      const { toolId, invocationId } = this.pendingApproval;
+      this.pendingApproval = null;
+      await this.runAgent(
+        folderId,
+        `{status: REJECTED, reason: ${reason}}`,
+        "ask_for_approval",
+        toolId,
+        invocationId
+      );
     },
   },
 });

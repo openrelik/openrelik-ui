@@ -116,6 +116,67 @@
     <v-spacer></v-spacer>
 
     <div class="pa-4 pt-2">
+      <!-- Pending Approval Action Row -->
+      <transition name="slide-up-only">
+        <div
+          v-if="investigationStore.pendingApproval"
+          class="d-flex align-center justify-end mb-2 pr-1"
+        >
+          <div class="mr-4 text-caption text-medium-emphasis">
+            Review and approve plan to continue
+          </div>
+          <v-btn
+            prepend-icon="mdi-pencil"
+            variant="flat"
+            size="small"
+            text="Review"
+            class="text-none mr-2"
+            @click="handleReject()"
+          ></v-btn>
+          <v-btn
+            prepend-icon="mdi-check"
+            color="info"
+            variant="flat"
+            size="small"
+            text="Approve"
+            class="text-none"
+            @click="handleApprove()"
+          ></v-btn>
+        </div>
+      </transition>
+
+      <!-- Review Reason Dialog -->
+      <v-dialog v-model="showReviewDialog" max-width="500">
+        <v-card>
+          <v-card-title>Review Feedback</v-card-title>
+          <div class="pa-4">
+            <v-textarea
+              v-model="reviewReason"
+              label="Feedback on the current plan"
+              rows="3"
+              auto-grow
+              variant="outlined"
+            ></v-textarea>
+            <v-btn
+              color="primary"
+              variant="text"
+              class="text-none"
+              @click="submitReview()"
+              :disabled="!reviewReason.trim()"
+            >
+              Submit review
+            </v-btn>
+            <v-btn
+              variant="text"
+              class="text-none"
+              @click="showReviewDialog = false"
+            >
+              Cancel
+            </v-btn>
+          </div>
+        </v-card>
+      </v-dialog>
+
       <!-- Action Row (Context + Actions) -->
       <transition name="slide-up-only">
         <div
@@ -139,7 +200,10 @@
       </transition>
 
       <div
-        v-if="investigationStore.isLoading || loading"
+        v-if="
+          (investigationStore.isLoading || loading) &&
+          !investigationStore.pendingApproval
+        "
         class="jumping-dots ml-2 mb-2"
       >
         <span class="dot-1"></span>
@@ -271,6 +335,26 @@ const handleStart = async () => {
       "Continue the investigation."
     );
   }
+};
+
+const showReviewDialog = ref(false);
+const reviewReason = ref("");
+
+const handleApprove = async () => {
+  await investigationStore.approveAction(route.params.folderId);
+};
+
+const handleReject = async () => {
+  showReviewDialog.value = true;
+};
+
+const submitReview = async () => {
+  await investigationStore.rejectAction(
+    route.params.folderId,
+    reviewReason.value
+  );
+  showReviewDialog.value = false;
+  reviewReason.value = "";
 };
 
 const sendMessage = async () => {
