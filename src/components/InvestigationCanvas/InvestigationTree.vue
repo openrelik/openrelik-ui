@@ -89,7 +89,6 @@ import { useInvestigationStore } from "@/stores/investigation";
 import InvestigationTreeNode from "./InvestigationTreeNode.vue";
 
 const { isLightTheme } = useThemeInfo();
-// Default to empty objects if not provided (safe fallback)
 const { isFullscreen } = inject("agent-fullscreen", {
   isFullscreen: ref(false),
 });
@@ -108,8 +107,6 @@ const investigationData = computed(() => {
   const sessionData = investigationStore.sessionData || {};
   const treeRoots = investigationStore.tree || [];
 
-  // Filter roots to finding Questions, or just assume roots are the top level items we want.
-  // In the DAG, Questions are roots.
   const questions = treeRoots.filter((node) => node.type === "QUESTION");
 
   return {
@@ -134,22 +131,14 @@ const handleNodeClick = (node) => {
   emit("select-node", node);
 };
 
-const handleAddQuestion = () => {
-  console.log("Action: Add Question");
-};
-
 const handleAddHypothesis = (node) => {
-  // In a real app, this would show a dialog
-  console.log("Add hypothesis to:", node.label);
   contextMenu.targetNode = node;
   contextMenu.show = true;
-  // Mocking coordinates for simplicity in this demo environment
   contextMenu.x = 100;
   contextMenu.y = 100;
 };
 
 const addHypothesisAction = () => {
-  console.log("Action: Add Hypothesis to", contextMenu.targetNode?.label);
   contextMenu.show = false;
 };
 </script>
@@ -192,16 +181,6 @@ const addHypothesisAction = () => {
   font-size: 0.75rem;
   letter-spacing: 0.02em;
   padding-left: 8px;
-}
-
-.add-question-btn {
-  color: rgba(var(--v-theme-on-surface), 0.4);
-  opacity: 0.6;
-  transition: opacity 0.2s;
-}
-
-.add-question-btn:hover {
-  opacity: 1;
 }
 
 .tree-content::-webkit-scrollbar {

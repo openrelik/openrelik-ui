@@ -90,13 +90,13 @@
               </small>
             </div>
           </div>
-          <div v-else-if="message.error">
+          <div v-else-if="message.error || message.type === 'error'">
             <div class="mb-1">
               <small>
                 <v-icon class="mr-2 mt-n1" size="small" color="error">
                   mdi-alert-circle
                 </v-icon>
-                <strong>{{ message.error }}</strong>
+                <strong>{{ message.error || message.message }}</strong>
               </small>
             </div>
           </div>
@@ -201,8 +201,7 @@
 
       <div
         v-if="
-          (investigationStore.isLoading || loading) &&
-          !investigationStore.pendingApproval
+          investigationStore.isLoading && !investigationStore.pendingApproval
         "
         class="jumping-dots ml-2 mb-2"
       >
@@ -252,14 +251,12 @@ import { useRoute } from "vue-router";
 const investigationStore = useInvestigationStore();
 const { isLightTheme } = useThemeInfo();
 const route = useRoute();
-// Default to empty objects if not provided (safe fallback)
 const { isFullscreen, toggleFullscreen } = inject("agent-fullscreen", {
   isFullscreen: ref(false),
   toggleFullscreen: () => {},
 });
 
 const chatPrompt = ref("");
-const loading = ref(false);
 const isCreatingSession = ref(false);
 
 const isValidMessage = (m) => {
@@ -267,6 +264,7 @@ const isValidMessage = (m) => {
   if (m.role === "user") return true;
   if (m.error) return true;
   if (m.type === "complete") return true;
+  if (m.type === "error") return true;
 
   if (m.content && m.content.parts && m.content.parts.length > 0) {
     return m.content.parts.some((p) => {
@@ -284,7 +282,6 @@ const isValidMessage = (m) => {
     });
   }
 
-  // Fallback for string content
   if (typeof m.content === "string" && m.content.trim().length > 0) return true;
 
   return false;
@@ -325,6 +322,8 @@ const handleStart = async () => {
           route.params.folderId,
           "Create the investigative plan."
         );
+      } catch (error) {
+        console.error("Failed to create session:", error);
       } finally {
         isCreatingSession.value = false;
       }
@@ -359,10 +358,6 @@ const submitReview = async () => {
 
 const sendMessage = async () => {
   if (!chatPrompt.value.trim()) return;
-
-  // existing logic to add user message to chat UI could go here,
-  // but user said "Ignore the user message for now"
-  // so we will just trigger the agent.
 
   await investigationStore.runAgent(route.params.folderId, chatPrompt.value);
   chatPrompt.value = "";

@@ -47,8 +47,6 @@
         <v-icon icon="mdi-chevron-right" size="small"></v-icon>
       </span>
       <span v-else>
-        <!-- Similar text for expanded state if desired, or just count? 
-             User template had full text. Keep full text. -->
         {{ node.childCount }}
         <template v-if="node.type === 'SECTION'">
           {{ node.childCount === 1 ? "Hypothesis" : "Hypotheses" }}
@@ -67,8 +65,6 @@
 </template>
 
 <script setup>
-import { defineProps } from "vue";
-
 const props = defineProps({
   node: {
     type: Object,
@@ -104,7 +100,7 @@ const getIcon = (type) => {
   switch (type) {
     case "QUESTION":
       return "mdi-help-circle-outline";
-    case "SECTION": // Lead
+    case "SECTION":
       return "mdi-lightbulb-outline";
     case "HYPOTHESIS":
       return "mdi-flask-outline";
@@ -185,18 +181,18 @@ const getStatusColor = (status) => {
 
 /* Type specific styling accents */
 .investigation-graph-node.question {
-  border-left: 4px solid #9c27b0; /* Purple */
+  border-left: 4px solid #9c27b0;
 }
 
 .investigation-graph-node.section {
-  border-left: 4px solid #ff9800; /* Orange */
+  border-left: 4px solid #ff9800;
 }
 
 .investigation-graph-node.hypothesis {
-  border-left: 4px solid #2196f3; /* Blue */
+  border-left: 4px solid #2196f3;
 }
 
 .investigation-graph-node.task {
-  border-left: 4px solid #4caf50; /* Green */
+  border-left: 4px solid #4caf50;
 }
 </style>

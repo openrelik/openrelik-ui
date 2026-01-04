@@ -1,0 +1,155 @@
+import { mount } from "@vue/test-utils";
+import { describe, it, expect, vi, beforeAll } from "vitest";
+import InvestigationCanvas from "../InvestigationCanvas.vue";
+import { createVuetify } from "vuetify";
+import * as components from "vuetify/components";
+import * as directives from "vuetify/directives";
+import { ref } from "vue";
+
+const vuetify = createVuetify({
+  components,
+  directives,
+});
+
+beforeAll(() => {
+    global.visualViewport = {
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        width: 1024,
+        height: 768
+    };
+});
+
+describe("InvestigationCanvas.vue", () => {
+    const mountWrapper = () => {
+        return mount(InvestigationCanvas, {
+            global: {
+                plugins: [vuetify],
+                stubs: {
+                    InvestigationContent: { template: "<div class='content-pane-stub'></div>" },
+                    InvestigationChat: { template: "<div class='chat-pane-stub'></div>" },
+                    InvestigationTree: { template: "<div class='tree-view-stub'></div>", emits: ["select-hypothesis"] }
+                },
+                provide: {
+                    "agent-fullscreen": { isFullscreen: ref(false) }
+                }
+            }
+        });
+    };
+
+    it("renders layout correctly", () => {
+        const wrapper = mountWrapper();
+        expect(wrapper.find(".tree-pane").exists()).toBe(true);
+        expect(wrapper.find(".middle-pane").exists()).toBe(true);
+        expect(wrapper.find(".right-pane").exists()).toBe(true);
+        expect(wrapper.find(".resizer").exists()).toBe(true);
+    });
+
+    it("handles tree pane resizing", async () => {
+        const wrapper = mountWrapper();
+        const container = wrapper.find(".investigation-workspace");
+        
+        // Mock getBoundingClientRect
+        // Container rect: left=0, width=1000.
+        vi.spyOn(container.element, "getBoundingClientRect").mockReturnValue({
+            left: 0, top: 0, width: 1000, height: 600, right: 1000, bottom: 600
+        });
+
+        // Current Tree Width default: 280.
+        
+        // Start resize
+        // First resizer (Tree Resizer)
+        const resizers = wrapper.findAll(".resizer");
+        const treeResizer = resizers[0]; 
+        
+        await treeResizer.trigger("mousedown");
+        expect(wrapper.vm.isTreeResizing).toBe(true);
+        
+        // Resize to 300px
+        const moveEvent = new MouseEvent("mousemove", { clientX: 300, clientY: 100 });
+        document.dispatchEvent(moveEvent);
+        
+        expect(wrapper.vm.treePaneWidth).toBe(300);
+        
+        // Stop resize
+        const upEvent = new MouseEvent("mouseup");
+        document.dispatchEvent(upEvent);
+        expect(wrapper.vm.isTreeResizing).toBe(false);
+    });
+
+    it("handles chat pane resizing", async () => {
+        const wrapper = mountWrapper();
+        const container = wrapper.find(".investigation-workspace");
+        
+        // Fix initial width issue (clientWidth 0 -> 0)
+        // Manually set chat pane width to something valid after mount
+        wrapper.vm.chatPaneWidth = 400; 
+        
+        vi.spyOn(container.element, "getBoundingClientRect").mockReturnValue({
+            left: 0, top: 0, width: 1000, height: 600, right: 1000, bottom: 600
+        });
+        
+        const resizers = wrapper.findAll(".resizer");
+        const chatResizer = resizers[1];
+        
+        await chatResizer.trigger("mousedown");
+        expect(wrapper.vm.isResizing).toBe(true);
+        
+        // Resize chat pane. 
+        // Logic: newWidth = container.right - e.clientX
+        // container.right = 1000.
+        // Try e.clientX = 700 => newWidth = 300.
+        // Constraint: maxChatWidth = 1000 - 280 (tree) - 300 (middle min) = 420.
+        // 300 is valid.
+        
+        const moveEvent = new MouseEvent("mousemove", { clientX: 700, clientY: 100 });
+        document.dispatchEvent(moveEvent);
+        
+        expect(wrapper.vm.chatPaneWidth).toBe(300);
+        
+        // Stop resize
+        const upEvent = new MouseEvent("mouseup");
+        document.dispatchEvent(upEvent);
+        expect(wrapper.vm.isResizing).toBe(false);
+    });
+
+    it("handles resizer hover effect", async () => {
+        const wrapper = mountWrapper();
+        const resizers = wrapper.findAll(".resizer");
+        const chatResizer = resizers[1]; // Right resizer has hover logic
+        
+        await chatResizer.trigger("mouseenter");
+        expect(wrapper.vm.isResizerHovered).toBe(true);
+        
+        // Trigger mousemove for updateHandlePosition
+        // Mock getBoundingClientRect
+        // e.currentTarget is the resizer div
+        vi.spyOn(chatResizer.element, "getBoundingClientRect").mockReturnValue({ top: 100 });
+        
+        await chatResizer.trigger("mousemove", { clientY: 150 });
+        // handleTop = e.clientY (150) - rect.top (100) = 50.
+        expect(wrapper.vm.handleTop).toBe(50);
+        
+        await chatResizer.trigger("mouseleave");
+        expect(wrapper.vm.isResizerHovered).toBe(false);
+        
+        // Trigger unmount to cover onUnmounted -> stopResize
+        wrapper.unmount();
+    });
+
+    it("handles hypothesis selection from tree", async () => {
+        const wrapper = mountWrapper();
+        
+        // Find stubbed Tree View using class selector from stub
+        // And use findComponent to get wrapper for emit
+        // Note: wrapper.findComponent(".class") works if root element has class
+        const tv = wrapper.findComponent(".tree-view-stub"); 
+        
+        expect(tv.exists()).toBe(true);
+        
+        // Emit select-hypothesis
+        tv.vm.$emit("select-hypothesis", "hyp-123");
+        
+        expect(wrapper.vm.activeHypothesisId).toBe("hyp-123");
+    });
+});

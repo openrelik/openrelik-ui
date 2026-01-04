@@ -74,9 +74,9 @@ export const useInvestigationStore = defineStore("investigation", {
         return state.graph.toTree();
     },
     taskList: (state) => {
-      const graph = state.graph; // Accessing other getter
-      if (!graph) return [];
-
+      const graph = state.graph;
+      // graph is always defined by getter
+      
       const allNodes = Array.from(graph.nodes.values());
       const tasks = allNodes.filter((n) => n.type === "TASK");
 

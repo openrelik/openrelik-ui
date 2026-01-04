@@ -72,7 +72,6 @@ const investigationStore = useInvestigationStore();
 const { sessionData } = storeToRefs(investigationStore);
 
 const { isLightTheme } = useThemeInfo();
-// Default to empty objects if not provided (safe fallback)
 const { isFullscreen } = inject("agent-fullscreen", {
   isFullscreen: ref(false),
 });
@@ -134,8 +133,8 @@ const taskCount = computed(() => {
 }
 
 .active-tab {
-  background-color: transparent; /* Blend in */
-  border-bottom: 1px solid rgb(var(--v-theme-primary)); /* Bottom indicator */
+  background-color: transparent;
+  border-bottom: 1px solid rgb(var(--v-theme-primary));
   opacity: 1;
   color: rgb(var(--v-theme-primary));
 }

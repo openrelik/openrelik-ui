@@ -3,10 +3,48 @@ import { nextTick } from "vue";
 
 const SETTINGS_KEY = "openrelik-user-settings";
 
+const originalLocalStorage = global.localStorage;
+
 describe("useUserSettings", () => {
   beforeEach(() => {
     vi.resetModules();
+    
+    // Ensure localStorage exists and works
+    const store = {};
+    const mockStorage = {
+        getItem: vi.fn((key) => store[key] || null),
+        setItem: vi.fn((key, value) => {
+            store[key] = value.toString();
+        }),
+        clear: vi.fn(() => {
+            for (const key in store) delete store[key];
+        }),
+        removeItem: vi.fn((key) => {
+            delete store[key];
+        }),
+    };
+
+    Object.defineProperty(global, 'localStorage', {
+        value: mockStorage,
+        writable: true,
+        configurable: true
+    });
+
     localStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    if (originalLocalStorage) {
+        Object.defineProperty(global, 'localStorage', {
+            value: originalLocalStorage,
+            writable: true,
+            configurable: true
+        });
+    } else {
+        // If it didn't exist, maybe delete it? But safe to leave or restore undefined if configurable.
+        // For happy-dom/jsdom it usually exists.
+    }
   });
 
   it("should initialize with default settings when localStorage is empty", async () => {

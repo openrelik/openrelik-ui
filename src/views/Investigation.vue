@@ -44,13 +44,13 @@
         marginTop: isFullscreen ? '0px' : '-8px',
       }"
     >
-      <Investigation />
+      <InvestigationCanvas />
     </div>
   </div>
 </template>
 
 <script setup>
-import Investigation from "@/components/Investigation/Investigation.vue";
+import InvestigationCanvas from "@/components/InvestigationCanvas/InvestigationCanvas.vue";
 import Breadcrumbs from "@/components/Breadcrumbs.vue";
 import RestApiClient from "@/RestApiClient";
 import { useRoute } from "vue-router";

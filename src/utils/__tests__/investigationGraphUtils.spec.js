@@ -64,4 +64,39 @@ describe('investigationGraphUtils', () => {
     expect(parents).toHaveLength(1);
     expect(parents[0].id).toBe('parent');
   });
+
+  it('should merge data when adding existing node', () => {
+    const graph = new Graph();
+    graph.addNode('1', { label: 'Initial' });
+    graph.addNode('1', { type: 'UPDATED' });
+    
+    expect(graph.getNode('1')).toEqual({ id: '1', label: 'Initial', type: 'UPDATED' });
+  });
+
+  it('should create implicit nodes when adding edge', () => {
+    const graph = new Graph();
+    // Implicitly add 'a' and 'b'
+    graph.addEdge('a', 'b');
+    
+    expect(graph.getNode('a')).toBeDefined();
+    expect(graph.getNode('b')).toBeDefined();
+    expect(graph.edges.get('a').has('b')).toBe(true);
+  });
+
+  it('should return empty arrays for unknown nodes in getters', () => {
+    const graph = new Graph();
+    expect(graph.getParents('unknown')).toEqual([]);
+    expect(graph.getChildren('unknown')).toEqual([]);
+  });
+
+  it('should convert to tree from specific root', () => {
+    const graph = new Graph();
+    graph.addEdge('root', 'child');
+    graph.addEdge('other', 'child2');
+    
+    const tree = graph.toTree('root');
+    // specific root returns object, not array
+    expect(tree.id).toBe('root');
+    expect(tree.children[0].id).toBe('child');
+  });
 });

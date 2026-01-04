@@ -10,7 +10,7 @@
       class="pane tree-pane"
       :style="{ width: `${treePaneWidth}px` }"
     >
-      <InvestigationTreeView
+      <InvestigationTree
         :active-hypothesis-id="activeHypothesisId"
         @select-hypothesis="handleHypothesisSelection"
       />
@@ -31,7 +31,7 @@
 
     <!-- Middle Pane: Artifacts (Flexible) -->
     <div class="pane middle-pane flex-grow-1">
-      <InvestigationArtifactsPane />
+      <InvestigationContent />
     </div>
 
     <!-- Right Resizer -->
@@ -56,7 +56,7 @@
 
     <!-- Right Pane: Chat -->
     <div class="pane right-pane" :style="{ width: `${chatPaneWidth}px` }">
-      <InvestigationChatPane />
+      <InvestigationChat />
     </div>
   </div>
 </template>
@@ -64,15 +64,15 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { useThemeInfo } from "@/composables/useThemeInfo";
-import InvestigationArtifactsPane from "./InvestigationArtifactsPane.vue";
-import InvestigationChatPane from "./InvestigationChatPane.vue";
-import InvestigationTreeView from "./InvestigationTreeView.vue";
+import InvestigationContent from "./InvestigationContent.vue";
+import InvestigationChat from "./InvestigationChat.vue";
+import InvestigationTree from "./InvestigationTree.vue";
 
 const { isLightTheme } = useThemeInfo();
 const containerRef = ref(null);
 const showTree = ref(true);
-const treePaneWidth = ref(280); // Fixed pixel width for tree
-const chatPaneWidth = ref(400); // Initial pixel width for chat
+const treePaneWidth = ref(280);
+const chatPaneWidth = ref(400);
 const isResizing = ref(false);
 const isTreeResizing = ref(false);
 const isResizerHovered = ref(false);
@@ -134,12 +134,9 @@ const stopResize = () => {
 
 const handleHypothesisSelection = (hypothesisId) => {
   activeHypothesisId.value = hypothesisId;
-  console.log("Selected Hypothesis:", hypothesisId);
-  // Ideally this would switch the tab in InvestigationArtifactsPane or open a dedicated editor
 };
 
 onMounted(() => {
-  // Set initial chat width based on a percentage of container
   if (containerRef.value) {
     chatPaneWidth.value = Math.floor(containerRef.value.clientWidth * 0.35);
   }
@@ -178,7 +175,7 @@ onUnmounted(() => {
 }
 
 .resizer {
-  width: 12px; /* Slightly wider hit area */
+  width: 12px;
   cursor: col-resize;
   display: flex;
   justify-content: center;

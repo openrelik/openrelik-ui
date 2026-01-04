@@ -117,13 +117,10 @@ const props = defineProps({
 
 const emit = defineEmits(["node-click", "add-hypothesis"]);
 
-const isExpanded = ref(false); // Expand more levels by default
+const isExpanded = ref(false);
 const isActive = computed(() => props.node.id === props.activeId);
 
 const nodeChildren = computed(() => {
-  // If the node comes from the DAG, the relationships are already in 'children'.
-
-  // Findings (if any) are generally leaf content for Tasks.
   if (props.node.type === "TASK") return props.node.findings || [];
 
   return props.node.children || [];
