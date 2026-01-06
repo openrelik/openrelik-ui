@@ -1,5 +1,20 @@
+/*
+Copyright 2025-2026 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 import { mount } from "@vue/test-utils";
-import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, vi, beforeAll } from "vitest";
 import InvestigationTree from "../InvestigationTree.vue";
 import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
@@ -29,50 +44,7 @@ describe("InvestigationTree.vue", () => {
         questions: [{ id: "q1", label: "Question 1", type: "QUESTION" }]
     };
 
-    const mountWrapper = (options = {}) => {
-        return mount(InvestigationTree, {
-            global: {
-                plugins: [
-                    vuetify,
-                    createTestingPinia({
-                        initialState: {
-                            investigation: {
-                                sessionData: options.sessionData || baseSessionData,
-                                // The store getter 'tree' needs to optionally return something if the component uses it?
-                                // implementation uses: const treeRoots = investigationStore.tree || [];
-                                // and filters it.
-                                // In createTestingPinia, getters are not computed by default unless we implement them or stub them.
-                                // But here the component accesses 'tree'.
-                                // If 'tree' is a getter in the real store, createTestingPinia mocks it as a ref/writable?
-                                // Actually, let's provide a 'tree' state if it's a state, or mock the getter.
-                                // Inspecting component:
-                                // const treeRoots = investigationStore.tree || [];
-                                // It seems to expect 'tree' to be available.
-                                // If 'tree' is derived from sessionData in the REAL store, we might need to manually set 'tree' in the mock store state 
-                                // because testing pinia doesn't reactivity compute getters from state by default?
-                                // "getters are computed properties, they are writable in tests".
-                                // So we should set 'tree' in initialState.
-                            }
-                        }
-                    })
-                ],
-                provide: {
-                    "agent-fullscreen": {
-                        isFullscreen: { value: options.isFullscreen || false },
-                    }
-                },
-                stubs: {
-                    // Stub child to avoid rendering complexity if needed, but integration is better for coverage?
-                    // Let's use real child, but maybe stub v-menu/v-list if tricky.
-                    // We need to trigger events from child.
-                }
-            },
-            props: {
-                activeHypothesisId: null,
-                ...options.props
-            }
-        });
-    };
+
 
     it("renders tree structure with provided data", async () => {
         const wrapper = mount(InvestigationTree, {
@@ -96,11 +68,11 @@ describe("InvestigationTree.vue", () => {
         store.tree = [{ id: "q1", label: "Question 1", type: "QUESTION", childCount: 0 }];
         await wrapper.vm.$nextTick();
 
-        // console.log(wrapper.html()); // Debug
+
         
         expect(wrapper.text()).toContain("Test Investigation");
-        expect(wrapper.text()).toContain("Investigation Plan"); // Meta file
-        expect(wrapper.text()).toContain("Final Report"); // Meta file
+        expect(wrapper.text()).toContain("Investigation Plan");
+        expect(wrapper.text()).toContain("Final Report");
         expect(wrapper.text()).toContain("Question 1");
     });
 
@@ -112,7 +84,7 @@ describe("InvestigationTree.vue", () => {
                     createTestingPinia({
                         initialState: {
                             investigation: {
-                                sessionData: {}, // Empty
+                                sessionData: {},
                                 tree: []
                             }
                         }
@@ -122,7 +94,7 @@ describe("InvestigationTree.vue", () => {
             }
         });
         
-        // Fallback label in computed property
+
         expect(wrapper.text()).toContain("Untitled Investigation");
     });
 
@@ -172,18 +144,9 @@ describe("InvestigationTree.vue", () => {
             }
         });
 
-        // Find a TreeNode
-        // The Meta Plan is hardcoded in template as InvestigationTreeNode
-        // Let's click it.
         const treeNodes = wrapper.findAllComponents(InvestigationTreeNode);
         const planNode = treeNodes.find(w => w.props().node.id === "meta-plan");
         
-        await planNode.trigger("click"); // Wait, InvestigationTreeNode emits node-click?
-        // Let's check InvestigationTreeNode usage: @node-click="handleNodeClick"
-        // And inside InvestigationTreeNode: @click="$emit('node-click', node)" (likely).
-        // If I trigger native click?
-        // Let's assume hitting the component wrapper triggers the native event which the component handles.
-        // Better: emit event from child.
         planNode.vm.$emit("node-click", { id: "meta-plan" });
         
         expect(wrapper.emitted("select-node")).toBeTruthy();
@@ -211,19 +174,11 @@ describe("InvestigationTree.vue", () => {
         const q1Node = wrapper.findAllComponents(InvestigationTreeNode)
             .find(w => w.props().node.id === "q1");
             
+
+            
         // Trigger add-hypothesis
         await q1Node.vm.$emit("add-hypothesis", { id: "q1", label: "Q1" });
         
-        // Verify context menu is shown
-        // We can access the component instance data if exposed, but <script setup> hides it.
-        // However, we can check if the VMenu is rendered?
-        // Actually, since we didn't stub VMenu here, checking internal state is hard.
-        // But wait! `mount` wraps the component.
-        // If we can't check internal state easily, we can check side effects.
-        // The previous test relied on console.log.
-        // Since we removed console.log, we need another verification.
-        // We can rely on vm.contextMenu if it's exposed? NO, <script setup> is closed by default.
-        // We can check if VMenu props changed?
         const menu = wrapper.findComponent({ name: "VMenu" });
         expect(menu.exists()).toBe(true);
         expect(menu.props("modelValue")).toBe(true);
@@ -255,7 +210,6 @@ describe("InvestigationTree.vue", () => {
         });
         
         // Emulate menu being open first to test closing?
-        // The action sets show = false.
         
         // Find the list item
         const listItem = wrapper.findComponent({ name: "VListItem" });
@@ -263,10 +217,6 @@ describe("InvestigationTree.vue", () => {
         
         await listItem.trigger("click");
         
-        // We can't verify console.log anymore.
-        // We can verify that it closes the menu (if we could check state).
-        // But since we stubbed VMenu and can't see internal state...
-        // This test is now verifying just that it doesn't crash on click.
         expect(true).toBe(true);
     });
     it("handles null sessionData and tree gracefully", () => {
@@ -311,20 +261,14 @@ describe("InvestigationTree.vue", () => {
         const store = useInvestigationStore();
         store.tree = [
             { id: "q1", label: "Question 1", type: "QUESTION" },
-            { id: "s1", label: "Section 1", type: "SECTION" } // Should be filtered
+            { id: "s1", label: "Section 1", type: "SECTION" }
         ];
         await wrapper.vm.$nextTick();
 
         // Question 1 should be visible
         expect(wrapper.text()).toContain("Question 1");
-        // Section 1 should NOT be strictly visible in the top level list
-        // Note: InvestigationTreeNode might recursively render children, but here we check if it is passed to the root v-for iteration.
-        // The v-for is on `investigationData.questions`.
+
         const treeNodes = wrapper.findAllComponents(InvestigationTreeNode);
-        // We expect: Meta Plan, Meta Report, and Question 1. Total 3.
-        // If Section 1 was there, it would be 4.
-        // Wait, InvestigationTreeNode is recursive? The component usage here is flat list of questions.
-        // Filter expects only type=QUESTION.
         const ids = treeNodes.map(w => w.props().node.id);
         expect(ids).toContain("q1");
         expect(ids).not.toContain("s1");

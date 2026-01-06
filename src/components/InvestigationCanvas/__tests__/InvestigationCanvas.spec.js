@@ -1,3 +1,19 @@
+/*
+Copyright 2025-2026 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 import { mount } from "@vue/test-utils";
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import InvestigationCanvas from "../InvestigationCanvas.vue";
@@ -50,15 +66,11 @@ describe("InvestigationCanvas.vue", () => {
         const container = wrapper.find(".investigation-workspace");
         
         // Mock getBoundingClientRect
-        // Container rect: left=0, width=1000.
         vi.spyOn(container.element, "getBoundingClientRect").mockReturnValue({
             left: 0, top: 0, width: 1000, height: 600, right: 1000, bottom: 600
         });
 
-        // Current Tree Width default: 280.
-        
         // Start resize
-        // First resizer (Tree Resizer)
         const resizers = wrapper.findAll(".resizer");
         const treeResizer = resizers[0]; 
         
@@ -71,7 +83,7 @@ describe("InvestigationCanvas.vue", () => {
         
         expect(wrapper.vm.treePaneWidth).toBe(300);
         
-        // Stop resize
+
         const upEvent = new MouseEvent("mouseup");
         document.dispatchEvent(upEvent);
         expect(wrapper.vm.resizingTarget).toBe(null);
@@ -81,7 +93,6 @@ describe("InvestigationCanvas.vue", () => {
         const wrapper = mountWrapper();
         const container = wrapper.find(".investigation-workspace");
         
-        // Fix initial width issue (clientWidth 0 -> 0)
         // Manually set chat pane width to something valid after mount
         wrapper.vm.chatPaneWidth = 400; 
         
@@ -95,19 +106,14 @@ describe("InvestigationCanvas.vue", () => {
         await chatResizer.trigger("mousedown");
         expect(wrapper.vm.resizingTarget).toBe("chat");
         
-        // Resize chat pane. 
-        // Logic: newWidth = container.right - e.clientX
-        // container.right = 1000.
-        // Try e.clientX = 700 => newWidth = 300.
-        // Constraint: maxChatWidth = 1000 - 280 (tree) - 300 (middle min) = 420.
-        // 300 is valid.
+        // Resize chat pane.
         
         const moveEvent = new MouseEvent("mousemove", { clientX: 700, clientY: 100 });
         document.dispatchEvent(moveEvent);
         
         expect(wrapper.vm.chatPaneWidth).toBe(300);
         
-        // Stop resize
+
         const upEvent = new MouseEvent("mouseup");
         document.dispatchEvent(upEvent);
         expect(wrapper.vm.resizingTarget).toBe(null);
@@ -116,14 +122,12 @@ describe("InvestigationCanvas.vue", () => {
     it("handles resizer hover effect", async () => {
         const wrapper = mountWrapper();
         const resizers = wrapper.findAll(".resizer");
-        const chatResizer = resizers[1]; // Right resizer has hover logic
+        const chatResizer = resizers[1];
         
         await chatResizer.trigger("mouseenter");
-        expect(wrapper.vm.isResizerHovered).toBe(true);
+        expect(wrapper.vm.hoveredResizer).toBe("chat");
         
-        // Trigger mousemove for updateHandlePosition
         // Mock getBoundingClientRect
-        // e.currentTarget is the resizer div
         vi.spyOn(chatResizer.element, "getBoundingClientRect").mockReturnValue({ top: 100 });
         
         await chatResizer.trigger("mousemove", { clientY: 150 });
@@ -131,9 +135,9 @@ describe("InvestigationCanvas.vue", () => {
         expect(wrapper.vm.handleTop).toBe(50);
         
         await chatResizer.trigger("mouseleave");
-        expect(wrapper.vm.isResizerHovered).toBe(false);
+        expect(wrapper.vm.hoveredResizer).toBe(null);
         
-        // Trigger unmount to cover onUnmounted -> stopResize
+
         wrapper.unmount();
     });
 
@@ -144,18 +148,14 @@ describe("InvestigationCanvas.vue", () => {
         
         expect(tv.exists()).toBe(true);
         
-        // Emit select-node with a hypothesis node
+
         tv.vm.$emit("select-node", { id: "hyp-123", type: "hypothesis" });
         
         expect(wrapper.vm.activeHypothesisId).toBe("hyp-123");
     });
 
     it("switches to plan tab when plan node is selected", async () => {
-        // We need a mock for contentRef to verify setTab is called
-        // Since we stub InvestigationContent, we can spy on a method if we attach it to the stub's vm,
-        // but easier here is to mock the ref logic or just verify the side effect if we could.
-        // However, the component calls `contentRef.value.setTab`. 
-        // We can use a custom stub that exposes setTab.
+
         
         const setTabMock = vi.fn();
         const wrapper = mount(InvestigationCanvas, {

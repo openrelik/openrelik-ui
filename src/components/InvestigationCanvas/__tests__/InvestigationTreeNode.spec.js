@@ -1,3 +1,19 @@
+/*
+Copyright 2025-2026 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 import { mount } from "@vue/test-utils";
 import InvestigationTreeNode from "../InvestigationTreeNode.vue";
 import { describe, it, expect } from "vitest";
@@ -27,7 +43,7 @@ describe("InvestigationTreeNode.vue", () => {
  
   const nodeTypes = [
       { type: "SECTION", icon: "mdi-lightbulb-outline", color: "grey" },
-      { type: "MD_FILE", icon: "mdi-file-document-outline", color: "grey-darken-1" }, // default color
+      { type: "MD_FILE", icon: "mdi-file-document-outline", color: "grey-darken-1" },
       { type: "OBSERVATION", icon: "mdi-eye-outline", color: "grey-darken-1" },
       { type: "QUESTION", icon: "mdi-help-circle-outline", color: "primary" },
       { type: "HYPOTHESIS", icon: "mdi-flask-outline", color: "amber" },
@@ -54,7 +70,7 @@ describe("InvestigationTreeNode.vue", () => {
       expect(wrapper.find(".node-content").exists()).toBe(false);
   });
 
-  // 2. Status Styling & Icons
+
   const allStatuses = [
       { status: "COMPLETED", className: "success", icon: "mdi-check-circle" },
       { status: "PROVEN", className: "success", icon: "mdi-check-circle" },
@@ -80,7 +96,7 @@ describe("InvestigationTreeNode.vue", () => {
           const statusIcon = wrapper.findAllComponents({ name: "VIcon" }).find(w => w.attributes("class")?.includes("ml-1"));
           expect(statusIcon.exists()).toBe(true);
           expect(statusIcon.props("icon")).toBe(icon);
-          expect(statusIcon.props("color")).toBe(className); // statusIconColor returns color name usually matching class logic simplistically in test mapping
+          expect(statusIcon.props("color")).toBe(className);
       } else {
            const statusIcon = wrapper.findAllComponents({ name: "VIcon" }).find(w => w.attributes("class")?.includes("ml-1"));
            expect(statusIcon).toBeUndefined();

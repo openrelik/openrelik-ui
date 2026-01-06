@@ -1,6 +1,21 @@
+/*
+Copyright 2025-2026 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 import { describe, it, expect } from "vitest";
 import { Graph } from "../investigationGraphUtils";
-import { calculateLayout, NODE_WIDTH, NODE_HEIGHT } from "../investigationLayout";
+import { calculateLayout } from "../investigationLayout";
 
 describe("investigationLayout", () => {
   it("should handle empty graph", () => {
@@ -35,18 +50,12 @@ describe("investigationLayout", () => {
     const root = result.nodes.find(n => n.id === "root");
     const child1 = result.nodes.find(n => n.id === "child1");
     const child2 = result.nodes.find(n => n.id === "child2");
-
-    // X coordinates: Root at 0, Children deeper (larger X)
     expect(root.x).toBe(0);
     expect(child1.x).toBeGreaterThan(0);
-    expect(child2.x).toBe(child1.x); // Same depth column
-
-    // Y coordinates: Children should be stacked (different Y)
-    // Root should be centered relative to children
+    expect(child2.x).toBe(child1.x);
     expect(child1.y).not.toBe(child2.y);
     expect(root.y).toBeGreaterThanOrEqual(Math.min(child1.y, child2.y));
     expect(root.y).toBeLessThanOrEqual(Math.max(child1.y, child2.y));
-    
     expect(result.edges).toHaveLength(2);
   });
 });

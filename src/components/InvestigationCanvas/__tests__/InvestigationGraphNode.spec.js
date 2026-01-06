@@ -1,3 +1,19 @@
+/*
+Copyright 2025-2026 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 import { mount } from "@vue/test-utils";
 import { describe, it, expect } from "vitest";
 import InvestigationGraphNode from "../InvestigationGraphNode.vue";
@@ -21,7 +37,7 @@ describe("InvestigationGraphNode.vue", () => {
     describe("Node Types and Icons", () => {
         const types = [
             { type: "QUESTION", icon: "mdi-help-circle-outline" },
-            { type: "SECTION", icon: "mdi-lightbulb-outline", label: "LEAD" }, // SECTION mapped to LEAD text
+            { type: "SECTION", icon: "mdi-lightbulb-outline", label: "LEAD" },
             { type: "HYPOTHESIS", icon: "mdi-flask-outline" },
             { type: "TASK", icon: "mdi-checkbox-marked-circle-outline" },
             { type: "UNKNOWN", icon: "mdi-circle-outline" },
@@ -77,16 +93,11 @@ describe("InvestigationGraphNode.vue", () => {
                 }
             });
             
-            const statusIcon = wrapper.find(`.node-header .mdi`);
             // There are two icons: type icon and status icon.
             // Type icon is first. Status icon is second (v-if="node.status").
             
-            // let's look for specific class
             expect(wrapper.find(`.${icon}`).exists()).toBe(true);
             
-            // Status icon component has :color prop.
-            // Vuetify renders color formatted classes or styles.
-            // Usually text-{color}.
             expect(wrapper.html()).toContain(`text-${color}`); 
         });
     });

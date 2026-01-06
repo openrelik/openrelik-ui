@@ -1,3 +1,18 @@
+/*
+Copyright 2025-2026 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useInvestigationStore } from '../investigation';
@@ -11,8 +26,6 @@ vi.mock('@/RestApiClient', () => ({
     },
 }));
 
-// Mock localStorage using spies on the Storage prototype
-// Mock localStorage using safe swap
 const localStorageMock = {
     getItem: vi.fn(),
     setItem: vi.fn(),
@@ -23,21 +36,18 @@ const localStorageMock = {
 const originalLocalStorage = window.localStorage;
 let getItemSpy;
 let setItemSpy;
-let clearSpy;
-let removeItemSpy;
+
 
 describe('Investigation Store', () => {
     beforeEach(() => {
         setActivePinia(createPinia());
         vi.clearAllMocks();
         
-        // Assign spies to variables for test usage
         getItemSpy = localStorageMock.getItem;
         setItemSpy = localStorageMock.setItem;
-        clearSpy = localStorageMock.clear;
-        removeItemSpy = localStorageMock.removeItem;
+        vi.spyOn(Storage.prototype, "clear");
+        vi.spyOn(Storage.prototype, "removeItem");
         
-        // Swap global localStorage
         Object.defineProperty(window, 'localStorage', {
             value: localStorageMock,
             writable: true,
@@ -46,7 +56,6 @@ describe('Investigation Store', () => {
     });
 
     afterEach(() => {
-        // Restore original
         Object.defineProperty(window, 'localStorage', {
             value: originalLocalStorage,
             writable: true,
@@ -54,11 +63,9 @@ describe('Investigation Store', () => {
         });
     });
 
-    // Actions
     it('createSession should set sessionId from API if not in localStorage', async () => {
         const store = useInvestigationStore();
         RestApiClient.createAgentSession.mockResolvedValue({ session_id: 'sess-new' });
-        // Mock getSessionData to avoid side effects
         const getSessionDataSpy = vi.spyOn(store, 'getSessionData').mockImplementation(() => {});
 
         await store.createSession('folder-1');
@@ -71,11 +78,9 @@ describe('Investigation Store', () => {
 
     it('createSession should use existing sessionId from localStorage', async () => {
         const store = useInvestigationStore();
-        // Setup existing session in our mock store
         getItemSpy.mockReturnValue('sess-existing');
         
         const getSessionDataSpy = vi.spyOn(store, 'getSessionData').mockImplementation(() => {});
-        // Mock sse to return a subscribe method for runAgent
         RestApiClient.sse.mockReturnValue({ subscribe: vi.fn() });
 
         await store.createSession('folder-1');
@@ -84,8 +89,6 @@ describe('Investigation Store', () => {
         expect(store.sessionId).toBe('sess-existing');
         expect(store.sessionId).toBe('sess-existing');
         expect(store.sessionIsLoading).toBe(true);
-        // We expect runAgent to be called to verify session
-        // runAgent calls RestApiClient.sse internally for the run endpoint
         expect(RestApiClient.sse).toHaveBeenCalledWith(
              expect.stringContaining('/investigations/run'), 
              expect.objectContaining({ session_id: 'sess-existing', user_message: null })
@@ -107,14 +110,12 @@ describe('Investigation Store', () => {
         expect(RestApiClient.sse).toHaveBeenCalled();
         expect(mockSubscribe).toHaveBeenCalled();
 
-        // Simulate SSE update
-        const observer = mockSubscribe.mock.calls[0][0];
         const mockData = { 
             state: { foo: 'bar' },
             events: [{ msg: 'hello' }] 
         };
         
-        // Next expects stringified data per component logic
+        const observer = mockSubscribe.mock.calls[0][0];
         observer.next(JSON.stringify(mockData));
 
         expect(store.sessionData).toEqual({ foo: 'bar' });
@@ -238,20 +239,20 @@ describe('Investigation Store', () => {
     it('runAgent handles SSE error', async () => {
         const store = useInvestigationStore();
         store.isLoading = true;
-        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        vi.spyOn(console, 'error').mockImplementation(() => {});
         const mockUnsubscribe = vi.fn();
         const mockSubscribe = vi.fn().mockReturnValue({ unsubscribe: mockUnsubscribe });
         RestApiClient.sse.mockReturnValue({ subscribe: mockSubscribe });
         
         await store.runAgent('f1', 'msg');
         
-        // Trigger error
-        // The first call (index 0) is getSessionData(), the second (index 1) is runAgent() subscription
+
+        
         const observer = mockSubscribe.mock.calls[1][0];
         observer.error('error');
         
         expect(store.isLoading).toBe(false);
-        // expect(consoleSpy).toHaveBeenCalledWith('error'); // runAgent does not log error
+
     });
 
     it('runAgent handles SSE complete', async () => {
@@ -281,15 +282,13 @@ describe('Investigation Store', () => {
         
         await store.runAgent('f1', 'msg');
         
-        // Simulate setting pending approval (logic inside next usually does this)
+
+        
         store.pendingApproval = { toolId: 't1' };
         
-        // Trigger complete
-        // Index 1 for runAgent subscription
         const observer = mockSubscribe.mock.calls[1][0];
         observer.complete();
         
-        // For runAgent, complete should clear loading
         expect(store.isLoading).toBe(false);
     });
 
@@ -300,12 +299,11 @@ describe('Investigation Store', () => {
         
         await store.runAgent('f1', 'msg');
         
+
         
-        // Index 1 for runAgent subscription
         const observer = mockSubscribe.mock.calls[1][0];
-        // Message with no content or parts
         observer.next(JSON.stringify({ someKey: 'val' }));
-        observer.next(JSON.stringify({ content: {} })); // no parts
+        observer.next(JSON.stringify({ content: {} }));
         
         expect(store.chatMessages).toHaveLength(2);
         expect(store.pendingApproval).toBeNull();
@@ -321,7 +319,7 @@ describe('Investigation Store', () => {
         const observer = mockSubscribe.mock.calls[0][0];
         observer.next(JSON.stringify({ state: {}, events: [{ id: 2 }] }));
         
-        expect(store.chatMessages).toEqual([{ id: 1 }]); // Should NOT be replaced
+        expect(store.chatMessages).toEqual([{ id: 1 }]);
     });
 
     it('runAgent ignores approval if missing longRunningToolIds', async () => {
@@ -336,7 +334,7 @@ describe('Investigation Store', () => {
             content: {
                 parts: [{ functionCall: { name: 'ask_for_approval' } }]
             },
-            longRunningToolIds: [], // Empty
+            longRunningToolIds: [],
             invocationId: 'inv-1'
         };
         
@@ -347,8 +345,6 @@ describe('Investigation Store', () => {
 
     it('getSessionData handles SSE error', () => {
         const store = useInvestigationStore();
-        // Do not set isListening=true initially, otherwise it returns early
-        
         const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
         const mockSubscribe = vi.fn();
         RestApiClient.sse.mockReturnValue({ subscribe: mockSubscribe });
@@ -357,11 +353,7 @@ describe('Investigation Store', () => {
         
         expect(store.isListening).toBe(true);
         
-        // Call again, should return early
         store.getSessionData('f1');
-        // We can't easily assert "returns early", but we can assert we didn't subscribe again
-        // mockSubscribe is created inside the mock sse call.
-        // If sse was called again, mockSubscribe would need to be checked or RestApiClient.sse call count.
         expect(RestApiClient.sse).toHaveBeenCalledTimes(1);
 
         const observer = mockSubscribe.mock.calls[0][0];
@@ -410,10 +402,9 @@ describe('Investigation Store', () => {
 
         expect(store.sseSubscription).toEqual({ unsubscribe: mockUnsubscribe });
         expect(RestApiClient.sse).toHaveBeenCalled();
-        expect(mockSubscribe).toHaveBeenCalled();
+    expect(mockSubscribe).toHaveBeenCalled();
     });
 
-    // Getters
     describe('Getters', () => {
         it('graph getter constructs graph from sessionData', () => {
             const store = useInvestigationStore();
@@ -431,9 +422,6 @@ describe('Investigation Store', () => {
             expect(graph.nodes.get('h1').type).toBe('HYPOTHESIS');
             expect(graph.nodes.get('t1').type).toBe('TASK');
             
-            // Check edges
-            // Graph implementation: addEdge(source, target)
-            // q1 -> l1
             expect(graph.getParents('l1').map(p=>p.id)).toContain('q1');
             expect(graph.getParents('h1').map(p=>p.id)).toContain('l1');
             expect(graph.getParents('t1').map(p=>p.id)).toContain('h1');
@@ -447,8 +435,6 @@ describe('Investigation Store', () => {
             };
             
             const tree = store.tree;
-            // Tree structure: Array/Map of roots depending on implementation. 
-            // graph.toTree() returns array of root nodes with children populated.
             expect(tree.length).toBe(1);
             expect(tree[0].id).toBe('q1');
             expect(tree[0].children.length).toBe(1);
@@ -476,19 +462,19 @@ describe('Investigation Store', () => {
             const store = useInvestigationStore();
              store.sessionData = {
                 questions: [{ id: 'q1' }],
-                hypotheses: [{ id: 'h1', question_id: 'q1' }], // Directly under question
+                hypotheses: [{ id: 'h1', question_id: 'q1' }],
                 tasks: [{ id: 't1', hypothesis_id: 'h1' }]
             };
             
             const list = store.taskList;
-            expect(list[0].lead).toBeUndefined(); // or null? Implementation line 88: let lead = null;
+            expect(list[0].lead).toBeUndefined();
             expect(list[0].question.id).toBe('q1');
         });
 
         it('taskList handles orphan tasks (no hypothesis)', () => {
             const store = useInvestigationStore();
             store.sessionData = {
-                tasks: [{ id: 't1', task: 'T' }] // Orphan task
+                tasks: [{ id: 't1', task: 'T' }]
             };
             const list = store.taskList;
             expect(list.length).toBe(1);
@@ -501,17 +487,14 @@ describe('Investigation Store', () => {
         it('graph getter handles partial data and orphans', () => {
             const store = useInvestigationStore();
             store.sessionData = {
-                // specific keys missing
                 questions: [{ id: 'q1', question: 'Q' }],
-                // leads missing
-                hypotheses: [{ id: 'h1', hypothesis: 'H' }], // Orphan, no parent links
-                tasks: [{ id: 't1', task: 'T' }] // Orphan task
+                hypotheses: [{ id: 'h1', hypothesis: 'H' }],
+                tasks: [{ id: 't1', task: 'T' }]
             };
             
             const graph = store.graph;
             expect(graph.nodes.size).toBe(3);
             expect(graph.nodes.get('h1')).toBeDefined();
-            // Verify no edges created for orphans
             expect(graph.getParents('h1')).toEqual([]);
             expect(graph.getParents('t1')).toEqual([]);
         });
@@ -519,7 +502,7 @@ describe('Investigation Store', () => {
         it('graph getter handles leads without question_id', () => {
             const store = useInvestigationStore();
             store.sessionData = {
-                leads: [{ id: 'l1', lead: 'L' }] // No question_id
+                leads: [{ id: 'l1', lead: 'L' }]
             };
             const graph = store.graph;
             expect(graph.nodes.has('l1')).toBe(true);
@@ -528,7 +511,7 @@ describe('Investigation Store', () => {
 
         it('graph getter handles null sessionData', () => {
             const store = useInvestigationStore();
-            store.sessionData = null; // Enforce null
+            store.sessionData = null;
             
             const graph = store.graph;
             expect(graph).toBeDefined();
@@ -537,15 +520,6 @@ describe('Investigation Store', () => {
 
         it('taskList getter returns empty if graph is missing (edge case)', () => {
             const store = useInvestigationStore();
-            // Force graph getter to return null? 
-            // Better: rely on state. It's a derived getter.
-            // If sessionData is empty, graph is empty, taskList is empty.
-            // If we want to hit `if (!graph) return []`, we mocked graph?
-            // "graph" is a getter on the store. 
-            // We can try to spy on the getter if possible or just rely on standard path.
-            // Standard path always returns a graph instance (line 34: const graph = new Graph();).
-            // So `if (!graph)` might be dead code unless graph instantiation fails or is mocked.
-            // However, we can verify empty task list for empty graph.
             store.sessionData = {};
             expect(store.taskList).toEqual([]);
         });

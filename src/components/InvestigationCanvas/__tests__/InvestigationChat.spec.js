@@ -1,3 +1,19 @@
+/*
+Copyright 2025-2026 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 import { mount } from "@vue/test-utils";
 import { describe, it, expect, vi } from "vitest";
 import InvestigationChat from "../InvestigationChat.vue";
@@ -89,7 +105,6 @@ describe("InvestigationChat.vue", () => {
         });
 
         expect(wrapper.text()).toContain("Hello User");
-        // Filter specifically for the user message content
         const userSheets = wrapper.findAll(".v-sheet.bg-info").filter(w => w.text().includes("Hello User"));
         expect(userSheets.length).toBe(1);
     });
@@ -227,14 +242,13 @@ describe("InvestigationChat.vue", () => {
 
         expect(wrapper.text()).toContain("Review and approve plan to continue");
         
-        // Find Approve button
         const buttons = wrapper.findAll("button");
         const approveBtn = buttons.find(b => b.text().includes("Approve"));
         expect(approveBtn.exists()).toBe(true);
         
-        // Trigger approve
+
         await approveBtn.trigger("click");
-        // Verify action call (we stub actions so we just check if it didn't crash, or spy if needed)
+
     });
 
     it("handles rejection with reason", async () => {
@@ -256,15 +270,13 @@ describe("InvestigationChat.vue", () => {
             }
         });
 
-        // Find Review/Reject button
         const buttons = wrapper.findAll("button");
         const reviewBtn = buttons.find(b => b.text().includes("Review"));
         await reviewBtn.trigger("click");
         
-        // Wait for dialog animation/teleport
-        await new Promise(resolve => setTimeout(resolve, 200));
 
-        // Check document body for dialog content (v-dialog teleports)
+
+
         expect(document.body.textContent).toContain("Review Feedback");
     });
 
@@ -286,10 +298,9 @@ describe("InvestigationChat.vue", () => {
                 ],
                 provide: defaultProvide,
                 stubs: {
-                    // Stub VDialog to render content in-place for easier testing
                     VDialog: {
                         template: "<div><slot /></div>",
-                        props: ["modelValue"] // Accept modelValue to avoid warnings, though we assume it renders slot always or we manage it
+                        props: ["modelValue"] 
                     }
                 }
             }
@@ -299,23 +310,22 @@ describe("InvestigationChat.vue", () => {
         const store = useInvestigationStore();
         store.rejectAction = vi.fn();
 
-        // Trigger review to set showReviewDialog = true (though stub renders always, logically we follow flow)
         const reviewBtn = wrapper.findAll("button").find(b => b.text().includes("Review"));
         await reviewBtn.trigger("click");
         
-        // Find inputs in wrapper now (no teleport)
+
         const textarea = wrapper.find("textarea");
         expect(textarea.exists()).toBe(true);
         
         await textarea.setValue("Change the plan");
         
-        // Find submit button
+
         const submitBtn = wrapper.findAll("button").find(b => b.text().includes("Submit review"));
         expect(submitBtn.exists()).toBe(true);
         
         await submitBtn.trigger("click");
         
-        // Verify store action called
+
         expect(store.rejectAction).toHaveBeenCalledWith("123", "Change the plan");
     });
     
@@ -338,31 +348,20 @@ describe("InvestigationChat.vue", () => {
                 provide: defaultProvide
             }
         });
-
-        // Default Pinia stubs actions. runAgent is already a spy.
         const store = useInvestigationStore();
 
-        // Find VTextarea component and emit update:modelValue to simulate v-model update
-        const textareaComp = wrapper.findComponent({ name: "v-textarea" });
-        textareaComp.vm.$emit("update:modelValue", "New command");
-        
-        // Wait for parent to react to event and re-render
         await wrapper.vm.$nextTick();
 
-        // Assert button is enabled to ensure input worked
+        const textarea = wrapper.findComponent({ name: "VTextarea" });
+        await textarea.vm.$emit("update:modelValue", "New command");
+        await wrapper.vm.$nextTick();
+
         const sendBtn = wrapper.find(".send-btn");
         expect(sendBtn.element.disabled).toBe(false);
 
         await sendBtn.trigger("click");
         
-        // Wait for potential async operations
-        await new Promise(resolve => setTimeout(resolve, 0));
-        
-        // Input should be cleared
         expect(store.runAgent).toHaveBeenCalled();
-        // The value reset in component updates the prop bound to VTextarea
-        // We verified logic execution passed via store call.
-        // Route params folderId is mocked as '123' globally in this file
         expect(store.runAgent).toHaveBeenCalledWith("123", "New command");
     });
 
@@ -380,14 +379,14 @@ describe("InvestigationChat.vue", () => {
                             investigation: {
                                 sessionId: "s1",
                                 chatMessages: [
-                                    null, // Line 265
-                                    undefined, // Line 265
-                                    { role: "model", content: "   " }, // Line 286 (empty string)
-                                    { role: "model", content: null }, // Invalid
-                                    { role: "model", content: { parts: [] } }, // Invalid logic?
-                                    { role: "model", content: { parts: [{ text: "   " }] } }, // Empty text
-                                    { role: "model", content: { parts: [{ functionResponse: { name: "foo" } }] } }, // Internal response, no transfer -> Invalid
-                                    { role: "user", content: "Valid" } // Valid
+                                    null,
+                                    undefined,
+                                    { role: "model", content: "   " },
+                                    { role: "model", content: null },
+                                    { role: "model", content: { parts: [] } },
+                                    { role: "model", content: { parts: [{ text: "   " }] } },
+                                    { role: "model", content: { parts: [{ functionResponse: { name: "foo" } }] } },
+                                    { role: "user", content: "Valid" }
                                 ],
                             }
                         }
@@ -398,10 +397,8 @@ describe("InvestigationChat.vue", () => {
         });
 
         expect(wrapper.text()).toContain("Valid");
-        // Should not contain empty/invalid message placeholders
-        // We can check how many items rendered.
-        // "Valid" should be the only one.
-        const items = wrapper.findAll(".v-sheet.bg-info"); // User message
+        expect(wrapper.text()).toContain("Valid");
+        const items = wrapper.findAll(".v-sheet.bg-info");
         expect(items.length).toBe(1);
     });
 
@@ -422,9 +419,7 @@ describe("InvestigationChat.vue", () => {
             }
         });
 
-        // Find fullscreen exit button
-        const btn = wrapper.find(".mdi-fullscreen-exit").element.closest("button");
-        await wrapper.findComponent({ name: "v-btn", icon: "mdi-fullscreen-exit" }).trigger("click"); // wrapper.find might fail if icon is prop
+        await wrapper.findComponent({ name: "v-btn", icon: "mdi-fullscreen-exit" }).trigger("click");
         
         expect(toggleFullscreenMock).toHaveBeenCalled();
     });
@@ -461,7 +456,7 @@ describe("InvestigationChat.vue", () => {
                                 sessionId: "session-1", 
                             }
                         },
-                         stubActions: false // to check calls if we could spy
+                         stubActions: false
                     })
                 ],
                 provide: defaultProvide
@@ -473,13 +468,11 @@ describe("InvestigationChat.vue", () => {
         store.runAgent = vi.fn();
 
         const textarea = wrapper.find("textarea");
-        await textarea.setValue("   "); // whitespace
+        await textarea.setValue("   ");
         
         const sendBtn = wrapper.find(".send-btn");
-        // Button should be disabled actually
         expect(sendBtn.element.disabled).toBe(true);
         
-        // Force enter on textarea
         await textarea.trigger("keydown.enter");
         
         expect(store.runAgent).not.toHaveBeenCalled();
@@ -515,27 +508,11 @@ describe("InvestigationChat.vue", () => {
             }
         });
 
-        // Should render text
 
-        // text is rendered via v-html="toHtml(...)". mock returns string as is.
-        // Wait, I mocked marked: (str) => str.
-        // So it should render "**thought**".
-        // But toHtml uses DOMPurify(marked()).
-        // So output is "**thought**".
         expect(wrapper.text()).toContain("This is a **thought**.");
     });
     
     it("sanitizes html in messages", () => {
-        // Since we mocked DOMPurify to return identity, this test verifies the CALL to it?
-        // Or we can unmock it for this test?
-        // Unmocking partial modules in Vitest is tricky inside a test file if global mock exists.
-        // We'll trust the mock chain is called.
-        // We check if `toHtml` is used.
-        // In the previous test, we verified content rendering.
-        // Let's verify `toHtml` function logic indirectly by checking if it renders via v-html.
-        // We can inspect the wrapper.text() or html().
-        
-        // Let's just create a message with HTML and see.
         const wrapper = mount(InvestigationChat, {
             global: {
                 plugins: [
@@ -554,7 +531,9 @@ describe("InvestigationChat.vue", () => {
                 provide: defaultProvide
             }
         });
-        // User message uses {{ message.content }} (interpolation), so it auto-escapes.
+        
+        expect(wrapper.text()).toContain("<script>alert('xss')</script>");
+
         // Agent fallback uses v-html="toHtml".
         
          const wrapperAgent = mount(InvestigationChat, {
@@ -576,36 +555,26 @@ describe("InvestigationChat.vue", () => {
              }
          });
          
-         // JSDOM normalizes attributes, so we expect quotes.
          expect(wrapperAgent.html()).toContain('<img src="x" onerror="alert(1)">');
-         // This confirms the fallback v-html path is taken.
     });
 
 
 
     it("uses default injection values", async () => {
-        // Mount without providing 'agent-fullscreen'
         const wrapper = mount(InvestigationChat, {
             global: {
                 plugins: [
                     vuetify,
                     createTestingPinia()
                 ]
-                // Provide is omitted
             }
         });
         
         // Default isFullscreen is false, so button should not exist
         expect(wrapper.find(".mdi-fullscreen-exit").exists()).toBe(false);
-        
-        // We can't easily trigger the default toggleFullscreen function since button is hidden.
-        // But we covered the initialization line.
     });
     
     it("applies light theme class", () => {
-         // Mock useThemeInfo to return true
-         // We can't mocking composable easily if it's imported.
-         // But we can check if the class is present (Vuetify default is likely light).
          const wrapper = mount(InvestigationChat, {
             global: {
                 plugins: [
@@ -616,13 +585,7 @@ describe("InvestigationChat.vue", () => {
             }
         });
         
-        // If default is light
-        // We can check .light-theme-bar
         const toolbar = wrapper.find(".chat-pane-toolbar");
-        // We don't control the theme easily without mocking useThemeInfo or setting vuetify theme.
-        // Let's assume default is light?
-        // Actually useThemeInfo likely uses `useTheme`.
-        // If verified present, good.
         if (toolbar.classes('light-theme-bar')) {
              expect(true).toBe(true);
         }

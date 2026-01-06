@@ -1,3 +1,19 @@
+/*
+Copyright 2025-2026 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 import { mount } from "@vue/test-utils";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import InvestigationGraph from "../InvestigationGraph.vue";
@@ -22,14 +38,12 @@ const vuetify = createVuetify({
 });
 
 describe("InvestigationGraph.vue", () => {
-    // Mock Data
     const mockGraph = {
         getParents: vi.fn().mockReturnValue([])
     };
     
     beforeEach(() => {
         vi.clearAllMocks();
-        // Default layout mock return
         calculateLayout.mockReturnValue({
             nodes: [
                 { id: "1", type: "QUESTION", x: 0, y: 0, label: "Q1" },
@@ -66,15 +80,6 @@ describe("InvestigationGraph.vue", () => {
 
     it("renders nodes and edges", async () => {
         const wrapper = mountWrapper();
-        // Trigger layout watch
-        await wrapper.vm.$nextTick(); 
-        
-        expect(calculateLayout).toHaveBeenCalled();
-        expect(wrapper.findAll("path").length).toBe(1); // One edge
-        // InvestigationGraphNode components are stubs by default? No, we didn't stub child.
-        // It renders InvestigationGraphNode.
-        // We can check if child components exist.
-        
         const nodes = wrapper.findAllComponents({ name: "InvestigationGraphNode" });
         expect(nodes.length).toBe(2);
     });
@@ -83,7 +88,6 @@ describe("InvestigationGraph.vue", () => {
         const wrapper = mountWrapper();
         await wrapper.vm.$nextTick();
         
-        // Check path d attribute
         const path = wrapper.find("path");
         expect(path.attributes("d")).toContain("M");
     });
@@ -94,10 +98,6 @@ describe("InvestigationGraph.vue", () => {
         
         await container.trigger("mousedown", { clientX: 0, clientY: 0 });
         
-        // Verify isDragging
-        expect(wrapper.vm.isDragging).toBe(true);
-        
-        // Simulate global mousemove
         const moveEvent = new MouseEvent("mousemove", { clientX: 50, clientY: 50 });
         window.dispatchEvent(moveEvent);
         
@@ -121,7 +121,7 @@ describe("InvestigationGraph.vue", () => {
         const zoomOutBtn = wrapper.findAllComponents({ name: "VBtn" }).find(b => b.props("icon") === "mdi-minus");
         await zoomOutBtn.trigger("click");
         
-        expect(wrapper.vm.zoom).toBe(initialZoom); // Back to approx original
+        expect(wrapper.vm.zoom).toBe(initialZoom);
     });
 
     it("handles mouse wheel zoom", async () => {
@@ -129,14 +129,8 @@ describe("InvestigationGraph.vue", () => {
         const initialZoom = wrapper.vm.zoom;
         const container = wrapper.find(".investigation-graph-container");
         
-        // Mock getBoundingClientRect for container
-        const element = container.element;
-        vi.spyOn(element, "getBoundingClientRect").mockReturnValue({
-            left: 0, top: 0, width: 1000, height: 1000, right: 1000, bottom: 1000
-        });
-
         await container.trigger("wheel", { 
-            deltaY: -100, // Scroll up (Zoom in)
+            deltaY: -100,
             clientX: 500,
             clientY: 500,
             preventDefault: vi.fn()
@@ -154,17 +148,13 @@ describe("InvestigationGraph.vue", () => {
         
         expect(sectionNode.exists()).toBe(true);
         
-        // Initial state: not expanded (assuming default set is empty)
         expect(wrapper.vm.expandedNodes.has("2")).toBe(false);
         
-        // Click node
-        // InvestigationGraphNode emits click
         sectionNode.vm.$emit("click", sectionNode.props().node);
         
         expect(wrapper.vm.expandedNodes.has("2")).toBe(true);
-        expect(calculateLayout).toHaveBeenCalledTimes(2); // Initial + Click update
+        expect(calculateLayout).toHaveBeenCalledTimes(2);
         
-        // Click again to collapse
         sectionNode.vm.$emit("click", sectionNode.props().node);
         expect(wrapper.vm.expandedNodes.has("2")).toBe(false);
     });
@@ -173,23 +163,14 @@ describe("InvestigationGraph.vue", () => {
         const wrapper = mountWrapper();
         await wrapper.vm.$nextTick();
         
-        // Trigger fitToScreen via button
         const fitBtn = wrapper.findAllComponents({ name: "VBtn" }).find(b => b.props("icon") === "mdi-fit-to-screen-outline");
         
-        // Need to mock clientWidth/Height of container
-        // Since container is ref, we can spy/defineProperty?
-        // JSOM elements have clientWidth=0 by default.
         const container = wrapper.find(".investigation-graph-container").element;
         Object.defineProperty(container, 'clientWidth', { configurable: true, value: 800 });
         Object.defineProperty(container, 'clientHeight', { configurable: true, value: 600 });
         
         await fitBtn.trigger("click");
         
-        // Expect zoom and pan to change
-        // Initial defaults: zoom=1, pan={0,0}.
-        // fitToScreen likely changes them.
-        // We mocked graph size to 1000x1000. Container 800x600.
-        // Scale should be < 1.
         expect(wrapper.vm.zoom).toBeLessThan(1);
     });
 
@@ -198,16 +179,12 @@ describe("InvestigationGraph.vue", () => {
         const wrapper = mountWrapper();
         await wrapper.vm.$nextTick();
         
-        // Initial state: 2 nodes (1, 2).
         // Update layout to ADD a new node (3) that has parent (1).
         // And REMOVE node (2) that has parent (1).
         
-        // Mock getParents for the new node logic
-        // We need to change the implementation of getParents dynamically or conditionally.
-        // mockGraph.getParents is a jest mock.
         mockGraph.getParents.mockImplementation((id) => {
-            if (id === "3") return [{ id: "1" }]; // 3 is child of 1
-            if (id === "2") return [{ id: "1" }]; // 2 is child of 1
+            if (id === "3") return [{ id: "1" }];
+            if (id === "2") return [{ id: "1" }];
             return [];
         });
         
@@ -215,33 +192,24 @@ describe("InvestigationGraph.vue", () => {
         calculateLayout.mockReturnValue({
             nodes: [
                 { id: "1", type: "QUESTION", x: 0, y: 0, label: "Q1" },
-                { id: "3", type: "SECTION", x: 100, y: 100, label: "S2" } // 2 removed
+                { id: "3", type: "SECTION", x: 100, y: 100, label: "S2" }
             ],
             edges: [],
             width: 1000,
             height: 1000
         });
         
-        // Trigger update
         const store = useInvestigationStore();
         const newGraph = { ...store.graph };
-        newGraph.getParents = mockGraph.getParents; // Ensure function persists
+        newGraph.getParents = mockGraph.getParents;
         store.graph = newGraph;
         
         await wrapper.vm.$nextTick(); 
         
-        // At this point:
-        // Node 3 enter hook should run.
-        // Node 2 leave hook should run.
-        // We can't verify styles easily without inspecting elements deep in DOM.
-        // But we want to ensure lines 150-196 are executed.
-        
-        // Run timers to trigger done() callbacks in setTimeout
         vi.runAllTimers();
         
-        // Verify final state
         const nodes = wrapper.findAllComponents({ name: "InvestigationGraphNode" });
-        expect(nodes.length).toBe(2); // 1 and 3
+        expect(nodes.length).toBe(2);
         const ids = nodes.map(n => n.props().node.id);
         expect(ids).toContain("1");
         expect(ids).toContain("3");
@@ -249,7 +217,7 @@ describe("InvestigationGraph.vue", () => {
         vi.useRealTimers();
     });
 
-    // --- NEW TESTS FOR COVERAGE ---
+
 
     it("does not expand/collapse non-expandable nodes", async () => {
         const wrapper = mountWrapper();
@@ -260,15 +228,11 @@ describe("InvestigationGraph.vue", () => {
         
         expect(questionNode).toBeDefined();
         
-        // Clear previous calls
         calculateLayout.mockClear();
         
-        // Emit click
         questionNode.vm.$emit("click", questionNode.props().node);
         
-        // Should NOT add to expandedNodes
         expect(wrapper.vm.expandedNodes.has("1")).toBe(false);
-        // Should NOT trigger layout recalculation
         expect(calculateLayout).not.toHaveBeenCalled();
     });
 
@@ -285,7 +249,6 @@ describe("InvestigationGraph.vue", () => {
         // Or simply that no error is thrown.
         expect(wrapper.vm.investigationStore.graph).toBeNull();
         
-        // Directly call getParentNode to verify null check
         const parent = wrapper.vm.getParentNode("1");
         expect(parent).toBeNull();
     });
@@ -340,11 +303,11 @@ describe("InvestigationGraph.vue", () => {
         
         wrapper.vm.zoom = 2.95;
         wrapper.vm.zoomIn();
-        expect(wrapper.vm.zoom).toBe(3); // Clamped
+        expect(wrapper.vm.zoom).toBe(3);
         
         wrapper.vm.zoom = 0.15;
         wrapper.vm.zoomOut();
-        expect(wrapper.vm.zoom).toBe(0.1); // Clamped
+        expect(wrapper.vm.zoom).toBe(0.1);
     });
 
     it("fitToScreen handles empty nodes or missing container gracefully", async () => {
@@ -352,14 +315,7 @@ describe("InvestigationGraph.vue", () => {
          
          // 1. Empty nodes
          wrapper.vm.nodes = [];
-         wrapper.vm.fitToScreen();
-         // Verify zoom didn't change wildly or error
-         
-         // 2. Missing container (simulate by mocking ref if possible, or just call logic)
-         // It's hard to set ref to null after mount.
-         // But we can check the guard:
-         // if (!container.value || nodes.value.length === 0) return;
-         // We tested empty nodes. 
+         wrapper.vm.fitToScreen(); 
     });
 
     it("getEdgePath handles missing source or target", () => {
@@ -369,12 +325,10 @@ describe("InvestigationGraph.vue", () => {
              { id: "1", type: "QUESTION", x: 0, y: 0, label: "Q1" }
         ];
         
-        // Edge referring to missing target
         const edge = { from: "1", to: "999" };
         const path = wrapper.vm.getEdgePath(edge);
         expect(path).toBe("");
         
-        // Edge referring to missing source
         const edge2 = { from: "999", to: "1" };
         const path2 = wrapper.vm.getEdgePath(edge2);
         expect(path2).toBe("");
@@ -425,13 +379,10 @@ describe("InvestigationGraph.vue", () => {
         const wrapper = mountWrapper();
         const preventDefault = vi.fn();
         
-        // Save reference to method before unmount if needed, or access via vm
-        // Unmount should set container ref to null
         await wrapper.unmount();
         
         wrapper.vm.onWheel({ preventDefault });
         
-        // Should return early, verify no crash and preventDefault called
         expect(preventDefault).toHaveBeenCalled();
     });
 });

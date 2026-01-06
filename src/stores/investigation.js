@@ -1,5 +1,5 @@
 /*
-Copyright 2024 Google LLC
+Copyright 2024-2026 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ export const useInvestigationStore = defineStore("investigation", {
     isLoading: false,
     sessionData: {},
     isListening: false,
-    pendingApproval: null,
     pendingApproval: null,
     sseSubscription: null,
     runSubscription: null,
@@ -248,7 +247,7 @@ export const useInvestigationStore = defineStore("investigation", {
             }
           }
         },
-        error: (err) => {
+        error: () => {
           this.runSubscription.unsubscribe();
           this.runSubscription = null;
           this.isLoading = false;

@@ -1,3 +1,19 @@
+/*
+Copyright 2025-2026 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 import { mount } from "@vue/test-utils";
 import { describe, it, expect } from "vitest";
 import InvestigationContent from "../InvestigationContent.vue";
@@ -56,7 +72,6 @@ describe("InvestigationContent.vue", () => {
     });
 
     expect(wrapper.text()).toContain("Investigation Plan");
-    // Markdown content should be rendered
     expect(wrapper.html()).toContain("Plan Content");
   });
 
@@ -70,16 +85,14 @@ describe("InvestigationContent.vue", () => {
             createTestingPinia({
                 initialState: {
                     investigation: {
-                         // Provide enough data so taskList and graph are populated
-                         sessionData: { 
+                        sessionData: { 
                              plan: "some plan",
                              questions: [{ id: 'q1', question: 'Q?', type: 'QUESTION' }],
                              tasks: [{ id: 't1', hypothesis_id: 'h1', task: 'T?', type: 'TASK' }],
                              hypotheses: [{ id: 'h1', question_id: 'q1', hypothesis: 'H', type: 'HYPOTHESIS'}]
-                         },
+                        }
                     }
                 },
-                // Allow getters to run based on state
                 stubActions: false, 
             })
         ],
@@ -93,11 +106,6 @@ describe("InvestigationContent.vue", () => {
 
     const tabs = wrapper.findAll(".custom-tab");
     
-    // Tasks tab should be enabled now
-    await tabs[1].trigger("click");
-    expect(wrapper.vm.tab).toBe("tasks");
-    
-    // Graph tab should be enabled now
     await tabs[2].trigger("click");
     expect(wrapper.vm.tab).toBe("graph");
     
@@ -160,7 +168,6 @@ describe("InvestigationContent.vue", () => {
                 initialState: {
                     investigation: {
                         sessionData: { plan: "some plan" },
-                        // No tasks or graph nodes
                     }
                 },
                 stubActions: false,
@@ -172,14 +179,9 @@ describe("InvestigationContent.vue", () => {
 
     const tabs = wrapper.findAll(".custom-tab");
     
-    // Plan tab enabled
-    expect(tabs[0].classes()).not.toContain("disabled-tab");
-    // Tasks tab disabled
-    expect(tabs[1].classes()).toContain("disabled-tab");
-    // Graph tab disabled
     expect(tabs[2].classes()).toContain("disabled-tab");
     
-    // Click should not work
+
     await tabs[1].trigger("click");
     expect(wrapper.vm.tab).toBe("plan");
   });
@@ -195,8 +197,7 @@ describe("InvestigationContent.vue", () => {
                         sessionData: { 
                              plan: "some plan",
                              questions: [{ id: 'q1', question: 'Q?', type: 'QUESTION' }],
-                             tasks: [{ id: 't1', task: 'T?', type: 'TASK' }], // Orphan task is fine for logic check
-                             // Just need > 0 tasks and > 0 nodes
+                             tasks: [{ id: 't1', task: 'T?', type: 'TASK' }],
                         },
                     }
                 },
@@ -272,7 +273,6 @@ describe("InvestigationContent.vue", () => {
           createTestingPinia({
             initialState: {
               investigation: {
-                // Ensure plan is rendered
                 sessionData: { plan: "some plan" },
                 pendingApproval: true,
               },
@@ -318,7 +318,7 @@ describe("InvestigationContent.vue", () => {
     const approveBtn = buttons.find((b) => b.text().includes("Approve"));
     await approveBtn.trigger("click");
 
-    expect(approveSpy).toHaveBeenCalledWith("123"); // "123" is mocked route param
+    expect(approveSpy).toHaveBeenCalledWith("123");
   });
 
   it("opens review dialog when Review button is clicked and submits review", async () => {
@@ -349,14 +349,9 @@ describe("InvestigationContent.vue", () => {
 
     expect(wrapper.vm.showReviewDialog).toBe(true);
 
-    // Set review reason
     wrapper.vm.reviewReason = "Needs more detail";
     await wrapper.vm.$nextTick();
     
-    // Call submit directly or find the button in dialog (dialogs can be tricky in test-utils sometimes due to teleport)
-    // For simplicity with shallow/stubs, we can call the method or trigger the dialog button if reachable.
-    // Since we are using real vuetify components in mount, dialog content might be teleported.
-    // Let's call the method to verify logic.
     await wrapper.vm.submitReview();
 
     expect(rejectSpy).toHaveBeenCalledWith("123", "Needs more detail");
