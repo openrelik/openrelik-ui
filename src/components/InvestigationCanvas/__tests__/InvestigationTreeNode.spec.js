@@ -15,13 +15,7 @@ describe("InvestigationTreeNode.vue", () => {
       return mount(InvestigationTreeNode, {
         global: {
             plugins: [vuetify],
-            stubs: {
-                // Keep recursion shallow-ish by stubbing self if needed, but we want to test interaction?
-                // Actually, recursive components are tricky.
-                // If we want to test recursive rendering, we should NOT stub it entirely, or use shallowMount.
-                // But shallowMount is deprecated-ish.
-                // Let's rely on finding children by class or name after expansion.
-            }
+            stubs: {}
         },
         props: {
             depth: 0,
@@ -30,8 +24,7 @@ describe("InvestigationTreeNode.vue", () => {
         }
       });
   };
-
-  // 1. Node Types & Icons
+ 
   const nodeTypes = [
       { type: "SECTION", icon: "mdi-lightbulb-outline", color: "grey" },
       { type: "MD_FILE", icon: "mdi-file-document-outline", color: "grey-darken-1" }, // default color
@@ -64,27 +57,25 @@ describe("InvestigationTreeNode.vue", () => {
   // 2. Status Styling & Icons
   const allStatuses = [
       { status: "COMPLETED", className: "success", icon: "mdi-check-circle" },
-      { status: "PROVEN", className: "success", icon: "mdi-check-circle" }, // Proven
-      { status: "SUPPORTS_PARENT", className: "success", icon: "mdi-check-circle" }, // Supports Parent
+      { status: "PROVEN", className: "success", icon: "mdi-check-circle" },
+      { status: "SUPPORTS_PARENT", className: "success", icon: "mdi-check-circle" },
       
       { status: "FAILED", className: "error", icon: "mdi-close-circle" },
-      { status: "DISPROVEN", className: "error", icon: "mdi-close-circle" }, // Disproven
-      { status: "REFUTES_PARENT", className: "error", icon: "mdi-close-circle" }, // Refutes Parent
+      { status: "DISPROVEN", className: "error", icon: "mdi-close-circle" },
+      { status: "REFUTES_PARENT", className: "error", icon: "mdi-close-circle" },
       
       { status: "IN_PROGRESS", className: "info", icon: "mdi-play-circle-outline" },
-      { status: "RUNNING", className: "info", icon: "mdi-play-circle-outline" }, // Running
+      { status: "RUNNING", className: "info", icon: "mdi-play-circle-outline" },
       
       { status: "DATA_UNAVAILABLE", className: "warning", icon: "mdi-alert-circle-outline" },
       { status: "PENDING", className: "grey", icon: "mdi-clock-outline" },
-      // Default case coverage
-      { status: "UNKNOWN", className: "grey", icon: null } 
+      { status: "UNKNOWN", className: "grey", icon: "mdi-circle-outline" } 
   ];
-
+  
   it.each(allStatuses)("applies correct status styling and icon for $status", ({ status, className, icon }) => {
       const node = { id: "1", label: "Node", type: "HYPOTHESIS", status };
       const wrapper = mountComponent({ node });
 
-      // Check Icon
       if (icon) {
           const statusIcon = wrapper.findAllComponents({ name: "VIcon" }).find(w => w.attributes("class")?.includes("ml-1"));
           expect(statusIcon.exists()).toBe(true);
@@ -94,12 +85,6 @@ describe("InvestigationTreeNode.vue", () => {
            const statusIcon = wrapper.findAllComponents({ name: "VIcon" }).find(w => w.attributes("class")?.includes("ml-1"));
            expect(statusIcon).toBeUndefined();
       }
-      
-      // Check Class on main content if applicable (some statuses apply class to container)
-      // The component applies classes: disproven, proven, failed, data-unavailable.
-      // It doesn't apply class for PENDING or IN_PROGRESS directly to container in the template shown?
-      // Let's check the template logic:
-      // :class="{ 'disproven': ..., 'proven': ..., 'failed': ..., 'data-unavailable': ... }"
       
       if (["DISPROVEN", "REFUTES_PARENT"].includes(status)) {
           expect(wrapper.find(".disproven").exists()).toBe(true);
@@ -115,7 +100,6 @@ describe("InvestigationTreeNode.vue", () => {
       }
   });
 
-  // 3. Interactions
   it("emits node-click on content click", async () => {
       const node = { id: "1", label: "Click Me", type: "HYPOTHESIS" };
       const wrapper = mountComponent({ node });
@@ -132,8 +116,6 @@ describe("InvestigationTreeNode.vue", () => {
       await wrapper.find(".node-content").trigger("click");
       expect(wrapper.emitted("node-click")).toBeFalsy();
       
-      // But if it had children, it should expand?
-      // Verify toggle logic is independent
   });
 
   it("toggles expansion even if node-click is not emitted", async () => {
@@ -176,7 +158,7 @@ describe("InvestigationTreeNode.vue", () => {
           id: "1", 
           label: "Task", 
           type: "TASK", 
-          findings: [finding] // Should use findings, not children
+          findings: [finding]
       };
       const wrapper = mountComponent({ node });
       

@@ -31,7 +31,7 @@
           }"
           :depth="0"
           :active-id="activeHypothesisId"
-          @node-click="handleNodeClick"
+          @node-click="$emit('select-node', $event)"
         />
 
         <InvestigationTreeNode
@@ -39,29 +39,37 @@
             type: 'MD_FILE',
             label: 'Final Report',
             id: 'meta-final-report',
+            disabled: true,
           }"
           :depth="0"
           :active-id="activeHypothesisId"
-          @node-click="handleNodeClick"
+          @node-click="$emit('select-node', $event)"
         />
 
         <v-divider class="my-2 mx-n2" opacity="0.1" />
 
         <!-- Questions Section Header -->
-        <div class="questions-header d-flex align-center mb-1">
-          <div class="questions-header-text">Questions</div>
-        </div>
+        <template
+          v-if="
+            investigationData.questions &&
+            investigationData.questions.length > 0
+          "
+        >
+          <div class="questions-header d-flex align-center mb-1">
+            <div class="questions-header-text">Questions</div>
+          </div>
 
-        <!-- Questions Section -->
-        <InvestigationTreeNode
-          v-for="question in investigationData.questions"
-          :key="question.id"
-          :node="question"
-          :depth="0"
-          :active-id="activeHypothesisId"
-          @node-click="handleNodeClick"
-          @add-hypothesis="handleAddHypothesis"
-        />
+          <!-- Questions Section -->
+          <InvestigationTreeNode
+            v-for="question in investigationData.questions"
+            :key="question.id"
+            :node="question"
+            :depth="0"
+            :active-id="activeHypothesisId"
+            @node-click="$emit('select-node', $event)"
+            @add-hypothesis="handleAddHypothesis"
+          />
+        </template>
       </template>
     </div>
 
@@ -112,7 +120,7 @@ const investigationData = computed(() => {
   return {
     type: "INVESTIGATION_ROOT",
     id: sessionData.id || "CASE-UUID",
-    label: sessionData.label || "Current Investigation",
+    label: sessionData.label || "Untitled Investigation",
     status: sessionData.status || "IN_PROGRESS",
     final_verdict: sessionData.final_verdict || "PENDING",
     observations: sessionData.observations || [],
@@ -126,10 +134,6 @@ const contextMenu = reactive({
   y: 0,
   targetNode: null,
 });
-
-const handleNodeClick = (node) => {
-  emit("select-node", node);
-};
 
 const handleAddHypothesis = (node) => {
   contextMenu.targetNode = node;

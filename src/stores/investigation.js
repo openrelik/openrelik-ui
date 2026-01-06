@@ -27,6 +27,10 @@ export const useInvestigationStore = defineStore("investigation", {
     sessionData: {},
     isListening: false,
     pendingApproval: null,
+    pendingApproval: null,
+    sseSubscription: null,
+    runSubscription: null,
+    sessionIsLoading: false,
   }),
   getters: {
     graph: (state) => {
@@ -112,14 +116,18 @@ export const useInvestigationStore = defineStore("investigation", {
     }
   },
   actions: {
-    async createSession(folderId) {
+    async createSession(folderId, context = null) {
       const storageKey = `openrelik_agent_session_${folderId}`;
       const existingSessionId = localStorage.getItem(storageKey);
 
+      // If we have a session, attach to the existing session
       if (existingSessionId) {
         this.sessionId = existingSessionId;
+        this.sessionIsLoading = true;
+        this.runAgent(folderId, null);
+
       } else {
-        const response = await RestApiClient.createAgentSession(folderId);
+        const response = await RestApiClient.createAgentSession(folderId, context);
         this.sessionId = response.session_id;
         localStorage.setItem(storageKey, this.sessionId);
       }
@@ -129,19 +137,49 @@ export const useInvestigationStore = defineStore("investigation", {
     async getSessionData(folderId) {
       if (this.isListening) return;
       this.isListening = true;
-      RestApiClient.sse(
+      this.sseSubscription = RestApiClient.sse(
         "folders/" + folderId + "/investigations/" + this.sessionId
       ).subscribe({
         next: (data) => {
           data = JSON.parse(data);
           this.sessionData = data["state"];
+          // If we are just fetching the initial state and no agent is running,
+          // we can close the connection once we have the data (state).
+          if (!this.runSubscription && data["state"]) {
+            if (this.sseSubscription) {
+              this.sseSubscription.unsubscribe();
+              this.sseSubscription = null;
+            }
+            this.isListening = false;
+            this.sessionIsLoading = false;
+          }
+
           if (this.chatMessages.length === 0) {
-            this.chatMessages = data["events"];
+            this.chatMessages = data["events"] || [];
+
+            if (this.chatMessages.length > 0) {
+              const lastMessage =
+                this.chatMessages[this.chatMessages.length - 1];
+              if (lastMessage.content && lastMessage.content.parts) {
+                const hasAskForApproval = lastMessage.content.parts.some(
+                  (part) =>
+                    part.functionResponse &&
+                    part.functionResponse.name === "ask_for_approval"
+                );
+
+                if (hasAskForApproval) {
+                  this.pendingApproval = {
+                    invocationId: lastMessage.invocationId,
+                  };
+                }
+              }
+            }
           }
         },
         error: (err) => {
           console.error(err);
           this.isListening = false;
+          this.sessionIsLoading = false;
         },
       });
     },
@@ -158,6 +196,11 @@ export const useInvestigationStore = defineStore("investigation", {
         user_message: userMessage,
       };
 
+      if (this.runSubscription) {
+        this.runSubscription.unsubscribe();
+        this.runSubscription = null;
+      }
+
       if (functionName) {
         requestBody["function_name"] = functionName;
       }
@@ -170,9 +213,13 @@ export const useInvestigationStore = defineStore("investigation", {
         requestBody["invocation_id"] = invocationId;
       }
 
+      
       this.isLoading = true;
 
-      RestApiClient.sse(
+      // Start listening to session updates if not already
+      this.getSessionData(folderId);
+
+      this.runSubscription = RestApiClient.sse(
         "folders/" + folderId + "/investigations/run",
         requestBody
       ).subscribe({
@@ -202,13 +249,14 @@ export const useInvestigationStore = defineStore("investigation", {
           }
         },
         error: (err) => {
-          console.error(err);
+          this.runSubscription.unsubscribe();
+          this.runSubscription = null;
           this.isLoading = false;
         },
         complete: () => {
-          if (!this.pendingApproval) {
-            this.isLoading = false;
-          }
+          this.runSubscription.unsubscribe();
+          this.runSubscription = null;
+          this.isLoading = false;
         },
       });
     },
@@ -237,6 +285,16 @@ export const useInvestigationStore = defineStore("investigation", {
         toolId,
         invocationId
       );
+    },
+    reset() {
+      if (this.sseSubscription) {
+        this.sseSubscription.unsubscribe();
+      }
+      if (this.runSubscription) {
+        this.runSubscription.unsubscribe();
+      }
+      this.$reset();
+      this.sessionIsLoading = false;
     },
   },
 });

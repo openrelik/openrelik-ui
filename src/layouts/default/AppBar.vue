@@ -35,7 +35,7 @@ limitations under the License.
         <v-icon>mdi-cog-outline</v-icon>
       </v-btn>
       <system-menu />
-      <div class="mr-2 ml-5">
+      <div class="ml-5">
         <profile-menu size="30" />
       </div>
     </template>

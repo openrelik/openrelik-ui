@@ -123,7 +123,7 @@ describe("InvestigationTree.vue", () => {
         });
         
         // Fallback label in computed property
-        expect(wrapper.text()).toContain("Current Investigation");
+        expect(wrapper.text()).toContain("Untitled Investigation");
     });
 
     it("renders logo in fullscreen mode", () => {
@@ -288,7 +288,7 @@ describe("InvestigationTree.vue", () => {
         });
         
         // Should fallback to default label
-        expect(wrapper.text()).toContain("Current Investigation");
+        expect(wrapper.text()).toContain("Untitled Investigation");
     });
 
     it("filters out non-QUESTION nodes from tree", async () => {

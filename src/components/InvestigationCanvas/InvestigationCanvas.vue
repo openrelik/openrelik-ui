@@ -2,7 +2,7 @@
   <div
     ref="containerRef"
     class="investigation-workspace fill-height d-flex"
-    :class="{ 'is-resizing': isResizing || isTreeResizing }"
+    :class="{ 'is-resizing': isAnyResizing }"
   >
     <!-- Far Left Pane: Investigation Tree -->
     <div
@@ -12,7 +12,7 @@
     >
       <InvestigationTree
         :active-hypothesis-id="activeHypothesisId"
-        @select-hypothesis="handleHypothesisSelection"
+        @select-node="handleNodeSelection"
       />
     </div>
 
@@ -22,16 +22,24 @@
       class="resizer"
       :class="{
         'light-theme-resizer': isLightTheme,
-        'is-active': isTreeResizing,
+        'is-active': resizingTarget === 'tree',
       }"
-      @mousedown="startTreeResize"
+      @mousedown="startResize('tree')"
+      @mouseenter="hoveredResizer = 'tree'"
+      @mouseleave="hoveredResizer = null"
+      @mousemove="updateHandlePosition"
     >
       <div class="resizer-line"></div>
+      <div
+        v-show="hoveredResizer === 'tree' || resizingTarget === 'tree'"
+        class="resizer-handle"
+        :style="{ top: `${handleTop}px` }"
+      ></div>
     </div>
 
-    <!-- Middle Pane: Artifacts (Flexible) -->
+    <!-- Middle Pane: Content (Flexible) -->
     <div class="pane middle-pane flex-grow-1">
-      <InvestigationContent />
+      <InvestigationContent ref="contentRef" />
     </div>
 
     <!-- Right Resizer -->
@@ -39,16 +47,16 @@
       class="resizer"
       :class="{
         'light-theme-resizer': isLightTheme,
-        'is-active': isResizing,
+        'is-active': resizingTarget === 'chat',
       }"
-      @mousedown="startResize"
-      @mouseenter="isResizerHovered = true"
-      @mouseleave="isResizerHovered = false"
+      @mousedown="startResize('chat')"
+      @mouseenter="hoveredResizer = 'chat'"
+      @mouseleave="hoveredResizer = null"
       @mousemove="updateHandlePosition"
     >
       <div class="resizer-line"></div>
       <div
-        v-show="isResizerHovered || isResizing"
+        v-show="hoveredResizer === 'chat' || resizingTarget === 'chat'"
         class="resizer-handle"
         :style="{ top: `${handleTop}px` }"
       ></div>
@@ -62,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useThemeInfo } from "@/composables/useThemeInfo";
 import InvestigationContent from "./InvestigationContent.vue";
 import InvestigationChat from "./InvestigationChat.vue";
@@ -70,41 +78,24 @@ import InvestigationTree from "./InvestigationTree.vue";
 
 const { isLightTheme } = useThemeInfo();
 const containerRef = ref(null);
+const contentRef = ref(null);
 const showTree = ref(true);
 const treePaneWidth = ref(280);
 const chatPaneWidth = ref(400);
-const isResizing = ref(false);
-const isTreeResizing = ref(false);
-const isResizerHovered = ref(false);
+const resizingTarget = ref(null); // 'tree' | 'chat' | null
+const hoveredResizer = ref(null); // 'tree' | 'chat' | null
 const handleTop = ref(0);
 const activeHypothesisId = ref(null);
+
+const isAnyResizing = computed(() => !!resizingTarget.value);
 
 const updateHandlePosition = (e) => {
   const rect = e.currentTarget.getBoundingClientRect();
   handleTop.value = e.clientY - rect.top;
 };
 
-const startTreeResize = (e) => {
-  isTreeResizing.value = true;
-  document.addEventListener("mousemove", handleTreeResize);
-  document.addEventListener("mouseup", stopResize);
-  document.body.style.userSelect = "none";
-  document.body.style.cursor = "col-resize";
-};
-
-const handleTreeResize = (e) => {
-  if (!isTreeResizing.value || !containerRef.value) return;
-  const containerRect = containerRef.value.getBoundingClientRect();
-  const newWidth = e.clientX - containerRect.left;
-  // Constraint: 150px min, don't overlap with middle/chat (leave at least 300px for middle)
-  const maxTreeWidth = containerRect.width - chatPaneWidth.value - 300;
-  if (newWidth >= 150 && newWidth <= Math.max(150, maxTreeWidth)) {
-    treePaneWidth.value = newWidth;
-  }
-};
-
-const startResize = (e) => {
-  isResizing.value = true;
+const startResize = (target) => {
+  resizingTarget.value = target;
   document.addEventListener("mousemove", handleResize);
   document.addEventListener("mouseup", stopResize);
   document.body.style.userSelect = "none";
@@ -112,28 +103,42 @@ const startResize = (e) => {
 };
 
 const handleResize = (e) => {
-  if (!isResizing.value || !containerRef.value) return;
+  if (!resizingTarget.value || !containerRef.value) return;
   const containerRect = containerRef.value.getBoundingClientRect();
-  const newWidth = containerRect.right - e.clientX;
-  // Constraint: 200px min, don't overlap with tree/middle (leave at least 300px for middle)
-  const maxChatWidth = containerRect.width - treePaneWidth.value - 300;
-  if (newWidth >= 200 && newWidth <= Math.max(200, maxChatWidth)) {
-    chatPaneWidth.value = newWidth;
+
+  if (resizingTarget.value === "tree") {
+    const newWidth = e.clientX - containerRect.left;
+    // Constraint: 150px min, don't overlap with middle/chat (leave at least 300px for middle)
+    const maxTreeWidth = containerRect.width - chatPaneWidth.value - 300;
+    if (newWidth >= 150 && newWidth <= Math.max(150, maxTreeWidth)) {
+      treePaneWidth.value = newWidth;
+    }
+  } else if (resizingTarget.value === "chat") {
+    const newWidth = containerRect.right - e.clientX;
+    // Constraint: 200px min, don't overlap with tree/middle (leave at least 300px for middle)
+    const maxChatWidth = containerRect.width - treePaneWidth.value - 300;
+    if (newWidth >= 200 && newWidth <= Math.max(200, maxChatWidth)) {
+      chatPaneWidth.value = newWidth;
+    }
   }
 };
 
 const stopResize = () => {
-  isResizing.value = false;
-  isTreeResizing.value = false;
+  resizingTarget.value = null;
   document.removeEventListener("mousemove", handleResize);
-  document.removeEventListener("mousemove", handleTreeResize);
   document.removeEventListener("mouseup", stopResize);
   document.body.style.userSelect = "";
   document.body.style.cursor = "";
 };
 
-const handleHypothesisSelection = (hypothesisId) => {
-  activeHypothesisId.value = hypothesisId;
+const handleNodeSelection = (node) => {
+  if (node.id === "meta-plan") {
+    if (contentRef.value) {
+      contentRef.value.setTab("plan");
+    }
+  } else {
+    activeHypothesisId.value = node.id;
+  }
 };
 
 onMounted(() => {

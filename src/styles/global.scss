@@ -972,3 +972,10 @@ html {
   .markdown-body ::-webkit-calendar-picker-indicator {
     filter: invert(50%);
   }
+
+.v-theme--dark {
+  .v-btn.bg-info:disabled,
+  .v-btn.bg-info.v-btn--disabled {
+    opacity: 0.3 !important;
+  }
+}

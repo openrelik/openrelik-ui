@@ -21,6 +21,7 @@
         'data-unavailable': node.status === 'DATA_UNAVAILABLE',
         'hypothesis-node': node.type === 'HYPOTHESIS',
         'task-node': node.type === 'TASK',
+        disabled: node.disabled,
       }"
       :style="{
         paddingLeft: node.type === 'MD_FILE' ? '8px' : `${depth * 10 + 8}px`,
@@ -99,6 +100,7 @@
 
 <script setup>
 import { ref, computed } from "vue";
+import { getStatusIcon, getStatusColor } from "@/utils/statusUtils";
 
 const props = defineProps({
   node: {
@@ -167,48 +169,18 @@ const nodeIconColor = computed(() => {
 });
 
 const statusIcon = computed(() => {
-  switch (props.node.status) {
-    case "COMPLETED":
-    case "PROVEN":
-    case "SUPPORTS_PARENT":
-      return "mdi-check-circle";
-    case "FAILED":
-    case "DISPROVEN":
-    case "REFUTES_PARENT":
-      return "mdi-close-circle";
-    case "IN_PROGRESS":
-    case "RUNNING":
-      return "mdi-play-circle-outline";
-    case "DATA_UNAVAILABLE":
-      return "mdi-alert-circle-outline";
-    case "PENDING":
-      return "mdi-clock-outline";
-    default:
-      return null;
-  }
+  return getStatusIcon(props.node.status);
 });
 
 const statusIconColor = computed(() => {
-  switch (props.node.status) {
-    case "COMPLETED":
-    case "PROVEN":
-    case "SUPPORTS_PARENT":
-      return "success";
-    case "FAILED":
-    case "DISPROVEN":
-    case "REFUTES_PARENT":
-      return "error";
-    case "IN_PROGRESS":
-    case "RUNNING":
-      return "info";
-    case "DATA_UNAVAILABLE":
-      return "warning";
-    default:
-      return "grey";
-  }
+  return getStatusColor(props.node.status);
 });
 
 const handleNodeClick = () => {
+  if (props.node.disabled) {
+    return;
+  }
+
   if (
     ["HYPOTHESIS", "TASK", "FINDING", "OBSERVATION", "MD_FILE"].includes(
       props.node.type
@@ -324,5 +296,10 @@ const handleContextMenu = (e) => {
   .investigation-tree-node
   .node-label {
   font-size: 0.75rem;
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
 }
 </style>

@@ -31,7 +31,7 @@
         icon="mdi-fullscreen"
         variant="text"
         density="compact"
-        class="ml-auto mr-3"
+        class="ml-auto mr-1"
         @click="toggleFullscreen"
       ></v-btn>
     </div>
@@ -55,7 +55,7 @@ import Breadcrumbs from "@/components/Breadcrumbs.vue";
 import RestApiClient from "@/RestApiClient";
 import { useRoute } from "vue-router";
 import { useInvestigationStore } from "@/stores/investigation";
-import { onMounted, onBeforeUnmount, ref, provide, computed } from "vue";
+import { onMounted, onBeforeUnmount, ref, provide, computed, watch } from "vue";
 
 const investigationStore = useInvestigationStore();
 
@@ -71,7 +71,7 @@ provide("agent-fullscreen", { isFullscreen, toggleFullscreen });
 
 const handleBeforeUnload = (event) => {
   if (investigationStore.isLoading) {
-    event.preventDefault();
+    // event.preventDefault();
     event.returnValue = "";
   }
 };
@@ -100,24 +100,34 @@ const containerStyle = computed(() => {
   };
 });
 
-onMounted(async () => {
-  // Prevent navigation if the session is loading, to warn the user about unsaved changes
+onMounted(() => {
   window.addEventListener("beforeunload", handleBeforeUnload);
-  if (route.params.folderId) {
-    try {
-      folder.value = await RestApiClient.getFolder(route.params.folderId);
-
-      const storageKey = `openrelik_agent_session_${route.params.folderId}`;
-      if (localStorage.getItem(storageKey)) {
-        investigationStore.createSession(route.params.folderId);
-      }
-    } catch (error) {
-      console.error("Failed to load folder:", error);
-    }
-  }
 });
+
+watch(
+  () => route.params.folderId,
+  async (newFolderId) => {
+    if (newFolderId) {
+      try {
+        // Restore session immediately if possible
+        const storageKey = `openrelik_agent_session_${newFolderId}`;
+        if (localStorage.getItem(storageKey)) {
+          console.log("Restoring session for folder:", newFolderId);
+          investigationStore.createSession(newFolderId);
+        }
+
+        // Fetch folder details
+        folder.value = await RestApiClient.getFolder(newFolderId);
+      } catch (error) {
+        console.error("Failed to load folder or session:", error);
+      }
+    }
+  },
+  { immediate: true }
+);
 
 onBeforeUnmount(() => {
   window.removeEventListener("beforeunload", handleBeforeUnload);
+  investigationStore.reset();
 });
 </script>

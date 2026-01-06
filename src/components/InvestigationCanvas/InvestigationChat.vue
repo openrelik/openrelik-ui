@@ -9,6 +9,14 @@
         {{ investigationStore.sessionId }}
       </div>
       <div class="d-flex align-center">
+        <v-chip
+          variant="outlined"
+          size="x-small"
+          :color="investigationStore.runSubscription ? 'success' : 'warning'"
+          class="mr-4 font-weight-medium"
+        >
+          {{ investigationStore.runSubscription ? "Active" : "Idle" }}
+        </v-chip>
         <v-btn
           v-if="isFullscreen"
           icon="mdi-fullscreen-exit"
@@ -80,16 +88,6 @@
               </div>
             </template>
           </div>
-          <div v-else-if="message.type === 'complete'">
-            <div class="mb-1">
-              <small>
-                <v-icon class="mr-2 mt-n1" size="small" color="success">
-                  mdi-check-circle
-                </v-icon>
-                <strong>{{ message.message }}</strong>
-              </small>
-            </div>
-          </div>
           <div v-else-if="message.error || message.type === 'error'">
             <div class="mb-1">
               <small>
@@ -155,6 +153,7 @@
               label="Feedback on the current plan"
               rows="3"
               auto-grow
+              autofocus
               variant="outlined"
             ></v-textarea>
             <v-btn
@@ -176,28 +175,6 @@
           </div>
         </v-card>
       </v-dialog>
-
-      <!-- Action Row (Context + Actions) -->
-      <transition name="slide-up-only">
-        <div
-          v-if="showStartButton"
-          class="d-flex align-center justify-end mb-2 pr-1"
-        >
-          <div class="mr-4 text-caption text-medium-emphasis">
-            Start by creating an investigation plan
-          </div>
-          <v-btn
-            prepend-icon="mdi-play"
-            color="info"
-            variant="flat"
-            size="small"
-            text="Create plan"
-            class="text-none"
-            :loading="isCreatingSession"
-            @click="handleStart()"
-          ></v-btn>
-        </div>
-      </transition>
 
       <div
         v-if="
@@ -257,7 +234,6 @@ const { isFullscreen, toggleFullscreen } = inject("agent-fullscreen", {
 });
 
 const chatPrompt = ref("");
-const isCreatingSession = ref(false);
 
 const isValidMessage = (m) => {
   if (!m) return false;
@@ -291,49 +267,8 @@ const reversedChatMessages = computed(() => {
   return [...investigationStore.chatMessages].filter(isValidMessage).reverse();
 });
 
-const isPlanEmpty = computed(() => {
-  return !investigationStore.sessionData?.plan;
-});
-
-const showStartButton = computed(() => {
-  if (investigationStore.isLoading) return false;
-
-  const noSession = !investigationStore.sessionId;
-  const sessionButNoPlan =
-    investigationStore.sessionId &&
-    isPlanEmpty.value &&
-    investigationStore.chatMessages.length === 0;
-
-  return noSession || sessionButNoPlan;
-});
-
 const toHtml = (markdown) => {
   return DOMPurify.sanitize(marked(markdown, { FORBID_TAGS: ["hr"] }));
-};
-
-const handleStart = async () => {
-  if (!investigationStore.sessionId) {
-    if (route.params.folderId) {
-      isCreatingSession.value = true;
-      try {
-        await investigationStore.createSession(route.params.folderId);
-        // Also run agent to create the plan as expected
-        await investigationStore.runAgent(
-          route.params.folderId,
-          "Create the investigative plan."
-        );
-      } catch (error) {
-        console.error("Failed to create session:", error);
-      } finally {
-        isCreatingSession.value = false;
-      }
-    }
-  } else {
-    investigationStore.runAgent(
-      route.params.folderId,
-      "Continue the investigation."
-    );
-  }
 };
 
 const showReviewDialog = ref(false);

@@ -28,7 +28,7 @@ describe("InvestigationCanvas.vue", () => {
                 stubs: {
                     InvestigationContent: { template: "<div class='content-pane-stub'></div>" },
                     InvestigationChat: { template: "<div class='chat-pane-stub'></div>" },
-                    InvestigationTree: { template: "<div class='tree-view-stub'></div>", emits: ["select-hypothesis"] }
+                    InvestigationTree: { template: "<div class='tree-view-stub'></div>", emits: ["select-node"] }
                 },
                 provide: {
                     "agent-fullscreen": { isFullscreen: ref(false) }
@@ -63,7 +63,7 @@ describe("InvestigationCanvas.vue", () => {
         const treeResizer = resizers[0]; 
         
         await treeResizer.trigger("mousedown");
-        expect(wrapper.vm.isTreeResizing).toBe(true);
+        expect(wrapper.vm.resizingTarget).toBe("tree");
         
         // Resize to 300px
         const moveEvent = new MouseEvent("mousemove", { clientX: 300, clientY: 100 });
@@ -74,7 +74,7 @@ describe("InvestigationCanvas.vue", () => {
         // Stop resize
         const upEvent = new MouseEvent("mouseup");
         document.dispatchEvent(upEvent);
-        expect(wrapper.vm.isTreeResizing).toBe(false);
+        expect(wrapper.vm.resizingTarget).toBe(null);
     });
 
     it("handles chat pane resizing", async () => {
@@ -93,7 +93,7 @@ describe("InvestigationCanvas.vue", () => {
         const chatResizer = resizers[1];
         
         await chatResizer.trigger("mousedown");
-        expect(wrapper.vm.isResizing).toBe(true);
+        expect(wrapper.vm.resizingTarget).toBe("chat");
         
         // Resize chat pane. 
         // Logic: newWidth = container.right - e.clientX
@@ -110,7 +110,7 @@ describe("InvestigationCanvas.vue", () => {
         // Stop resize
         const upEvent = new MouseEvent("mouseup");
         document.dispatchEvent(upEvent);
-        expect(wrapper.vm.isResizing).toBe(false);
+        expect(wrapper.vm.resizingTarget).toBe(null);
     });
 
     it("handles resizer hover effect", async () => {
@@ -140,16 +140,47 @@ describe("InvestigationCanvas.vue", () => {
     it("handles hypothesis selection from tree", async () => {
         const wrapper = mountWrapper();
         
-        // Find stubbed Tree View using class selector from stub
-        // And use findComponent to get wrapper for emit
-        // Note: wrapper.findComponent(".class") works if root element has class
         const tv = wrapper.findComponent(".tree-view-stub"); 
         
         expect(tv.exists()).toBe(true);
         
-        // Emit select-hypothesis
-        tv.vm.$emit("select-hypothesis", "hyp-123");
+        // Emit select-node with a hypothesis node
+        tv.vm.$emit("select-node", { id: "hyp-123", type: "hypothesis" });
         
         expect(wrapper.vm.activeHypothesisId).toBe("hyp-123");
+    });
+
+    it("switches to plan tab when plan node is selected", async () => {
+        // We need a mock for contentRef to verify setTab is called
+        // Since we stub InvestigationContent, we can spy on a method if we attach it to the stub's vm,
+        // but easier here is to mock the ref logic or just verify the side effect if we could.
+        // However, the component calls `contentRef.value.setTab`. 
+        // We can use a custom stub that exposes setTab.
+        
+        const setTabMock = vi.fn();
+        const wrapper = mount(InvestigationCanvas, {
+            global: {
+                plugins: [vuetify],
+                stubs: {
+                    InvestigationContent: { 
+                        template: "<div class='content-pane-stub'></div>",
+                        methods: {
+                            setTab: setTabMock
+                        },
+                        expose: ['setTab']
+                    },
+                    InvestigationChat: { template: "<div class='chat-pane-stub'></div>" },
+                    InvestigationTree: { template: "<div class='tree-view-stub'></div>", emits: ["select-node"] }
+                },
+                provide: {
+                    "agent-fullscreen": { isFullscreen: ref(false) }
+                }
+            }
+        });
+
+        const tv = wrapper.findComponent(".tree-view-stub");
+        tv.vm.$emit("select-node", { id: "meta-plan", type: "MD_FILE" });
+        
+        expect(setTabMock).toHaveBeenCalledWith("plan");
     });
 });

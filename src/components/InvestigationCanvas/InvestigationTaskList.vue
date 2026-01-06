@@ -30,6 +30,7 @@
 <script setup>
 import { computed } from "vue";
 import { useInvestigationStore } from "@/stores/investigation";
+import { getStatusIcon, getStatusColor } from "@/utils/statusUtils";
 
 const investigationStore = useInvestigationStore();
 
@@ -38,48 +39,6 @@ const headers = [{ title: "Task", key: "task", align: "start" }];
 const nodes = computed(() => {
   return investigationStore.taskList || [];
 });
-
-const getStatusIcon = (status) => {
-  switch (status) {
-    case "COMPLETED":
-    case "PROVEN":
-    case "SUPPORTS_PARENT":
-      return "mdi-check-circle";
-    case "FAILED":
-    case "DISPROVEN":
-    case "REFUTES_PARENT":
-      return "mdi-close-circle";
-    case "IN_PROGRESS":
-    case "RUNNING":
-      return "mdi-play-circle-outline";
-    case "DATA_UNAVAILABLE":
-      return "mdi-alert-circle-outline";
-    case "PENDING":
-      return "mdi-clock-outline";
-    default:
-      return "mdi-circle-outline";
-  }
-};
-
-const getStatusColor = (status) => {
-  switch (status) {
-    case "COMPLETED":
-    case "PROVEN":
-    case "SUPPORTS_PARENT":
-      return "success";
-    case "FAILED":
-    case "DISPROVEN":
-    case "REFUTES_PARENT":
-      return "error";
-    case "IN_PROGRESS":
-    case "RUNNING":
-      return "info";
-    case "DATA_UNAVAILABLE":
-      return "warning";
-    default:
-      return "grey";
-  }
-};
 </script>
 
 <style scoped>

@@ -66,30 +66,7 @@ describe("InvestigationChat.vue", () => {
         }
     };
 
-    it("renders empty state correctly (Start button shown)", () => {
-        const wrapper = mount(InvestigationChat, {
-            global: {
-                plugins: [
-                    vuetify,
-                    createTestingPinia({
-                        initialState: {
-                            investigation: {
-                                chatMessages: [],
-                                sessionId: null,
-                                isLoading: false,
-                                sessionData: { plan: null } // No plan
-                            }
-                        },
-                        stubActions: false, 
-                    })
-                ],
-                provide: defaultProvide
-            }
-        });
 
-        expect(wrapper.text()).toContain("Start by creating an investigation plan");
-        expect(wrapper.find(".mdi-play").exists()).toBe(true);
-    });
 
     it("renders user messages", () => {
         const wrapper = mount(InvestigationChat, {
@@ -342,29 +319,7 @@ describe("InvestigationChat.vue", () => {
         expect(store.rejectAction).toHaveBeenCalledWith("123", "Change the plan");
     });
     
-    it("handles start investigation action", async () => {
-        const wrapper = mount(InvestigationChat, {
-            global: {
-                plugins: [
-                    vuetify,
-                    createTestingPinia({
-                        initialState: {
-                            investigation: {
-                                chatMessages: [],
-                                sessionId: null, 
-                            }
-                        },
-                        stubActions: false 
-                    })
-                ],
-                provide: defaultProvide
-            }
-        });
 
-        const startBtn = wrapper.findAll("button").find(b => b.text().includes("Create plan"));
-        await startBtn.trigger("click");
-        // Verify method call via store spy if we had one attached to the wrapped component instance
-    });
 
     it("sends a message", async () => {
         const wrapper = mount(InvestigationChat, {
@@ -411,101 +366,9 @@ describe("InvestigationChat.vue", () => {
         expect(store.runAgent).toHaveBeenCalledWith("123", "New command");
     });
 
-    it("hides start button when plan exists", () => {
-        const wrapper = mount(InvestigationChat, {
-            global: {
-                plugins: [
-                    vuetify,
-                    createTestingPinia({
-                        initialState: {
-                            investigation: {
-                                chatMessages: [],
-                                sessionId: "session-1",
-                                sessionData: { plan: "Existing Plan" }
-                            }
-                        }
-                    })
-                ],
-                provide: defaultProvide
-            }
-        });
 
-        expect(wrapper.find(".mdi-play").exists()).toBe(false);
-        expect(wrapper.text()).not.toContain("Start by creating an investigation plan");
-    });
 
-    it("handles continue investigation action", async () => {
-         const wrapper = mount(InvestigationChat, {
-            global: {
-                plugins: [
-                    vuetify,
-                    createTestingPinia({
-                        initialState: {
-                            investigation: {
-                                chatMessages: [],
-                                sessionId: "session-1", // Exists
-                                sessionData: { plan: "Plan" }
-                            }
-                        },
-                        stubActions: false
-                    })
-                ],
-                provide: defaultProvide
-            }
-        });
 
-        // We need to force show the start button? No, if session exists and plan exists, button is hidden.
-        // Wait, handleStart is called by "Create plan" button.
-        // But logic says: showStartButton if noSession OR (session AND noPlan AND noMessages).
-        // If session exists and we want to "Continue", implies we *don't* show the button?
-        // Let's re-read handleStart logic.
-        // It says: if (!sessionId) create... else runAgent("Continue...").
-        // But when is handleStart called if button is hidden?
-        // Ah, maybe the button is NOT hidden if we want to allow "Continue"?
-        // line 299: showStartButton logic.
-        // If session exists, plan exists, messages exist -> Button HIDDEN.
-        // So "Continue" branch of handleStart might be unreachable via UI button?
-        // Unless there is another way to trigger it?
-        // Or showStartButton logic allows it?
-        // If session exists, plan is empty, messages empty -> Button SHOWN.
-        // Then handleStart -> "Continue..." (branch else).
-        // Let's test that case.
-    });
-    
-    it("handles continue investigation when session exists but plan missing", async () => {
-         const wrapper = mount(InvestigationChat, {
-            global: {
-                plugins: [
-                    vuetify,
-                    createTestingPinia({
-                        initialState: {
-                            investigation: {
-                                chatMessages: [],
-                                sessionId: "session-1", 
-                                sessionData: { plan: null } 
-                            }
-                        },
-                        stubActions: false
-                    })
-                ],
-                provide: defaultProvide
-            }
-        });
-        
-        // Button should be visible
-        const startBtn = wrapper.findAll("button").find(b => b.text().includes("Create plan"));
-        expect(startBtn.exists()).toBe(true);
-        
-        await startBtn.trigger("click");
-        
-        // Should call runAgent with "Continue..." 
-        // We can verify via spy if we had one, or check mock calls.
-        // Since we mock RestApiClient, checking mock calls is best, but we Stub actions...
-        // Wait, createTestingPinia stubActions: false means real actions run.
-        // Real actions call RestApiClient.
-        // So we can check RestApiClient.sse calls?
-        // Or createTestingPinia spy?
-    });
 
     it("filters invalid messages", () => {
         const wrapper = mount(InvestigationChat, {
@@ -622,50 +485,7 @@ describe("InvestigationChat.vue", () => {
         expect(store.runAgent).not.toHaveBeenCalled();
     });
 
-    it("handles error during session creation", async () => {
-         const wrapper = mount(InvestigationChat, {
-            global: {
-                plugins: [
-                    vuetify,
-                    createTestingPinia({
-                         initialState: {
-                            investigation: {
-                                sessionId: null, 
-                            }
-                        },
-                         stubActions: false 
-                    })
-                ],
-                provide: defaultProvide
-            }
-        });
-        
-        // Mock createSession to throw
-        const store = useInvestigationStore();
-        store.createSession = vi.fn().mockRejectedValue(new Error("Network Error"));
 
-        // Suppress console.error for this expected panic
-        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-        const startBtn = wrapper.findAll("button").find(b => b.text().includes("Create plan"));
-        
-        try {
-            await startBtn.trigger("click");
-        } catch (e) {
-            // Vue test utils might catch this or let it bubble.
-            // In unit tests, we primarily verify state change in finally block.
-        }
-        
-        // Wait for next tick/promise resolution
-        await new Promise(resolve => setTimeout(resolve, 0));
-
-        // isCreatingSession should be false eventually (in finally block)
-        expect(wrapper.vm.isCreatingSession).toBe(false);
-
-        // Verify error was logged (optional but good practice)
-        expect(consoleSpy).toHaveBeenCalled();
-        consoleSpy.mockRestore();
-    });
 
     it("renders text parts in agent message", () => {
         const wrapper = mount(InvestigationChat, {
@@ -761,29 +581,7 @@ describe("InvestigationChat.vue", () => {
          // This confirms the fallback v-html path is taken.
     });
 
-    it("renders complete message type", () => {
-        const wrapper = mount(InvestigationChat, {
-            global: {
-                plugins: [
-                    vuetify,
-                    createTestingPinia({
-                        initialState: {
-                            investigation: {
-                                chatMessages: [
-                                    { type: "complete", message: "Task Done" }
-                                ],
-                                sessionId: "s1"
-                            }
-                        }
-                    })
-                ],
-                provide: defaultProvide
-            }
-        });
-        
-        expect(wrapper.text()).toContain("Task Done");
-        expect(wrapper.find(".mdi-check-circle").exists()).toBe(true);
-    });
+
 
     it("uses default injection values", async () => {
         // Mount without providing 'agent-fullscreen'
@@ -830,46 +628,7 @@ describe("InvestigationChat.vue", () => {
         }
     });
 
-    it("handleStart does nothing if no folderId and no sessionId", async () => {
-         // Temporarily clear params
-         const originalParams = mockRoute.params;
-         mockRoute.params = {};
-         
-         const wrapper = mount(InvestigationChat, {
-            global: {
-                plugins: [
-                    vuetify,
-                    createTestingPinia({
-                         initialState: {
-                            investigation: {
-                                sessionId: null, 
-                            }
-                        },
-                         stubActions: false 
-                    })
-                ],
-                provide: defaultProvide
-            }
-        });
-        
-        const store = useInvestigationStore();
-        store.createSession = vi.fn();
-        store.runAgent = vi.fn();
-        
-        // Button might be hidden or visible depending on showStartButton logic?
-        // showStartButton: !sessionId (true).
-        // render button.
-        const startBtn = wrapper.findAll("button").find(b => b.text().includes("Create plan"));
-        expect(startBtn.exists()).toBe(true);
-        
-        await startBtn.trigger("click");
-        
-        expect(store.createSession).not.toHaveBeenCalled();
-        expect(store.runAgent).not.toHaveBeenCalled();
-        
-        // Restore params
-        mockRoute.params = originalParams;
-    });
+
 });
 
 

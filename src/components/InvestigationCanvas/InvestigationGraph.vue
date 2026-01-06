@@ -171,8 +171,6 @@ const onEnter = (el, done) => {
   }
   el.style.opacity = "1";
 
-  el.style.opacity = "1";
-
   setTimeout(() => {
     el.style.transition = "";
     done();
