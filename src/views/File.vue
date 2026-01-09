@@ -376,7 +376,7 @@ limitations under the License.
           <v-card
             variant="outlined"
             class="custom-border-color mt-2"
-            max-width="50%"
+            max-width="800"
           >
             <v-table density="compact">
               <tbody>
