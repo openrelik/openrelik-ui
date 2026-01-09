@@ -50,24 +50,24 @@ const vuetify = createVuetify({
 
 describe("InvestigationContent.vue", () => {
   it("renders default plan tab", () => {
-     const wrapper = mount(InvestigationContent, {
+    const wrapper = mount(InvestigationContent, {
       global: {
         plugins: [
-            vuetify,
-            createTestingPinia({
-                initialState: {
-                    investigation: {
-                        sessionData: { plan: "## Plan Content" },
-                        taskList: [],
-                    }
-                }
-            })
+          vuetify,
+          createTestingPinia({
+            initialState: {
+              investigation: {
+                sessionData: { plan: "## Plan Content" },
+                taskList: [],
+              },
+            },
+          }),
         ],
         provide: {
-            "agent-fullscreen": {
-                isFullscreen: { value: false },
-            }
-        }
+          "agent-fullscreen": {
+            isFullscreen: { value: false },
+          },
+        },
       },
     });
 
@@ -75,64 +75,71 @@ describe("InvestigationContent.vue", () => {
     expect(wrapper.html()).toContain("Plan Content");
   });
 
-
-
   it("switches tabs", async () => {
-     const wrapper = mount(InvestigationContent, {
+    const wrapper = mount(InvestigationContent, {
       global: {
         plugins: [
-            vuetify,
-            createTestingPinia({
-                initialState: {
-                    investigation: {
-                        sessionData: { 
-                             plan: "some plan",
-                             questions: [{ id: 'q1', question: 'Q?', type: 'QUESTION' }],
-                             tasks: [{ id: 't1', hypothesis_id: 'h1', task: 'T?', type: 'TASK' }],
-                             hypotheses: [{ id: 'h1', question_id: 'q1', hypothesis: 'H', type: 'HYPOTHESIS'}]
-                        }
-                    }
+          vuetify,
+          createTestingPinia({
+            initialState: {
+              investigation: {
+                sessionData: {
+                  plan: "some plan",
+                  questions: [{ id: "q1", question: "Q?", type: "QUESTION" }],
+                  tasks: [
+                    { id: "t1", hypothesis_id: "h1", task: "T?", type: "TASK" },
+                  ],
+                  hypotheses: [
+                    {
+                      id: "h1",
+                      question_id: "q1",
+                      hypothesis: "H",
+                      type: "HYPOTHESIS",
+                    },
+                  ],
                 },
-                stubActions: false, 
-            })
+              },
+            },
+            stubActions: false,
+          }),
         ],
         provide: {
-            "agent-fullscreen": {
-                isFullscreen: { value: false },
-            }
-        }
+          "agent-fullscreen": {
+            isFullscreen: { value: false },
+          },
+        },
       },
     });
 
     const tabs = wrapper.findAll(".custom-tab");
-    
+
     await tabs[2].trigger("click");
     expect(wrapper.vm.tab).toBe("graph");
-    
+
     await tabs[0].trigger("click");
     expect(wrapper.vm.tab).toBe("plan");
   });
 
   it("sanitizes and renders markdown plan with code fences", () => {
-      const wrapper = mount(InvestigationContent, {
+    const wrapper = mount(InvestigationContent, {
       global: {
         plugins: [
-            vuetify,
-            createTestingPinia({
-                initialState: {
-                    investigation: {
-                        sessionData: { 
-                            plan: "```markdown\n# Fenced Plan\n```" 
-                        },
-                    }
+          vuetify,
+          createTestingPinia({
+            initialState: {
+              investigation: {
+                sessionData: {
+                  plan: "```markdown\n# Fenced Plan\n```",
                 },
-                stubActions: false,
-            })
+              },
+            },
+            stubActions: false,
+          }),
         ],
-        provide: { "agent-fullscreen": { isFullscreen: { value: false } } }
+        provide: { "agent-fullscreen": { isFullscreen: { value: false } } },
       },
     });
-    
+
     expect(wrapper.text()).toContain("Fenced Plan");
     expect(wrapper.html()).not.toContain("```markdown");
   });
@@ -141,46 +148,47 @@ describe("InvestigationContent.vue", () => {
     const wrapper = mount(InvestigationContent, {
       global: {
         plugins: [
-            vuetify,
-            createTestingPinia({
-                initialState: {
-                    investigation: {
-                        sessionIsLoading: true,
-                        sessionData: {},
-                    }
-                }
-            })
+          vuetify,
+          createTestingPinia({
+            initialState: {
+              investigation: {
+                sessionIsLoading: true,
+                sessionData: {},
+              },
+            },
+          }),
         ],
-        provide: { "agent-fullscreen": { isFullscreen: { value: false } } }
+        provide: { "agent-fullscreen": { isFullscreen: { value: false } } },
       },
     });
 
     expect(wrapper.find(".v-progress-circular").exists()).toBe(true);
-    expect(wrapper.findComponent({ name: "InvestigationForm" }).exists()).toBe(false);
+    expect(wrapper.findComponent({ name: "InvestigationForm" }).exists()).toBe(
+      false
+    );
   });
 
   it("disables Tasks and Graph tabs when data is missing", async () => {
     const wrapper = mount(InvestigationContent, {
       global: {
         plugins: [
-            vuetify,
-            createTestingPinia({
-                initialState: {
-                    investigation: {
-                        sessionData: { plan: "some plan" },
-                    }
-                },
-                stubActions: false,
-            })
+          vuetify,
+          createTestingPinia({
+            initialState: {
+              investigation: {
+                sessionData: { plan: "some plan" },
+              },
+            },
+            stubActions: false,
+          }),
         ],
-        provide: { "agent-fullscreen": { isFullscreen: { value: false } } }
+        provide: { "agent-fullscreen": { isFullscreen: { value: false } } },
       },
     });
 
     const tabs = wrapper.findAll(".custom-tab");
-    
+
     expect(tabs[2].classes()).toContain("disabled-tab");
-    
 
     await tabs[1].trigger("click");
     expect(wrapper.vm.tab).toBe("plan");
@@ -190,29 +198,29 @@ describe("InvestigationContent.vue", () => {
     const wrapper = mount(InvestigationContent, {
       global: {
         plugins: [
-            vuetify,
-            createTestingPinia({
-                initialState: {
-                    investigation: {
-                        sessionData: { 
-                             plan: "some plan",
-                             questions: [{ id: 'q1', question: 'Q?', type: 'QUESTION' }],
-                             tasks: [{ id: 't1', task: 'T?', type: 'TASK' }],
-                        },
-                    }
+          vuetify,
+          createTestingPinia({
+            initialState: {
+              investigation: {
+                sessionData: {
+                  plan: "some plan",
+                  questions: [{ id: "q1", question: "Q?", type: "QUESTION" }],
+                  tasks: [{ id: "t1", task: "T?", type: "TASK" }],
                 },
-                stubActions: false,
-            })
+              },
+            },
+            stubActions: false,
+          }),
         ],
-        provide: { "agent-fullscreen": { isFullscreen: { value: false } } }
+        provide: { "agent-fullscreen": { isFullscreen: { value: false } } },
       },
     });
 
     const tabs = wrapper.findAll(".custom-tab");
-    
+
     expect(tabs[1].classes()).not.toContain("disabled-tab");
     expect(tabs[2].classes()).not.toContain("disabled-tab");
-    
+
     await tabs[1].trigger("click");
     expect(wrapper.vm.tab).toBe("tasks");
   });
@@ -221,17 +229,17 @@ describe("InvestigationContent.vue", () => {
     const wrapper = mount(InvestigationContent, {
       global: {
         plugins: [
-            vuetify,
-            createTestingPinia({
-                initialState: {
-                    investigation: {
-                        sessionData: { plan: "some plan", tasks: [] },
-                    }
-                },
-                stubActions: false,
-            })
+          vuetify,
+          createTestingPinia({
+            initialState: {
+              investigation: {
+                sessionData: { plan: "some plan", tasks: [] },
+              },
+            },
+            stubActions: false,
+          }),
         ],
-        provide: { "agent-fullscreen": { isFullscreen: { value: false } } }
+        provide: { "agent-fullscreen": { isFullscreen: { value: false } } },
       },
     });
 
@@ -240,24 +248,24 @@ describe("InvestigationContent.vue", () => {
   });
 
   it("shows task count when count > 0", async () => {
-      const wrapper = mount(InvestigationContent, {
+    const wrapper = mount(InvestigationContent, {
       global: {
         plugins: [
-            vuetify,
-            createTestingPinia({
-                initialState: {
-                    investigation: {
-                        sessionData: { 
-                             plan: "some plan",
-                             questions: [{ id: 'q1', question: 'Q?', type: 'QUESTION' }],
-                             tasks: [{ id: 't1', task: 'T?', type: 'TASK' }],
-                        },
-                    }
+          vuetify,
+          createTestingPinia({
+            initialState: {
+              investigation: {
+                sessionData: {
+                  plan: "some plan",
+                  questions: [{ id: "q1", question: "Q?", type: "QUESTION" }],
+                  tasks: [{ id: "t1", task: "T?", type: "TASK" }],
                 },
-                stubActions: false,
-            })
+              },
+            },
+            stubActions: false,
+          }),
         ],
-        provide: { "agent-fullscreen": { isFullscreen: { value: false } } }
+        provide: { "agent-fullscreen": { isFullscreen: { value: false } } },
       },
     });
 
@@ -351,11 +359,32 @@ describe("InvestigationContent.vue", () => {
 
     wrapper.vm.reviewReason = "Needs more detail";
     await wrapper.vm.$nextTick();
-    
+
     await wrapper.vm.submitReview();
 
     expect(rejectSpy).toHaveBeenCalledWith("123", "Needs more detail");
     expect(wrapper.vm.showReviewDialog).toBe(false);
     expect(wrapper.vm.reviewReason).toBe("");
+  });
+
+  it("shows progress circular when plan is being drafted", () => {
+    const wrapper = mount(InvestigationContent, {
+      global: {
+        plugins: [
+          vuetify,
+          createTestingPinia({
+            initialState: {
+              investigation: {
+                sessionData: { plan: null, context: "some context" },
+              },
+            },
+          }),
+        ],
+        provide: { "agent-fullscreen": { isFullscreen: { value: false } } },
+      },
+    });
+
+    expect(wrapper.find(".v-progress-circular").exists()).toBe(true);
+    expect(wrapper.text()).toContain("Plan is being drafted...");
   });
 });

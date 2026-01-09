@@ -15,7 +15,7 @@ limitations under the License.
 -->
 <template>
   <div class="d-flex justify-left align-center">
-    <v-card width="600" class="pa-4 bg-transparent" flat>
+    <v-card width="900" class="pa-4 bg-transparent" flat>
       <v-card-title class="text-h6 pb-4"
         >Create Investigation Plan</v-card-title
       >

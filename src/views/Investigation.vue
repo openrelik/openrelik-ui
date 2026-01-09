@@ -127,7 +127,6 @@ watch(
         // Restore session immediately if possible
         const storageKey = `openrelik_agent_session_${newFolderId}`;
         if (localStorage.getItem(storageKey)) {
-          console.log("Restoring session for folder:", newFolderId);
           investigationStore.createSession(newFolderId);
         }
 

@@ -1,5 +1,5 @@
 <!--
-Copyright 2026 Google LLC
+Copyright 2025-2026 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,9 +21,24 @@ limitations under the License.
     >
       <div class="text-body-2 font-weight-bold py-3 px-4">
         <v-icon icon="mdi-console-line" class="mr-2" size="small" />
-        {{ investigationStore.sessionId }}
       </div>
       <div class="d-flex align-center">
+        <!-- Removed Toggle Button -->
+        <v-chip
+          v-if="
+            totalTokens.input > 0 ||
+            totalTokens.output > 0 ||
+            totalTokens.thinking > 0
+          "
+          variant="text"
+          size="small"
+          class="mr-2 text-caption text-medium-emphasis"
+        >
+          <v-icon start icon="mdi-counter" size="x-small"></v-icon>
+          Input: {{ formatTokenCount(totalTokens.input) }} • Output:
+          {{ formatTokenCount(totalTokens.output) }} • Thinking:
+          {{ formatTokenCount(totalTokens.thinking) }}
+        </v-chip>
         <v-chip
           variant="outlined"
           size="x-small"
@@ -47,7 +62,11 @@ limitations under the License.
       class="flex-grow-1 overflow-y-auto d-flex flex-column-reverse pa-4 scrollable-content"
       style="height: 100%"
     >
-      <div v-for="(message, index) in reversedChatMessages" :key="index">
+      <div
+        v-for="(message, index) in reversedChatMessages"
+        :key="index"
+        class="mb-4"
+      >
         <!-- User Message -->
         <v-sheet
           color="info"
@@ -61,46 +80,52 @@ limitations under the License.
 
         <!-- Agent Message (Complex Structure) -->
         <div v-else>
-          <div v-if="message.content && message.content.parts">
+          <div
+            v-if="message.content && message.content.parts"
+            class="d-flex flex-column ga-2"
+          >
             <template
               v-for="(part, pIndex) in message.content.parts"
               :key="pIndex"
             >
-              <div v-if="part.functionCall">
-                <div class="mb-1">
-                  <small>
-                    <v-icon class="mr-2 mt-n1" size="small" color="grey">
-                      mdi-tools
-                    </v-icon>
-                    <strong>{{ message.author }}</strong> is
-                    <strong>using tool</strong>
-                    {{ part.functionCall.name }}
-                    <strong>with args</strong>
-                    {{ part.functionCall.args }}
-                  </small>
+              <!-- Thought Part -->
+              <div v-if="part.thought">
+                <InvestigationChatThought :text="part.text || part.thought" />
+              </div>
+
+              <!-- Other Parts (Tool Use, Tool Response, Text) -->
+              <template v-else-if="!part.thought">
+                <div v-if="part.functionCall">
+                  <InvestigationChatFunction
+                    :name="part.functionCall.name"
+                    :args="part.functionCall.args"
+                    :author="message.author"
+                  />
                 </div>
-              </div>
-              <div
-                v-if="part.functionResponse && message.actions.transferToAgent"
-              >
-                <div class="mb-1">
-                  <small>
-                    <v-icon class="mr-2" size="small" color="grey">
-                      mdi-account-switch
-                    </v-icon>
-                    <strong>{{ message.author }}</strong> delegated to
-                    <strong>{{ message.actions.transferToAgent }}</strong>
-                  </small>
+                <div
+                  v-if="
+                    part.functionResponse && message.actions.transferToAgent
+                  "
+                >
+                  <div>
+                    <small>
+                      <v-icon class="mr-2" size="small" color="grey">
+                        mdi-account-switch
+                      </v-icon>
+                      <strong>{{ message.author }}</strong> delegated to
+                      <strong>{{ message.actions.transferToAgent }}</strong>
+                    </small>
+                  </div>
                 </div>
-              </div>
-              <div v-if="part.text && part.text.trim().length > 0">
-                <v-sheet
-                  color="transparent"
-                  style="font-size: 0.9em"
-                  class="markdown-body pa-2"
-                  v-html="toHtml(part.text)"
-                ></v-sheet>
-              </div>
+                <div v-if="part.text && part.text.trim().length > 0">
+                  <v-sheet
+                    color="transparent"
+                    style="font-size: 0.9em"
+                    class="markdown-body pa-2"
+                    v-html="toHtml(part.text)"
+                  ></v-sheet>
+                </div>
+              </template>
             </template>
           </div>
           <div v-else-if="message.error || message.type === 'error'">
@@ -121,8 +146,34 @@ limitations under the License.
             class="markdown-body pa-2"
             v-html="toHtml(message.content)"
           ></v-sheet>
+
+          <!-- Token Count Footer -->
+          <div
+            v-if="
+              message.usageMetadata &&
+              (message.usageMetadata.promptTokenCount ||
+                message.usageMetadata.candidatesTokenCount ||
+                message.usageMetadata.thoughtsTokenCount)
+            "
+            class="d-flex justify-start mt-1 ml-1"
+          >
+            <div class="text-caption text-medium-emphasis">
+              <v-icon icon="mdi-counter" size="x-small" class="mr-1" />
+              Input:
+              {{ formatTokenCount(message.usageMetadata.promptTokenCount) }} •
+              Output:
+              {{
+                formatTokenCount(
+                  message.usageMetadata.candidatesTokenCount || 0
+                )
+              }}
+              • Thinking:
+              {{
+                formatTokenCount(message.usageMetadata.thoughtsTokenCount || 0)
+              }}
+            </div>
+          </div>
         </div>
-        <br />
       </div>
     </div>
 
@@ -239,6 +290,8 @@ import { marked } from "marked";
 import { useInvestigationStore } from "@/stores/investigation";
 import { useThemeInfo } from "@/composables/useThemeInfo";
 import { useRoute } from "vue-router";
+import InvestigationChatThought from "./InvestigationChatThought.vue";
+import InvestigationChatFunction from "./InvestigationChatFunction.vue";
 
 const investigationStore = useInvestigationStore();
 const { isLightTheme } = useThemeInfo();
@@ -259,6 +312,9 @@ const isValidMessage = (m) => {
 
   if (m.content && m.content.parts && m.content.parts.length > 0) {
     return m.content.parts.some((p) => {
+      // 0. Thought (always valid, handled by component)
+      if (p.thought) return true;
+
       // 1. Tool Use
       if (p.functionCall) return true;
 
@@ -281,6 +337,28 @@ const isValidMessage = (m) => {
 const reversedChatMessages = computed(() => {
   return [...investigationStore.chatMessages].filter(isValidMessage).reverse();
 });
+
+const totalTokens = computed(() => {
+  let input = 0;
+  let output = 0;
+  let thinking = 0;
+  investigationStore.chatMessages.forEach((m) => {
+    if (m && m.usageMetadata) {
+      input += m.usageMetadata.promptTokenCount || 0;
+      output += m.usageMetadata.candidatesTokenCount || 0;
+      thinking += m.usageMetadata.thoughtsTokenCount || 0;
+    }
+  });
+  return { input, output, thinking };
+});
+
+const formatTokenCount = (count) => {
+  if (!count) return "0";
+  return new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(count);
+};
 
 const toHtml = (markdown) => {
   return DOMPurify.sanitize(marked(markdown, { FORBID_TAGS: ["hr"] }));

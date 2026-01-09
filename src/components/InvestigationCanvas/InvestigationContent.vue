@@ -71,12 +71,14 @@ limitations under the License.
     <div class="flex-grow-1 overflow-y-auto scrollable-content">
       <div
         v-if="investigationStore.sessionIsLoading"
-        class="fill-height d-flex align-center justify-center"
+        class="pa-4 d-flex flex-column align-center justify-center fill-height"
       >
         <v-progress-circular
+          class="mb-4"
           indeterminate
           color="primary"
         ></v-progress-circular>
+        <div class="font-weight-regular">Fetching session...</div>
       </div>
 
       <div v-else-if="!hasContextOrPlan && !formSubmitted" class="fill-height">
@@ -122,13 +124,14 @@ limitations under the License.
 
           <div
             v-if="!renderedPlan"
-            class="pa-4 d-flex flex-column align-start fill-height"
+            class="pa-4 d-flex flex-column align-center justify-center fill-height"
           >
-            <div class="mb-4 font-weight-regular">Plan is being drafted...</div>
-            <v-skeleton-loader
-              type="article, paragraph"
-              width="100%"
-            ></v-skeleton-loader>
+            <v-progress-circular
+              class="mb-4"
+              indeterminate
+              color="primary"
+            ></v-progress-circular>
+            <div class="font-weight-regular">Plan is being drafted...</div>
           </div>
 
           <div v-else class="px-4 pb-4 markdown-body">
@@ -240,7 +243,14 @@ const renderedPlan = computed(() => {
       .replace(/^```(?:markdown)?\s*\n/i, "")
       .replace(/\n\s*```\s*$/i, "");
   }
-  return DOMPurify.sanitize(marked(plan));
+  try {
+    const m = marked(plan);
+    console.log("DEBUG: plan=", plan, "marked=", m);
+    return DOMPurify.sanitize(m);
+  } catch (e) {
+    console.error("DEBUG: marked error", e);
+    return "";
+  }
 });
 
 const planStatusColor = computed(() => {
