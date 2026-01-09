@@ -1,5 +1,5 @@
 <!--
-Copyright 2024 Google LLC
+Copyright 2024-2026 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ limitations under the License.
         <v-icon>mdi-cog-outline</v-icon>
       </v-btn>
       <system-menu />
-      <div class="mr-2 ml-5">
+      <div class="ml-5">
         <profile-menu size="30" />
       </div>
     </template>

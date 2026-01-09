@@ -1,10 +1,26 @@
+/*
+Copyright 2025 Google LLC
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 /**
  * Pure utilities for WorkflowCanvas UI calculations.
  */
 
 /**
  * Calculates the world position for the task menu based on the pending interaction.
- * 
+ *
  * @param {Object} args
  * @param {Array} args.nodes - Current workflow nodes.
  * @param {string|null} args.pendingParentId - ID of parent node (if adding child).
@@ -40,7 +56,9 @@ export const calculateTaskMenuWorldPosition = ({
     worldX = commonX;
     worldY = maxY + 100;
   } else if (pendingCallbackGroupId) {
-    const groupNodes = nodes.filter((n) => n.groupId === pendingCallbackGroupId);
+    const groupNodes = nodes.filter(
+      (n) => n.groupId === pendingCallbackGroupId
+    );
     if (groupNodes.length === 0) return { x: 0, y: 0 };
 
     let maxX = -Infinity;
@@ -64,7 +82,7 @@ export const calculateTaskMenuWorldPosition = ({
 
 /**
  * Calculates the screen position for the status overview popup.
- * 
+ *
  * @param {Object} args
  * @param {Object} args.node - The node to position relative to.
  * @param {number} args.scale - Current zoom scale.
@@ -118,7 +136,7 @@ export const calculateOverviewScreenPosition = ({
 /**
  * Computes temporary position offsets for nodes that collide
  * with a highlighted/expanded group.
- * 
+ *
  * @param {Array} nodes - All workflow nodes.
  * @param {string} activeGroupId - The ID of the hovered group.
  * @returns {Object} Map of nodeId to Y offset.
@@ -149,7 +167,8 @@ export const computeCollisionOffsets = (nodes, activeGroupId) => {
     if (n.groupId === activeGroupId) return false;
     const nMinX = n.x;
     const nMaxX = n.x + 180;
-    const xOverlap = Math.max(0, Math.min(gMaxX, nMaxX) - Math.max(gMinX, nMinX)) > 0;
+    const xOverlap =
+      Math.max(0, Math.min(gMaxX, nMaxX) - Math.max(gMinX, nMinX)) > 0;
     if (!xOverlap) return false;
     return n.y >= gMaxY - 10 && n.y < expandedBottom;
   });

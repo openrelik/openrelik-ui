@@ -535,7 +535,7 @@ limitations under the License.
         variant="outlined"
         class="text-none mr-2 custom-border-color"
         :to="{ name: 'investigation', params: { folderId: folderId } }"
-        prepend-icon="mdi-star-four-points"
+        prepend-icon="mdi-feature-search-outline"
         >Investigate</v-btn
       >
     </div>

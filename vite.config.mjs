@@ -50,6 +50,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'happy-dom',
+    setupFiles: ['./happydom.config.js'],
     server: {
       deps: {
         inline: ['vuetify'],
@@ -58,6 +59,11 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+    },
+    onConsoleLog(log) {
+      if (log.includes('AbortError')) return false
+      if (log.includes('The operation was aborted')) return false
+      if (log.includes('SSE request failed: Unauthorized')) return false
     },
   },
 })

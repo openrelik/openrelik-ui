@@ -1,5 +1,5 @@
 /*
-Copyright 2024 Google LLC
+Copyright 2024-2026 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,10 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
-// Ignore eslint error because Observable is not defined. ESLint does not recognize the
-// the Chrome native Observable type yet.
-/* global Observable */
 
 import axios from "axios";
 import settings from "./settings.js";
@@ -40,57 +36,75 @@ function RestApiSSEClient(endpoint, requestBody) {
     "/" +
     endpoint;
 
-  return new Observable((observer) => {
-    const controller = new AbortController();
-    const decoder = new TextDecoder("utf-8");
-    const csrfToken = sessionStorage.getItem("csrfToken");
+  return {
+    subscribe: (observer) => {
+      const controller = new AbortController();
+      const decoder = new TextDecoder("utf-8");
+      const csrfToken = sessionStorage.getItem("csrfToken");
+      let buffer = "";
 
-    fetch(url, {
-      method: "POST",
-      headers: {
-        Accept: "text/event-stream",
-        "Content-Type": "application/json",
-        "X-CSRF-Token": csrfToken || "",
-      },
-      credentials: "include",
-      body: JSON.stringify(requestBody),
-      signal: controller.signal,
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`SSE request failed: ${response.statusText}`);
-        }
-
-        const reader = response.body?.getReader();
-        const read = () => {
-          reader
-            .read()
-            .then(({ done, value }) => {
-              if (done) {
-                observer.complete();
-                return;
-              }
-
-              const chunk = decoder.decode(value, { stream: true });
-              const lines = chunk
-                .split(/\r?\n/)
-                .filter((line) => line.startsWith("data:"));
-              lines.forEach((line) => {
-                const data = line.replace(/^data:\s*/, "");
-                observer.next(data);
-              });
-
-              read();
-            })
-            .catch((err) => observer.error(err));
-        };
-
-        read();
+      fetch(url, {
+        method: "POST",
+        headers: {
+          Accept: "text/event-stream",
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken || "",
+        },
+        credentials: "include",
+        body: JSON.stringify(requestBody),
+        signal: controller.signal,
       })
-      .catch((err) => observer.error(err));
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`SSE request failed: ${response.statusText}`);
+          }
 
-    return () => controller.abort(); // allow external unsubscribe
-  });
+          const reader = response.body?.getReader();
+          const read = () => {
+            reader
+              .read()
+              .then(({ done, value }) => {
+                if (done) {
+                  if (observer.complete) observer.complete();
+                  return;
+                }
+
+                const chunk = decoder.decode(value, { stream: true });
+                buffer += chunk;
+                const lines = buffer.split(/\r?\n/);
+                // Only process complete lines
+                buffer = lines.pop();
+
+                lines
+                  .filter((line) => line.startsWith("data:"))
+                  .forEach((line) => {
+                    const data = line.replace(/^data:\s*/, "");
+                    if (data && observer.next) observer.next(data);
+                  });
+
+                read();
+              })
+              .catch((err) => {
+                if (err.name === "AbortError") return;
+                if (observer.error) observer.error(err);
+              });
+          };
+
+          read();
+        })
+        .catch((err) => {
+          if (err.name === "AbortError" || err.message.includes("aborted"))
+            return;
+          if (observer.error) observer.error(err);
+        });
+
+      return {
+        unsubscribe: () => {
+          controller.abort();
+        },
+      };
+    },
+  };
 }
 
 /**
@@ -764,24 +778,6 @@ export default {
         });
     });
   },
-  async getInvestigativeQuestions(folder_id, name, context) {
-    return new Promise((resolve, reject) => {
-      const requestBody = {
-        goal: name,
-        context: context,
-      };
-      RestApiClient.post(
-        "/folders/" + folder_id + "/investigations/questions",
-        requestBody
-      )
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
-  },
   async getSQLSchemas(file_id) {
     return new Promise((resolve, reject) => {
       RestApiClient.get("/files/" + file_id + "/sql/schemas")
@@ -814,6 +810,21 @@ export default {
     return new Promise((resolve, reject) => {
       RestApiClient.post(
         "/files/" + file_id + "/sql/query/generate",
+        requestBody
+      )
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async createAgentSession(folderId, context = null) {
+    const requestBody = context ? { context: context } : {};
+    return new Promise((resolve, reject) => {
+      RestApiClient.post(
+        "/folders/" + folderId + "/investigations/init",
         requestBody
       )
         .then((response) => {

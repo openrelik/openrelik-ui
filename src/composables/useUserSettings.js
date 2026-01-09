@@ -26,7 +26,13 @@ const defaultSettings = {
   WorkflowChordCreation: false,
 };
 
-const savedSettings = localStorage.getItem(SETTINGS_KEY);
+let savedSettings = null;
+try {
+  savedSettings = localStorage.getItem(SETTINGS_KEY);
+} catch (error) {
+  // LocalStorage not available or failed
+}
+
 const initialSettings = savedSettings
   ? { ...defaultSettings, ...JSON.parse(savedSettings) }
   : defaultSettings;
