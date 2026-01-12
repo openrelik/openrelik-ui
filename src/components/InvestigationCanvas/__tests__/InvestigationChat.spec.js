@@ -680,59 +680,6 @@ describe("InvestigationChat.vue", () => {
     expect(wrapper.text()).toContain("Only a thought here");
   });
 
-  it("displays aggregated token counts in header with formatting", () => {
-    const wrapper = mount(InvestigationChat, {
-      global: {
-        plugins: [
-          vuetify,
-          createTestingPinia({
-            initialState: {
-              investigation: {
-                chatMessages: [
-                  {
-                    role: "model",
-                    content: "Msg 1",
-                    usageMetadata: {
-                      promptTokenCount: 1500,
-                      candidatesTokenCount: 2000,
-                      thoughtsTokenCount: 500,
-                    },
-                  },
-                  {
-                    role: "model",
-                    content: "Msg 2",
-                    usageMetadata: {
-                      promptTokenCount: 1000000,
-                      candidatesTokenCount: 1000000,
-                      thoughtsTokenCount: 0,
-                    },
-                  },
-                ],
-                sessionId: "test-session",
-              },
-            },
-          }),
-        ],
-        provide: defaultProvide,
-      },
-    });
-
-    // Total Input: 1500 + 1000000 = 1,001,500 -> 1M (compact) - Wait, Intl default round 1M
-    // Let's use simpler numbers to be safe with default locale behavior if needed.
-    // 1500 -> 1.5K
-    // 1000000 -> 1M
-    // Sum Input: 1.0015M -> 1M?
-    // Let's rely on standard Intl behavior for en-US.
-    // Input: 1500 + 1000000 = 1001500. compact -> 1M
-    // Output: (2000 + 500) + (1000000 + 0) = 1002500 -> 1M
-
-    // Let's try explicit 1.5K case
-    // Input: 1500 -> 1.5K
-    // Output: 2500 -> 2.5K
-
-    // We need to re-mount with specific numbers for testing formatting properly without huge sum confusion.
-  });
-
   it("displays per-message token count", () => {
     const wrapper = mount(InvestigationChat, {
       global: {
@@ -765,9 +712,6 @@ describe("InvestigationChat.vue", () => {
     // Author header is removed, so we don't expect "Gemini" as a header anymore
     // (unless it's part of the content, which it isn't here).
 
-    // Input: 1.5K
-    // Output: 2K (excluding thoughts)
-    // Thinking: 500
     expect(wrapper.text()).toContain("Input: 1.5K");
     expect(wrapper.text()).toContain("Output: 2K");
     expect(wrapper.text()).toContain("Thinking: 500");
@@ -799,10 +743,6 @@ describe("InvestigationChat.vue", () => {
         provide: defaultProvide,
       },
     });
-
-    // Total Input: 1.5K
-    // Total Output: 2K (excluding thoughts)
-    // Total Thinking: 500
 
     expect(wrapper.text()).toContain("Input: 1.5K");
     expect(wrapper.text()).toContain("Output: 2K");
