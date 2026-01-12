@@ -112,9 +112,10 @@ describe("InvestigationContent.vue", () => {
     });
 
     const tabs = wrapper.findAll(".custom-tab");
+    // Graph tab (index 2) is gone, logic removed.
 
-    await tabs[2].trigger("click");
-    expect(wrapper.vm.tab).toBe("graph");
+    await tabs[1].trigger("click");
+    expect(wrapper.vm.tab).toBe("tasks");
 
     await tabs[0].trigger("click");
     expect(wrapper.vm.tab).toBe("plan");
@@ -187,8 +188,7 @@ describe("InvestigationContent.vue", () => {
     });
 
     const tabs = wrapper.findAll(".custom-tab");
-
-    expect(tabs[2].classes()).toContain("disabled-tab");
+    // Graph tab is gone
 
     await tabs[1].trigger("click");
     expect(wrapper.vm.tab).toBe("plan");
@@ -219,7 +219,7 @@ describe("InvestigationContent.vue", () => {
     const tabs = wrapper.findAll(".custom-tab");
 
     expect(tabs[1].classes()).not.toContain("disabled-tab");
-    expect(tabs[2].classes()).not.toContain("disabled-tab");
+    // Graph tab is gone
 
     await tabs[1].trigger("click");
     expect(wrapper.vm.tab).toBe("tasks");

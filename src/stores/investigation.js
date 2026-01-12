@@ -17,7 +17,6 @@ limitations under the License.
 // Utilities
 import { defineStore } from "pinia";
 import RestApiClient from "@/RestApiClient";
-import { Graph } from "@/utils/investigationGraphUtils";
 
 export const useInvestigationStore = defineStore("investigation", {
   state: () => ({
@@ -32,87 +31,68 @@ export const useInvestigationStore = defineStore("investigation", {
     sessionIsLoading: false,
   }),
   getters: {
-    graph: (state) => {
-      const data = state.sessionData || {};
-      const graph = new Graph();
-      
-      // 1. Add Questions (Roots)
-      (data.questions || []).forEach((q) => {
-        graph.addNode(q.id, { ...q, type: "QUESTION", label: q.question });
-      });
-
-      // 2. Add Leads (Children of Questions)
-      (data.leads || []).forEach((l) => {
-        graph.addNode(l.id, { ...l, type: "SECTION", label: l.lead });
-        if (l.question_id) {
-          graph.addEdge(l.question_id, l.id);
-        }
-      });
-
-      // 3. Add Hypotheses (Children of Leads or Questions)
-      (data.hypotheses || []).forEach((h) => {
-        graph.addNode(h.id, { ...h, type: "HYPOTHESIS", label: h.hypothesis });
-        
-        if (h.lead_id) {
-          graph.addEdge(h.lead_id, h.id);
-        } else if (h.question_id) {
-          graph.addEdge(h.question_id, h.id);
-        }
-      });
-
-      // 4. Add Tasks (Children of Hypotheses)
-      (data.tasks || []).forEach((t) => {
-        graph.addNode(t.id, { ...t, type: "TASK", label: t.task });
-        if (t.hypothesis_id) {
-          graph.addEdge(t.hypothesis_id, t.id);
-        }
-      });
-
-      return graph;
-    },
     tree: (state) => {
-        // Return the forest (array of trees)
-        // We can filter roots here if we only want questions at the top level, 
-        // but the graph logic handles roots fairly well.
-        return state.graph.toTree();
+      const data = state.sessionData || {};
+      const questions = (data.questions || []).map((q) => ({
+        ...q,
+        type: "QUESTION",
+        label: q.question,
+        children: [],
+      }));
+      const leads = (data.leads || []).map((l) => ({
+        ...l,
+        type: "SECTION",
+        label: l.lead,
+        children: [],
+      }));
+      const hypotheses = (data.hypotheses || []).map((h) => ({
+        ...h,
+        type: "HYPOTHESIS",
+        label: h.hypothesis,
+        children: [],
+      }));
+      const tasks = (data.tasks || []).map((t) => ({
+        ...t,
+        type: "TASK",
+        label: t.task,
+        children: [],
+      }));
+
+      const nodeMap = new Map();
+      [...questions, ...leads, ...hypotheses, ...tasks].forEach((n) =>
+        nodeMap.set(n.id, n)
+      );
+
+      // Link Tasks to Hypotheses
+      tasks.forEach((t) => {
+        if (t.hypothesis_id && nodeMap.has(t.hypothesis_id)) {
+          nodeMap.get(t.hypothesis_id).children.push(t);
+        }
+      });
+
+      // Link Hypotheses to Leads or Questions
+      hypotheses.forEach((h) => {
+        if (h.lead_id && nodeMap.has(h.lead_id)) {
+          nodeMap.get(h.lead_id).children.push(h);
+        } else if (h.question_id && nodeMap.has(h.question_id)) {
+          nodeMap.get(h.question_id).children.push(h);
+        }
+      });
+
+      // Link Leads to Questions
+      leads.forEach((l) => {
+        if (l.question_id && nodeMap.has(l.question_id)) {
+          nodeMap.get(l.question_id).children.push(l);
+        }
+      });
+
+      return questions;
     },
     taskList: (state) => {
-      const graph = state.graph;
-      // graph is always defined by getter
-      
-      const allNodes = Array.from(graph.nodes.values());
-      const tasks = allNodes.filter((n) => n.type === "TASK");
-
-      return tasks.map((task) => {
-        // Traverse up to find context
-        const parents = graph.getParents(task.id);
-        const hypothesis = parents.find((p) => p.type === "HYPOTHESIS");
-        
-        let lead = null;
-        let question = null;
-
-        if (hypothesis) {
-          const hypParents = graph.getParents(hypothesis.id);
-          lead = hypParents.find((p) => p.type === "SECTION"); // Lead is SECTION
-          
-          // Question can be parent of Lead OR directly parent of Hypothesis (orphan)
-          if (lead) {
-            const leadParents = graph.getParents(lead.id);
-            question = leadParents.find((p) => p.type === "QUESTION");
-          } else {
-            // Orphan hypothesis
-            question = hypParents.find((p) => p.type === "QUESTION");
-          }
-        }
-
-        return {
-          ...task,
-          hypothesis,
-          lead,
-          question,
-        };
-      });
-    }
+      const data = state.sessionData || {};
+      const tasks = data.tasks || [];
+      return tasks.map((t) => ({ ...t, label: t.task }));
+    },
   },
   actions: {
     async createSession(folderId, context = null) {
@@ -124,9 +104,11 @@ export const useInvestigationStore = defineStore("investigation", {
         this.sessionId = existingSessionId;
         this.sessionIsLoading = true;
         this.runAgent(folderId, null);
-
       } else {
-        const response = await RestApiClient.createAgentSession(folderId, context);
+        const response = await RestApiClient.createAgentSession(
+          folderId,
+          context
+        );
         this.sessionId = response.session_id;
         localStorage.setItem(storageKey, this.sessionId);
       }
@@ -142,6 +124,10 @@ export const useInvestigationStore = defineStore("investigation", {
         next: (data) => {
           data = JSON.parse(data);
           this.sessionData = data["state"];
+          if (data["state"]) {
+            this.sessionIsLoading = false;
+          }
+
           // If we are just fetching the initial state and no agent is running,
           // we can close the connection once we have the data (state).
           if (!this.runSubscription && data["state"]) {
@@ -150,7 +136,6 @@ export const useInvestigationStore = defineStore("investigation", {
               this.sseSubscription = null;
             }
             this.isListening = false;
-            this.sessionIsLoading = false;
           }
 
           if (this.chatMessages.length === 0) {
@@ -212,7 +197,6 @@ export const useInvestigationStore = defineStore("investigation", {
         requestBody["invocation_id"] = invocationId;
       }
 
-      
       this.isLoading = true;
 
       // Start listening to session updates if not already
@@ -231,7 +215,8 @@ export const useInvestigationStore = defineStore("investigation", {
           if (parsedData.content && parsedData.content.parts) {
             const hasAskForApproval = parsedData.content.parts.some(
               (part) =>
-                part.functionCall && part.functionCall.name === "ask_for_approval"
+                part.functionCall &&
+                part.functionCall.name === "ask_for_approval"
             );
 
             if (

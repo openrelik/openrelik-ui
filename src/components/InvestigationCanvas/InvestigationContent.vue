@@ -49,20 +49,7 @@ limitations under the License.
       >
         Tasks{{ taskCount > 0 ? ` (${taskCount})` : "" }}
       </div>
-      <div
-        class="custom-tab px-4 py-3 text-body-2"
-        :class="{
-          'active-tab': tab === 'graph',
-          'light-theme-active-tab': isLightTheme && tab === 'graph',
-          'cursor-pointer': (hasContextOrPlan || formSubmitted) && hasGraph,
-          'disabled-tab': (!hasContextOrPlan && !formSubmitted) || !hasGraph,
-        }"
-        @click="
-          (hasContextOrPlan || formSubmitted) && hasGraph && (tab = 'graph')
-        "
-      >
-        Graph
-      </div>
+
       <!-- Spacer to fill the rest of the bar -->
       <div class="flex-grow-1"></div>
     </div>
@@ -142,10 +129,6 @@ limitations under the License.
         <div v-show="tab === 'tasks'" class="fill-height">
           <InvestigationTaskList />
         </div>
-
-        <div v-show="tab === 'graph'" class="fill-height">
-          <InvestigationGraph />
-        </div>
       </template>
     </div>
     <!-- Review Reason Dialog -->
@@ -192,7 +175,7 @@ import { useInvestigationStore } from "@/stores/investigation";
 import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
 import InvestigationTaskList from "./InvestigationTaskList.vue";
-import InvestigationGraph from "./InvestigationGraph.vue";
+
 import InvestigationForm from "./InvestigationForm.vue";
 
 const investigationStore = useInvestigationStore();
@@ -211,9 +194,7 @@ const reviewReason = ref("");
 const setTab = (newTab) => {
   if (
     (hasContextOrPlan.value || formSubmitted.value) &&
-    (newTab === "plan" ||
-      (newTab === "tasks" && taskCount.value > 0) ||
-      (newTab === "graph" && hasGraph.value))
+    (newTab === "plan" || (newTab === "tasks" && taskCount.value > 0))
   ) {
     tab.value = newTab;
   } else if (newTab === "plan") {
@@ -230,11 +211,6 @@ const hasContextOrPlan = computed(() => {
   return sessionData.value?.context || sessionData.value?.plan;
 });
 
-const hasGraph = computed(() => {
-  const graph = investigationStore.graph;
-  return graph && graph.nodes && graph.nodes.size > 0;
-});
-
 const renderedPlan = computed(() => {
   let plan = sessionData.value?.plan || "";
   if (!plan) return "";
@@ -245,7 +221,6 @@ const renderedPlan = computed(() => {
   }
   try {
     const m = marked(plan);
-    console.log("DEBUG: plan=", plan, "marked=", m);
     return DOMPurify.sanitize(m);
   } catch (e) {
     console.error("DEBUG: marked error", e);
