@@ -17,4 +17,6 @@ limitations under the License.
 // Initialize Pinia
 import { createPinia } from "pinia";
 
-export default createPinia();
+const pinia = createPinia();
+
+export default pinia;

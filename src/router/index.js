@@ -1,5 +1,5 @@
 /*
-Copyright 2024 Google LLC
+Copyright 2024-2026 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import Home from "@/views/Home.vue";
 import Folder from "@/views/Folder.vue";
 import File from "@/views/File.vue";
 import Metrics from "@/views/Metrics.vue";
-import Investigation from "@/views/Investigation.vue";
 
 // Import Pinia stores
 import { useUserStore } from "@/stores/user";
@@ -65,6 +64,7 @@ const routes = [
         component: Metrics,
         props: true,
       },
+
       {
         path: "/folder/:folderId",
         children: [
@@ -95,7 +95,7 @@ const routes = [
           {
             path: "investigation",
             name: "investigation",
-            component: Investigation,
+            component: () => import("@/views/Investigation.vue"),
             props: true,
           },
         ],
