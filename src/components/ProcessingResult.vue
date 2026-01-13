@@ -38,49 +38,51 @@ limitations under the License.
           <th width="300px"></th>
         </tr>
       </thead>
-      <tr>
-        <td>Queued</td>
-        <td>{{ statusDetail.tasks.queued }}</td>
-        <td>
-          <v-progress-linear max="20" v-model="statusDetail.tasks.queued">
-          </v-progress-linear>
-        </td>
-      </tr>
+      <tbody>
+        <tr>
+          <td>Queued</td>
+          <td>{{ statusDetail.tasks.queued }}</td>
+          <td>
+            <v-progress-linear max="20" v-model="statusDetail.tasks.queued">
+            </v-progress-linear>
+          </td>
+        </tr>
 
-      <tr>
-        <td>Processing</td>
-        <td>{{ statusDetail.tasks.processing }}</td>
-        <td>
-          <v-progress-linear max="20" v-model="statusDetail.tasks.processing">
-          </v-progress-linear>
-        </td>
-      </tr>
+        <tr>
+          <td>Processing</td>
+          <td>{{ statusDetail.tasks.processing }}</td>
+          <td>
+            <v-progress-linear max="20" v-model="statusDetail.tasks.processing">
+            </v-progress-linear>
+          </td>
+        </tr>
 
-      <tr>
-        <td>Merging</td>
-        <td>{{ statusDetail.tasks.merging }}</td>
-        <td>
-          <v-progress-linear max="20" v-model="statusDetail.tasks.merging">
-          </v-progress-linear>
-        </td>
-      </tr>
+        <tr>
+          <td>Merging</td>
+          <td>{{ statusDetail.tasks.merging }}</td>
+          <td>
+            <v-progress-linear max="20" v-model="statusDetail.tasks.merging">
+            </v-progress-linear>
+          </td>
+        </tr>
 
-      <tr>
-        <td>Abandoned</td>
-        <td>{{ statusDetail.tasks.abandoned }}</td>
-        <td>
-          <v-progress-linear max="20" v-model="statusDetail.tasks.abandoned">
-          </v-progress-linear>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <strong>Total</strong>
-        </td>
-        <td>
-          <strong>{{ statusDetail.tasks.total }}</strong>
-        </td>
-      </tr>
+        <tr>
+          <td>Abandoned</td>
+          <td>{{ statusDetail.tasks.abandoned }}</td>
+          <td>
+            <v-progress-linear max="20" v-model="statusDetail.tasks.abandoned">
+            </v-progress-linear>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <strong>Total</strong>
+          </td>
+          <td>
+            <strong>{{ statusDetail.tasks.total }}</strong>
+          </td>
+        </tr>
+      </tbody>
     </table>
   </div>
 

@@ -23,5 +23,5 @@ limitations under the License.
 </template>
 
 <style lang="scss">
-@import "src/styles/global.scss";
+@use "@/styles/global.scss";
 </style>
