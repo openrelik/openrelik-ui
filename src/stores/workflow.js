@@ -1,10 +1,10 @@
 import { defineStore } from "pinia";
 import { useAppStore } from "./app";
 import RestApiClient from "@/RestApiClient";
-import { 
-  buildTaskTree, 
-  flattenTasks, 
-  getIdealPlacement 
+import {
+  buildTaskTree,
+  flattenTasks,
+  getIdealPlacement,
 } from "@/utils/workflowGraphUtils";
 import { computeWorkflowLayout } from "@/utils/workflowLayoutUtils";
 
@@ -51,11 +51,10 @@ export const useWorkflowStore = defineStore("workflow", {
      */
     hasActiveTasks: (state) => {
       if (!state.workflow || !state.workflow.tasks) return false;
-      return state.workflow.tasks.some(
-        (task) =>
-          ["STARTED", "PROGRESS", "RECEIVED", "PENDING", "REGISTERED"].includes(
-            task.status_short
-          )
+      return state.workflow.tasks.some((task) =>
+        ["STARTED", "PROGRESS", "RECEIVED", "PENDING", "REGISTERED"].includes(
+          task.status_short
+        )
       );
     },
   },
@@ -180,7 +179,7 @@ export const useWorkflowStore = defineStore("workflow", {
       // Use the same X position as existing group nodes to maintain proper chord detection
       // (findCommonCallback uses X position to determine the callback node)
       const groupX = groupNodes[0].x;
-      const groupMaxY = Math.max(...groupNodes.map(n => n.y));
+      const groupMaxY = Math.max(...groupNodes.map((n) => n.y));
       const label = taskData ? taskData.display_name : "Task";
       const newId = this.addNode(
         groupX,
@@ -192,7 +191,7 @@ export const useWorkflowStore = defineStore("workflow", {
 
       // Merge Data if provided
       if (taskData) {
-        const node = this.nodes.find(n => n.id === newId);
+        const node = this.nodes.find((n) => n.id === newId);
         if (node) {
           Object.assign(node.data, taskData);
         }
@@ -214,7 +213,7 @@ export const useWorkflowStore = defineStore("workflow", {
 
         // layoutWorkflow wipes store, so we need to pass current status map to preserve runtime data
         const taskStatusMap = new Map();
-        this.nodes.forEach(n => {
+        this.nodes.forEach((n) => {
           if (n.data && n.data.uuid) {
             taskStatusMap.set(n.data.uuid, n.data);
           }
@@ -332,12 +331,13 @@ export const useWorkflowStore = defineStore("workflow", {
       if (!node || !node.data || !node.data.task_config) return;
 
       // Loop through the task options in the object
-      node.data.task_config.forEach((option) => {
+      node.data.task_config = node.data.task_config.map((option) => {
         // Check if there's a corresponding value in the formData
         if (Object.prototype.hasOwnProperty.call(formData, option.name)) {
-          // Update the option with the value from the formData
-          option.value = formData[option.name];
+          // Return a new object with the updated value
+          return { ...option, value: formData[option.name] };
         }
+        return option;
       });
       this.triggerDebouncedSave();
     },
@@ -371,7 +371,9 @@ export const useWorkflowStore = defineStore("workflow", {
 
       // Add new node (temporarily without position)
       const newId = `node-${this.nextId++}`;
-      const label = taskData ? taskData.display_name : `Task ${this.nextId - 1}`;
+      const label = taskData
+        ? taskData.display_name
+        : `Task ${this.nextId - 1}`;
 
       const newNode = {
         id: newId,
@@ -382,7 +384,7 @@ export const useWorkflowStore = defineStore("workflow", {
         groupId: groupId, // Assign group
         data: {
           uuid: crypto.randomUUID().replaceAll("-", ""),
-          ...(taskData || {})
+          ...(taskData || {}),
         },
       };
       this.nodes.push(newNode);
@@ -398,7 +400,12 @@ export const useWorkflowStore = defineStore("workflow", {
         const targetX = children.length > 0 ? children[0].x : newNode.x;
 
         // Calculate starting Y using the ideal placement utility
-        const startY = getIdealPlacement(parent, allChildren, this.nodes, spacing);
+        const startY = getIdealPlacement(
+          parent,
+          allChildren,
+          this.nodes,
+          spacing
+        );
 
         allChildren.forEach((child, index) => {
           child.y = startY + index * spacing;
@@ -442,11 +449,14 @@ export const useWorkflowStore = defineStore("workflow", {
       // Capture existing input node to preserve data (like files)
       const inputNode = this.nodes.find((n) => n.id === "node-1");
 
-      const { nodes: taskNodes, edges: taskEdges, nextId, rootHeight } = computeWorkflowLayout(
-        workflowData, 
-        taskStatusMap, 
-        { initialNextId: this.nextId }
-      );
+      const {
+        nodes: taskNodes,
+        edges: taskEdges,
+        nextId,
+        rootHeight,
+      } = computeWorkflowLayout(workflowData, taskStatusMap, {
+        initialNextId: this.nextId,
+      });
 
       // Reconstruct nodes with preserved Input Node
       if (inputNode) {
@@ -468,7 +478,7 @@ export const useWorkflowStore = defineStore("workflow", {
 
     /**
      * Updates the workflow data on the server.
-     */ 
+     */
     async updateWorkflowData() {
       if (!this.workflow || this.readOnly) return;
       try {
@@ -605,7 +615,6 @@ export const useWorkflowStore = defineStore("workflow", {
         // Fetch the latest state to ensure all tasks and statuses are correct
         // We use isPolling=true to update efficiently without resetting the layout.
         await this.loadWorkflowData(folderId, workflowId, true);
-        
       } catch (error) {
         console.error("Failed to run workflow:", error);
         throw error;
@@ -637,11 +646,14 @@ export const useWorkflowStore = defineStore("workflow", {
      * This runs asynchronously and updates the name upon completion.
      */
     async generateAndSetWorkflowName() {
-      if (!this.workflow || this.workflow.display_name !== "Untitled workflow") return;
-      
+      if (!this.workflow || this.workflow.display_name !== "Untitled workflow")
+        return;
+
       this.isGeneratingName = true;
       try {
-        const response = await RestApiClient.generateWorkflowName(this.workflow);
+        const response = await RestApiClient.generateWorkflowName(
+          this.workflow
+        );
         if (response && response.generated_name) {
           await this.renameWorkflow(response.generated_name);
         }
@@ -664,6 +676,5 @@ export const useWorkflowStore = defineStore("workflow", {
         throw error;
       }
     },
-
   },
 });

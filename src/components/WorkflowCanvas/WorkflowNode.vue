@@ -29,7 +29,6 @@ limitations under the License.
     }"
     :style="{
       transform: `translate(${node.x}px, ${node.y}px)`,
-      paddingBottom: showConfigButton ? '42px' : '12px',
     }"
     @mousedown="onMouseDown"
     @mouseenter="$emit('node-hover', node)"
@@ -65,6 +64,35 @@ limitations under the License.
           title="Task completed successfully but produced no output files"
           >No output</span
         >
+      </div>
+
+      <!-- Configured Options List -->
+      <div v-if="configuredOptions.length > 0" class="config-list">
+        <div
+          v-for="opt in configuredOptions"
+          :key="opt.name"
+          class="config-item"
+        >
+          <span class="config-key">
+            {{ opt.name }}
+            <span v-if="Array.isArray(opt.value)"
+              >({{ opt.value.length }})
+            </span>
+
+            <span v-if="opt.type === 'checkbox'"
+              >:
+              <span :class="opt.value === true ? 'bool-true' : 'bool-false'">{{
+                opt.value === true ? "true" : "false"
+              }}</span></span
+            >
+            <span
+              v-else-if="
+                typeof opt.value === 'boolean' || opt.type === 'select'
+              "
+              >: {{ opt.value }}</span
+            >
+          </span>
+        </div>
       </div>
 
       <!-- Creative Progress Effect -->
@@ -121,8 +149,8 @@ limitations under the License.
       @click.stop="showTaskConfigForm = true"
       :title="hasConfiguredValue ? 'Re-configure node' : 'Configure node'"
     >
-      <v-icon size="small">mdi-cog-outline</v-icon>
-      {{ hasConfiguredValue ? "Show configuration" : "Configure" }}
+      <v-icon size="small">mdi-cog</v-icon>
+      <span class="ml-1">configure</span>
     </div>
 
     <div
@@ -310,6 +338,37 @@ const showConfigButton = computed(() => {
   return (
     hasTaskConfig.value && !props.readOnly && !props.node.data.status_short
   );
+});
+
+const configuredOptions = computed(() => {
+  if (
+    !props.node.data ||
+    !props.node.data.task_config ||
+    !Array.isArray(props.node.data.task_config)
+  ) {
+    return [];
+  }
+  return props.node.data.task_config.filter((option) => {
+    // Always show booleans (checkboxes)
+    if (option.type === "checkbox") return true;
+
+    // Check property existence for others
+    if (
+      !Object.prototype.hasOwnProperty.call(option, "value") ||
+      option.value === null ||
+      option.value === undefined
+    ) {
+      return false;
+    }
+
+    const val = option.value;
+    // Check specific empty types
+    if (typeof val === "string" && val.trim() === "") return false;
+    if (Array.isArray(val) && val.length === 0) return false;
+
+    // Everything else (numbers, booleans, non-empty strings/arrays) is considered configured
+    return true;
+  });
 });
 
 // Methods
@@ -500,6 +559,37 @@ onUnmounted(() => {
   color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.config-list {
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.config-item {
+  font-size: 0.7rem;
+  line-height: 1.2;
+  color: var(--input-text-color);
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.config-key {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.bool-true {
+  color: #4caf50; /* Green */
+}
+
+.bool-false {
+  color: #f44336; /* Red */
 }
 
 /* Handles */
@@ -784,44 +874,46 @@ onUnmounted(() => {
 
 .config-btn {
   position: absolute;
-  bottom: 8px; /* Lift from bottom */
-  left: 50%;
-  transform: translateX(-50%);
-  transform: translateX(-50%);
-  width: calc(100% - 16px);
-  padding: 0 8px;
-  height: 24px;
-  background: transparent;
-  border: 1px solid var(--node-border);
-  border-radius: 20px;
+  top: -12px;
+  left: 9px;
+  height: 25px;
+  line-height: 16px;
+  border-radius: 12px;
+  border: 1px solid;
+  border-color: inherit;
 
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  padding: 0 6px;
 
-  font-size: 0.75rem;
-  color: var(--input-text-color);
   cursor: pointer;
   transition: all 0.2s;
   z-index: 25;
+  font-size: 0.65rem;
 }
 
+/* Theme specific backgrounds to match runtime badge */
 .workflow-node.dark-theme .config-btn {
-  background: rgba(0, 0, 0, 0.2);
+  background: #1e293b; /* Match dark theme runtime badge */
   color: #94a3b8;
+  border-color: var(--node-border);
+}
+
+.workflow-node.light-theme .config-btn {
+  background: #ffffff; /* Match light theme runtime badge */
+  color: #64748b;
+  border-color: var(--node-border);
 }
 
 .config-btn:hover {
-  background: var(--accent-color) !important;
-  color: white !important;
+  transform: scale(1.1);
+  color: var(--accent-color);
   border-color: var(--accent-color);
 }
 
 .config-btn.is-configured {
-  background: var(--accent-color);
-  color: white;
+  color: var(--accent-color);
   border-color: var(--accent-color);
-  opacity: 1 !important; /* Always visible if configured */
 }
 </style>
