@@ -234,7 +234,7 @@ const emit = defineEmits(["close"]);
 
 const isMouseOver = ref(false);
 const contentBody = ref(null);
-let originalOverflow = "";
+const originalOverflow = ref("");
 
 const handleWindowWheel = (e) => {
   if (!isMouseOver.value) {
@@ -277,7 +277,7 @@ const handleMouseLeave = () => {
 };
 
 onMounted(() => {
-  originalOverflow = document.body.style.overflow;
+  originalOverflow.value = document.body.style.overflow;
   document.body.style.overflow = "hidden";
   // passive: false allows preventDefault()
   window.addEventListener("wheel", handleWindowWheel, {
@@ -287,7 +287,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  document.body.style.overflow = originalOverflow;
+  document.body.style.overflow = originalOverflow.value;
   window.removeEventListener("wheel", handleWindowWheel, {
     capture: true,
     passive: false,
