@@ -24,12 +24,12 @@ limitations under the License.
       'status-success': node.data && node.data.status_short === 'SUCCESS',
       'status-failure': node.data && node.data.status_short === 'FAILURE',
       'status-progress': node.data && node.data.status_short === 'PROGRESS',
+      'status-skipped': node.data && node.data.status_short === 'SKIPPED',
       'light-theme': isLightTheme,
       'dark-theme': !isLightTheme,
     }"
     :style="{
       transform: `translate(${node.x}px, ${node.y}px)`,
-      paddingBottom: showConfigButton ? '42px' : '12px',
     }"
     @mousedown="onMouseDown"
     @mouseenter="$emit('node-hover', node)"
@@ -47,6 +47,39 @@ limitations under the License.
         </v-card-text>
       </v-card>
     </v-dialog>
+
+    <!-- Debug Mode: Always show status badge -->
+    <div
+      v-if="node.data && node.data.status_short"
+      class="running-badge"
+      :class="{
+        'starting-mode': ['STARTING', 'RECEIVED'].includes(
+          node.data.status_short
+        ),
+        'success-mode': node.data.status_short === 'SUCCESS',
+        'failure-mode': node.data.status_short === 'FAILURE',
+        'skipped-mode': node.data.status_short === 'SKIPPED',
+        'pending-mode': node.data.status_short === 'PENDING',
+      }"
+      :title="`Task Status: ${node.data.status_short}`"
+    >
+      <v-progress-circular
+        v-if="
+          ['PROGRESS', 'STARTING', 'STARTED'].includes(node.data.status_short)
+        "
+        indeterminate
+        size="10"
+        width="2"
+        color="white"
+        class="mr-1"
+      ></v-progress-circular>
+      {{
+        ["STARTED", "PROGRESS"].includes(node.data.status_short)
+          ? "RUNNING"
+          : node.data.status_short
+      }}
+    </div>
+
     <div class="content">
       <div class="title">
         <span v-if="node.type !== 'Input'">
@@ -67,11 +100,36 @@ limitations under the License.
         >
       </div>
 
-      <!-- Creative Progress Effect -->
-      <div
-        v-if="node.data && node.data.status_short === 'PROGRESS'"
-        class="circulating-border"
-      ></div>
+      <!-- Configured Options List -->
+      <div v-if="configuredOptions.length > 0" class="config-list">
+        <div
+          v-for="opt in configuredOptions"
+          :key="opt.name"
+          class="config-item"
+        >
+          <span class="config-key">
+            {{ opt.name }}
+            <span v-if="Array.isArray(opt.value)"
+              >({{ opt.value.length }})
+            </span>
+
+            <span v-if="opt.type === 'checkbox'"
+              >:
+              <span :class="opt.value === true ? 'bool-true' : 'bool-false'">{{
+                opt.value === true ? "true" : "false"
+              }}</span></span
+            >
+            <span
+              v-else-if="
+                typeof opt.value === 'boolean' || opt.type === 'select'
+              "
+              >: {{ opt.value }}</span
+            >
+          </span>
+        </div>
+      </div>
+
+      <!-- Creative Progress Effect Removed -->
 
       <!-- Input Files List -->
       <div
@@ -121,8 +179,8 @@ limitations under the License.
       @click.stop="showTaskConfigForm = true"
       :title="hasConfiguredValue ? 'Re-configure node' : 'Configure node'"
     >
-      <v-icon size="small">mdi-cog-outline</v-icon>
-      {{ hasConfiguredValue ? "Show configuration" : "Configure" }}
+      <v-icon size="small">mdi-cog</v-icon>
+      <span class="ml-1">configure</span>
     </div>
 
     <div
@@ -310,6 +368,37 @@ const showConfigButton = computed(() => {
   return (
     hasTaskConfig.value && !props.readOnly && !props.node.data.status_short
   );
+});
+
+const configuredOptions = computed(() => {
+  if (
+    !props.node.data ||
+    !props.node.data.task_config ||
+    !Array.isArray(props.node.data.task_config)
+  ) {
+    return [];
+  }
+  return props.node.data.task_config.filter((option) => {
+    // Always show booleans (checkboxes)
+    if (option.type === "checkbox") return true;
+
+    // Check property existence for others
+    if (
+      !Object.prototype.hasOwnProperty.call(option, "value") ||
+      option.value === null ||
+      option.value === undefined
+    ) {
+      return false;
+    }
+
+    const val = option.value;
+    // Check specific empty types
+    if (typeof val === "string" && val.trim() === "") return false;
+    if (Array.isArray(val) && val.length === 0) return false;
+
+    // Everything else (numbers, booleans, non-empty strings/arrays) is considered configured
+    return true;
+  });
 });
 
 // Methods
@@ -502,6 +591,37 @@ onUnmounted(() => {
   letter-spacing: 0.05em;
 }
 
+.config-list {
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.config-item {
+  font-size: 0.7rem;
+  line-height: 1.2;
+  color: var(--input-text-color);
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.config-key {
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.bool-true {
+  color: #4caf50; /* Green */
+}
+
+.bool-false {
+  color: #f44336; /* Red */
+}
+
 /* Handles */
 .handle {
   position: absolute;
@@ -654,42 +774,18 @@ onUnmounted(() => {
 
 .workflow-node.status-progress {
   border-color: #eab308;
-  background: rgba(234, 179, 8, 0.1);
-  box-shadow: none;
+  box-shadow: 0 0 8px rgba(234, 179, 8, 0.4);
+}
+
+.workflow-node.status-skipped {
+  border-color: #94a3b8;
+  background: rgba(148, 163, 184, 0.05);
+  opacity: 0.8;
 }
 
 .workflow-node.light-theme.status-progress {
   border-color: #ca8a04;
-  background: rgba(234, 179, 8, 0.25);
-}
-
-.circulating-border {
-  position: absolute;
-  inset: 0;
-  border-radius: 12px;
-  overflow: hidden;
-  padding: 2px;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-.circulating-border::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 200%;
-  height: 200%;
-  background: conic-gradient(
-    transparent 0%,
-    rgba(234, 179, 8, 0.8) 20%,
-    transparent 40%
-  );
-  animation: spin 3s linear infinite;
-  transform: translate(-50%, -50%);
+  box-shadow: 0 0 8px rgba(202, 138, 4, 0.4);
 }
 
 .runtime-badge-on-node {
@@ -762,13 +858,50 @@ onUnmounted(() => {
   letter-spacing: 0.05em;
 }
 
-@keyframes spin {
-  from {
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-  to {
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
+.running-badge {
+  position: absolute;
+  top: -9px;
+  left: 9px;
+  height: 18px;
+  background-color: #eab308; /* Yellow-500 (Progress) */
+  color: white;
+  font-size: 0.65rem;
+  padding: 0 6px;
+  border-radius: 9px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 25;
+  border: 1px solid #ca8a04;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  line-height: 16px;
+}
+
+.running-badge.starting-mode {
+  background-color: #64748b; /* Slate-500 */
+  border-color: #475569; /* Slate-600 */
+}
+
+.running-badge.success-mode {
+  background-color: #22c55e; /* Green-500 */
+  border-color: #16a34a; /* Green-600 */
+}
+
+.running-badge.failure-mode {
+  background-color: #ef4444; /* Red-500 */
+  border-color: #dc2626; /* Red-600 */
+}
+
+.running-badge.skipped-mode,
+.workflow-node.status-skipped .running-badge {
+  background-color: #94a3b8; /* Slate-400 */
+  border-color: #64748b; /* Slate-500 */
+}
+
+.running-badge.pending-mode {
+  background-color: #94a3b8; /* Slate-400 */
+  border-color: #64748b; /* Slate-500 */
 }
 
 .fade-enter-active,
@@ -784,44 +917,46 @@ onUnmounted(() => {
 
 .config-btn {
   position: absolute;
-  bottom: 8px; /* Lift from bottom */
-  left: 50%;
-  transform: translateX(-50%);
-  transform: translateX(-50%);
-  width: calc(100% - 16px);
-  padding: 0 8px;
-  height: 24px;
-  background: transparent;
-  border: 1px solid var(--node-border);
-  border-radius: 20px;
+  top: -12px;
+  left: 9px;
+  height: 25px;
+  line-height: 16px;
+  border-radius: 12px;
+  border: 1px solid;
+  border-color: inherit;
 
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  padding: 0 6px;
 
-  font-size: 0.75rem;
-  color: var(--input-text-color);
   cursor: pointer;
   transition: all 0.2s;
   z-index: 25;
+  font-size: 0.65rem;
 }
 
+/* Theme specific backgrounds to match runtime badge */
 .workflow-node.dark-theme .config-btn {
-  background: rgba(0, 0, 0, 0.2);
+  background: #1e293b; /* Match dark theme runtime badge */
   color: #94a3b8;
+  border-color: var(--node-border);
+}
+
+.workflow-node.light-theme .config-btn {
+  background: #ffffff; /* Match light theme runtime badge */
+  color: #64748b;
+  border-color: var(--node-border);
 }
 
 .config-btn:hover {
-  background: var(--accent-color) !important;
-  color: white !important;
+  transform: scale(1.1);
+  color: var(--accent-color);
   border-color: var(--accent-color);
 }
 
 .config-btn.is-configured {
-  background: var(--accent-color);
-  color: white;
+  color: var(--accent-color);
   border-color: var(--accent-color);
-  opacity: 1 !important; /* Always visible if configured */
 }
 </style>

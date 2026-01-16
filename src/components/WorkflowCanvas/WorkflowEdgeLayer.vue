@@ -31,7 +31,10 @@ limitations under the License.
       v-for="path in paths"
       :key="path.id"
       :d="path.d"
-      :class="{ 'animated-edge': path.animated }"
+      :class="{
+        'animated-edge': path.animated,
+        'dimmed-edge': path.dimmed,
+      }"
       marker-end="url(#arrowhead)"
     />
   </svg>
@@ -103,10 +106,17 @@ const paths = computed(() => {
       const cp2x = endX - curvature;
       const cp2y = endY;
 
+      // Determine if edge should be dimmed
+      const isDimmed =
+        startNode.data &&
+        (startNode.data.status_short === "FAILURE" ||
+          startNode.data.status_short === "SKIPPED");
+
       return {
         id: edge.id,
         d: `M ${startX} ${startY} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${endX} ${endY}`,
         animated: startNode.data && startNode.data.status_short === "PROGRESS",
+        dimmed: isDimmed,
       };
     })
     .filter((p) => p !== null);
@@ -134,6 +144,13 @@ path {
   stroke-width: 2px;
   stroke-linecap: round;
   filter: drop-shadow(0 0 4px var(--accent-glow));
+  transition: opacity 0.3s ease;
+}
+
+.dimmed-edge {
+  opacity: 0.4;
+  stroke: #94a3b8; /* Force a neutral grey color */
+  filter: none;
 }
 
 .animated-edge {

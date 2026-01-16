@@ -15,14 +15,14 @@ limitations under the License.
 */
 
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import { 
-  calculateTaskMenuWorldPosition, 
-  calculateOverviewScreenPosition 
+import {
+  calculateTaskMenuWorldPosition,
+  calculateOverviewScreenPosition,
 } from "@/utils/workflowCanvasUtils";
 
 /**
  * Composable to handle WorkflowCanvas navigation (pan, zoom) and positioning.
- * 
+ *
  * @param {Object} options
  * @param {Ref} options.nodes - Reactive reference to workflow nodes.
  * @param {Ref} options.container - Reference to the canvas container element.
@@ -170,33 +170,80 @@ export function useWorkflowCanvasView({
 
     if (onVisibilityUpdate) onVisibilityUpdate();
 
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-
-    nodes.value.forEach((node) => {
-      if (node.x < minX) minX = node.x;
-      if (node.x > maxX) maxX = node.x;
-      if (node.y < minY) minY = node.y;
-      if (node.y > maxY) maxY = node.y;
-    });
-
-    maxX += 250;
-    maxY += 120;
-
-    const width = maxX - minX;
-    const height = maxY - minY;
-
     const viewportWidth = container.value.clientWidth;
     const viewportHeight = container.value.clientHeight;
     if (!viewportWidth || !viewportHeight) return;
 
     const padding = 50;
-    const scaleX = (viewportWidth - padding * 2) / width;
-    const scaleY = (viewportHeight - padding * 2) / height;
-    
-    scale.value = Math.min(Math.max(Math.min(scaleX, scaleY), 0.6), 0.9);
-    panY.value = viewportHeight / 2 - (minY + height / 2) * scale.value;
-    panX.value = 40 - minX * scale.value;
-    hasInitialZoom.value = true;
+    const nodeWidth = 180;
+    const nodeHeight = 100;
+
+    // Calculate initial bounds
+    let minX = Infinity,
+      maxX = -Infinity,
+      minY = Infinity,
+      maxY = -Infinity;
+
+    nodes.value.forEach((node) => {
+      if (node.x < minX) minX = node.x;
+      if (node.x + nodeWidth > maxX) maxX = node.x + nodeWidth;
+      if (node.y < minY) minY = node.y;
+      if (node.y + nodeHeight > maxY) maxY = node.y + nodeHeight;
+    });
+
+    // Add padding for visual breathing room
+    maxX += 70;
+    maxY += 20;
+
+    const contentWidth = maxX - minX;
+    const contentHeight = maxY - minY;
+
+    const scaleX = (viewportWidth - padding * 2) / contentWidth;
+    const scaleY = (viewportHeight - padding * 2) / contentHeight;
+
+    // If height-constrained (scaleY < scaleX), spread columns horizontally
+    if (scaleY < scaleX && scaleY < 0.9) {
+      // Calculate how much horizontal space is available at the height-constrained scale
+      const availableWidth = (viewportWidth - padding * 2) / scaleY;
+      const stretchFactor = availableWidth / contentWidth;
+
+      // Only stretch if it would make a meaningful difference (> 20% more space)
+      if (stretchFactor > 1.2) {
+        // Cap the stretch to avoid excessive spacing
+        const cappedStretch = Math.min(stretchFactor, 2.5);
+
+        // Stretch X coordinates relative to minX
+        nodes.value.forEach((node) => {
+          node.x = minX + (node.x - minX) * cappedStretch;
+        });
+
+        // Recalculate bounds after stretching
+        maxX = minX;
+        nodes.value.forEach((node) => {
+          if (node.x + nodeWidth > maxX) maxX = node.x + nodeWidth;
+        });
+        maxX += 70;
+      }
+    }
+
+    const finalWidth = maxX - minX;
+    const finalHeight = maxY - minY;
+
+    const finalScaleX = (viewportWidth - padding * 2) / finalWidth;
+    const finalScaleY = (viewportHeight - padding * 2) / finalHeight;
+    const finalScale = Math.min(Math.max(Math.min(finalScaleX, finalScaleY), 0.1), 0.9);
+
+    scale.value = finalScale;
+    panY.value = viewportHeight / 2 - (minY + finalHeight / 2) * scale.value;
+    panX.value = padding - minX * scale.value;
+
+    // Wait for browser to paint the final positions before showing viewport
+    // This prevents transition animations from triggering on the stretched positions
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        hasInitialZoom.value = true;
+      });
+    });
   };
 
   onMounted(() => {

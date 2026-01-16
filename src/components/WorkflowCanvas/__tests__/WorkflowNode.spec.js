@@ -169,7 +169,10 @@ describe("WorkflowNode.vue", () => {
       wrapper = createWrapper();
       expect(wrapper.find(".runtime-badge-on-node").text()).toBe("1.50s");
 
-      const fastNode = { ...mockNode, data: { ...mockNode.data, runtime: 0.5 } };
+      const fastNode = {
+        ...mockNode,
+        data: { ...mockNode.data, runtime: 0.5 },
+      };
       wrapper = createWrapper({ node: fastNode });
       expect(wrapper.find(".runtime-badge-on-node").text()).toBe("< 1s");
     });
@@ -210,6 +213,83 @@ describe("WorkflowNode.vue", () => {
       wrapper = createWrapper({ node: alertNode });
       expect(wrapper.find(".alert-badge").exists()).toBe(true);
     });
+
+    it("displays running badge correctly", () => {
+      const runningNode = {
+        ...mockNode,
+        data: {
+          ...mockNode.data,
+          status_short: "PROGRESS",
+        },
+      };
+      wrapper = createWrapper({ node: runningNode });
+      expect(wrapper.find(".running-badge").exists()).toBe(true);
+      expect(wrapper.find(".running-badge").text()).toContain("RUNNING");
+
+      const pendingNode = {
+        ...mockNode,
+        data: {
+          ...mockNode.data,
+          status_short: "PENDING",
+        },
+      };
+      wrapper = createWrapper({ node: pendingNode });
+      // In debug mode, we expect it to exist for pending too
+      expect(wrapper.find(".running-badge").exists()).toBe(true);
+      expect(wrapper.find(".running-badge").text()).toContain("PENDING");
+    });
+
+    it("displays starting badge correctly", () => {
+      const startingNode = {
+        ...mockNode,
+        data: {
+          ...mockNode.data,
+          status_short: "STARTING",
+        },
+      };
+      wrapper = createWrapper({ node: startingNode });
+      expect(wrapper.find(".running-badge").exists()).toBe(true);
+      expect(wrapper.find(".running-badge").text()).toContain("STARTING");
+      expect(wrapper.find(".running-badge").classes()).toContain(
+        "starting-mode"
+      );
+    });
+
+    it("displays received badge correctly", () => {
+      const receivedNode = {
+        ...mockNode,
+        data: {
+          ...mockNode.data,
+          status_short: "RECEIVED",
+        },
+      };
+      wrapper = createWrapper({ node: receivedNode });
+      expect(wrapper.find(".running-badge").exists()).toBe(true);
+      expect(wrapper.find(".running-badge").text()).toContain("RECEIVED");
+      // Should be grey
+      expect(wrapper.find(".running-badge").classes()).toContain(
+        "starting-mode"
+      );
+      // RECEIVED should NOT have spinner (only PROGRESS and STARTING)
+      expect(wrapper.find("v-progress-circular").exists()).toBe(false);
+    });
+
+    it("displays started badge correctly with spinner", () => {
+      const startedNode = {
+        ...mockNode,
+        data: {
+          ...mockNode.data,
+          status_short: "STARTED",
+        },
+      };
+      wrapper = createWrapper({ node: startedNode });
+      expect(wrapper.find(".running-badge").exists()).toBe(true);
+      expect(wrapper.find(".running-badge").text()).toContain("RUNNING");
+      // STARTED should have spinner
+      expect(
+        wrapper.findComponent({ name: "VProgressCircular" }).exists()
+      ).toBe(true);
+    });
   });
 
   describe("Dragging Logic", () => {
@@ -237,7 +317,7 @@ describe("WorkflowNode.vue", () => {
       window.dispatchEvent(moveEvent);
 
       vi.runAllTimers(); // Advance timers (including requestAnimationFrame)
-      
+
       expect(wrapper.emitted("update:position")).toBeTruthy();
       // dx=20, dy=20, initial=100. Expected 120, 120
       expect(wrapper.emitted("update:position")[0][0]).toEqual({
@@ -252,7 +332,7 @@ describe("WorkflowNode.vue", () => {
       wrapper = createWrapper();
       const removeSpy = vi.spyOn(window, "removeEventListener");
       await wrapper.trigger("mousedown", { clientX: 100, clientY: 100 });
-      
+
       const upEvent = new MouseEvent("mouseup");
       window.dispatchEvent(upEvent);
 
@@ -266,12 +346,12 @@ describe("WorkflowNode.vue", () => {
       const node1 = { ...mockNode };
       const groupNode = { id: "node-2", groupId: "group-1" };
       const edge = { from: "node-1", to: "node-2" };
-      
+
       wrapper = createWrapper({
         nodes: [node1, groupNode],
-        edges: [edge]
+        edges: [edge],
       });
-      
+
       // logic: !isConnectedToGroup. here it IS connected to group, so should be false -> hidden
       // The v-if is !isConnectedToGroup
       expect(wrapper.find(".output-handle").exists()).toBe(false);
@@ -302,9 +382,12 @@ describe("WorkflowNode.vue", () => {
       wrapper = createWrapper({ node: successNode });
 
       await wrapper.trigger("mousedown", { clientX: 100, clientY: 100 });
-      
+
       // Simulate move
-      const moveEvent = new MouseEvent("mousemove", { clientX: 150, clientY: 150 });
+      const moveEvent = new MouseEvent("mousemove", {
+        clientX: 150,
+        clientY: 150,
+      });
       window.dispatchEvent(moveEvent);
 
       const upEvent = new MouseEvent("mouseup");
@@ -363,11 +446,11 @@ describe("WorkflowNode.vue", () => {
     it("emits update:node-config when form saves", async () => {
       wrapper = createWrapper({ node: configNode });
       wrapper.vm.showTaskConfigForm = true;
-      
+
       // Directly invoke the method logic to verify emission
       const formData = { param1: "newValue" };
       wrapper.vm.saveTaskConfig(formData);
-      
+
       expect(wrapper.emitted("update:node-config")).toBeTruthy();
       expect(wrapper.emitted("update:node-config")[0][0]).toEqual({
         nodeId: mockNode.id,
@@ -384,16 +467,16 @@ describe("WorkflowNode.vue", () => {
 
   describe("Complex Grouping Logic", () => {
     it("detects if node is connected to a group member (isConnectedToGroup)", () => {
-       // Covered partially by previous test, but explicitly checking true case
+      // Covered partially by previous test, but explicitly checking true case
       const node1 = { ...mockNode };
       const groupNode = { id: "node-2", groupId: "group-1" };
       const edge = { from: "node-1", to: "node-2" };
-      
+
       wrapper = createWrapper({
         nodes: [node1, groupNode],
-        edges: [edge]
+        edges: [edge],
       });
-      
+
       expect(wrapper.vm.isConnectedToGroup).toBe(true);
     });
 
@@ -401,23 +484,23 @@ describe("WorkflowNode.vue", () => {
       const nodeInGroup = { ...mockNode, groupId: "group-a" };
       const otherGroupNode = { id: "node-2", groupId: "group-a" };
       const callbackNode = { id: "cb-1", type: "Callback" };
-      
+
       // invalid case first
       wrapper = createWrapper({ node: nodeInGroup, nodes: [nodeInGroup] });
       expect(wrapper.vm.isGroupConnectedToCallback).toBe(false);
 
       // valid case: other node in same group connects to callback
       const edgeToCb = { from: "node-2", to: "cb-1" };
-      
+
       wrapper = createWrapper({
         node: nodeInGroup,
         nodes: [nodeInGroup, otherGroupNode, callbackNode],
-        edges: [edgeToCb]
+        edges: [edgeToCb],
       });
-      
+
       expect(wrapper.vm.isGroupConnectedToCallback).toBe(true);
       // If true, handle is hidden
-       expect(wrapper.find(".output-handle").exists()).toBe(false);
+      expect(wrapper.find(".output-handle").exists()).toBe(false);
     });
   });
 });
