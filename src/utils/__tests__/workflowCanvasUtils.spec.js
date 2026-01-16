@@ -194,12 +194,12 @@ describe("workflowCanvasUtils", () => {
 
     it("should shift nodes below expanded group that overlap in X", () => {
       const offsets = computeCollisionOffsets(nodes, "group-1");
-      // gMaxY for group-1 is 200. gMaxX is 280. 
+      // gMaxY for group-1 is 200. gMaxX is 280.
       // gMaxY (200) + 100 (node height) = 300.
       // expandedBottom = 300 + 120 + 20 = 440.
       // node-3 Y is 300.
-      // shift = 440 + 40 - 300 = 180.
-      expect(offsets["node-3"]).toBe(180);
+      // shift = 440 + 50 - 300 = 190.
+      expect(offsets["node-3"]).toBe(190);
       expect(offsets["node-4"]).toBeUndefined();
     });
 
@@ -212,9 +212,9 @@ describe("workflowCanvasUtils", () => {
         // gMaxY = 500.
         // bottom = 500 + 100 (height) = 600.
         // expandedBottom = 600 + 120 + 20 = 740.
-        // shift = 740 + 40 - 600 = 180.
+        // shift = 740 + 50 - 600 = 190.
         const offsets = computeCollisionOffsets(unordered, "g1");
-        expect(offsets["target"]).toBe(180);
+        expect(offsets["target"]).toBe(190);
     });
 
     it("should ensure pushed node does not overlap with expanded group", () => {
@@ -233,9 +233,9 @@ describe("workflowCanvasUtils", () => {
         
         // Check gap
         // Gap = newY - expandedBottom
-        // Expect gap >= 40
+        // Expect gap >= 50
         const gap = newY - 340;
-        expect(gap).toBeGreaterThanOrEqual(40);
+        expect(gap).toBeGreaterThanOrEqual(50);
     });
 
     it("should return empty map if no nodes in active group", () => {
@@ -273,12 +273,12 @@ describe("workflowCanvasUtils", () => {
         ];
         const offsets = computeCollisionOffsets(mixNodes, 'active');
         // gMaxY = 200. expandedBottom = 340.
-        // t1 shift = 340 + 40 - 220 = 160.
-        // t2 shift = 340 + 40 - 210 = 170.
+        // t1 shift = 340 + 50 - 220 = 170.
+        // t2 shift = 340 + 50 - 210 = 180.
         // The implementation pushes ALL overlapping nodes by the MAXIMUM required shift for any node in that group/cluster.
-        // So both should be shifted by 170.
-        expect(offsets['t1']).toBe(170);
-        expect(offsets['t2']).toBe(170);
+        // So both should be shifted by 180.
+        expect(offsets['t1']).toBe(180);
+        expect(offsets['t2']).toBe(180);
     });
   });
 });
