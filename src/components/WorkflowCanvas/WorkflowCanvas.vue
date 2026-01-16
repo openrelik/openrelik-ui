@@ -31,7 +31,8 @@ limitations under the License.
   >
     <div
       class="viewport"
-      :style="[viewportStyle, { opacity: hasInitialZoom || hasNodes ? 1 : 0 }]"
+      :class="{ initializing: !hasInitialZoom }"
+      :style="[viewportStyle, { opacity: hasInitialZoom ? 1 : 0 }]"
       style="transition: opacity 0.2s ease-in"
     >
       <WorkflowGroupLayer
@@ -237,7 +238,6 @@ const visibleNodes = computed(() => {
   });
 });
 
-const hasNodes = computed(() => nodes.value.length > 0);
 
 // Methods
 
@@ -510,6 +510,15 @@ defineExpose({
   height: 100%;
   transform-origin: 0 0;
   will-change: transform;
+}
+
+/* Disable all transitions during initial layout/stretch */
+.viewport.initializing {
+  transition: none !important;
+}
+
+.viewport.initializing :deep(*) {
+  transition: none !important;
 }
 
 .fade-enter-active,

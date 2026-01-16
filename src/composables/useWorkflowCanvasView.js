@@ -236,7 +236,14 @@ export function useWorkflowCanvasView({
     scale.value = finalScale;
     panY.value = viewportHeight / 2 - (minY + finalHeight / 2) * scale.value;
     panX.value = padding - minX * scale.value;
-    hasInitialZoom.value = true;
+
+    // Wait for browser to paint the final positions before showing viewport
+    // This prevents transition animations from triggering on the stretched positions
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        hasInitialZoom.value = true;
+      });
+    });
   };
 
   onMounted(() => {
