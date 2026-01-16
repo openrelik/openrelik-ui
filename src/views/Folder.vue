@@ -1160,21 +1160,20 @@ export default {
 
 /* Background Grid Effect */
 .grid-bg {
-  /* Default (Dark) grid color */
-  --grid-color: rgba(148, 163, 184, 0.05);
+  /* Default (Dark) grid color - Increased opacity for dots */
+  --grid-color: rgba(148, 163, 184, 0.15);
 
   background-size: 20px 20px;
-  background-image: linear-gradient(
-      to right,
-      var(--grid-color) 1px,
-      transparent 1px
-    ),
-    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+  background-image: radial-gradient(
+    circle,
+    var(--grid-color) 1px,
+    transparent 1px
+  );
 }
 
 .v-theme--light .grid-bg {
-  /* Light theme grid color */
-  --grid-color: rgba(0, 0, 0, 0.05);
+  /* Light theme grid color - Increased opacity for dots */
+  --grid-color: rgba(0, 0, 0, 0.15);
 }
 
 .pulsate-text {
