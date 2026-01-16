@@ -190,7 +190,7 @@ export const computeWorkflowLayout = (
 };
 
 /**
- * Resolves vertical collisions between groups at the same X column.
+ * Resolves vertical collisions between groups and single nodes at the same X column.
  * Ensures groups have at least GROUP_GAP pixels between them.
  *
  * @param {Array} nodes - The array of nodes to process (mutated in place).
@@ -199,10 +199,23 @@ const resolveGroupCollisions = (nodes) => {
   const GROUP_GAP = 100;
   const NODE_HEIGHT = 100;
 
-  // Collect group bounds
+  // Collect group bounds and single nodes as "blocks"
   const groupBounds = {};
+  const singleNodes = [];
+
   nodes.forEach((node) => {
-    if (!node.groupId) return;
+    if (!node.groupId) {
+      // Single node - treat as its own block
+      singleNodes.push({
+        id: `single-${node.id}`,
+        minX: node.x,
+        minY: node.y,
+        maxY: node.y + NODE_HEIGHT,
+        nodes: [node],
+        isSingleNode: true,
+      });
+      return;
+    }
 
     if (!groupBounds[node.groupId]) {
       groupBounds[node.groupId] = {
@@ -211,6 +224,7 @@ const resolveGroupCollisions = (nodes) => {
         minY: Infinity,
         maxY: -Infinity,
         nodes: [],
+        isSingleNode: false,
       };
     }
 
@@ -221,48 +235,49 @@ const resolveGroupCollisions = (nodes) => {
     group.maxY = Math.max(group.maxY, node.y + NODE_HEIGHT);
   });
 
-  const groups = Object.values(groupBounds);
-  if (groups.length < 2) return;
+  // Combine groups and single nodes into one list of blocks
+  const allBlocks = [...Object.values(groupBounds), ...singleNodes];
+  if (allBlocks.length < 2) return;
 
-  // Bucket groups by X column (groups at same X level)
-  const columnThreshold = 50; // Groups within 50px are considered same column
+  // Bucket blocks by X column (blocks at same X level)
+  const columnThreshold = 50; // Blocks within 50px are considered same column
   const columns = [];
 
-  groups.forEach((group) => {
+  allBlocks.forEach((block) => {
     let foundColumn = columns.find(
-      (col) => Math.abs(col.x - group.minX) < columnThreshold
+      (col) => Math.abs(col.x - block.minX) < columnThreshold
     );
     if (!foundColumn) {
-      foundColumn = { x: group.minX, groups: [] };
+      foundColumn = { x: block.minX, blocks: [] };
       columns.push(foundColumn);
     }
-    foundColumn.groups.push(group);
+    foundColumn.blocks.push(block);
   });
 
-  // For each column, sort groups by minY and resolve collisions
+  // For each column, sort blocks by minY and resolve collisions
   columns.forEach((column) => {
-    if (column.groups.length < 2) return;
+    if (column.blocks.length < 2) return;
 
     // Sort by minY
-    column.groups.sort((a, b) => a.minY - b.minY);
+    column.blocks.sort((a, b) => a.minY - b.minY);
 
-    // Resolve collisions by shifting groups down
-    for (let i = 1; i < column.groups.length; i++) {
-      const prevGroup = column.groups[i - 1];
-      const currGroup = column.groups[i];
+    // Resolve collisions by shifting blocks down
+    for (let i = 1; i < column.blocks.length; i++) {
+      const prevBlock = column.blocks[i - 1];
+      const currBlock = column.blocks[i];
 
-      const requiredY = prevGroup.maxY + GROUP_GAP;
-      if (currGroup.minY < requiredY) {
-        const shift = requiredY - currGroup.minY;
+      const requiredY = prevBlock.maxY + GROUP_GAP;
+      if (currBlock.minY < requiredY) {
+        const shift = requiredY - currBlock.minY;
 
-        // Shift all nodes in this group
-        currGroup.nodes.forEach((node) => {
+        // Shift all nodes in this block
+        currBlock.nodes.forEach((node) => {
           node.y += shift;
         });
 
-        // Update group bounds
-        currGroup.minY += shift;
-        currGroup.maxY += shift;
+        // Update block bounds
+        currBlock.minY += shift;
+        currBlock.maxY += shift;
       }
     }
   });
