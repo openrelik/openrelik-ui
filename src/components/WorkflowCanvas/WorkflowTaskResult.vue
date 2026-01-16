@@ -20,6 +20,8 @@ limitations under the License.
     :style="style"
     @mousedown.stop
     @click.stop
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
   >
     <div class="header">
       <div class="title">{{ displayName }}</div>
@@ -35,7 +37,7 @@ limitations under the License.
       </div>
     </div>
 
-    <div class="content-body scroll-container">
+    <div ref="contentBody" class="content-body scroll-container">
       <!-- Error State -->
       <div v-if="errorException">
         <div class="section">
@@ -200,7 +202,7 @@ export default {
 </script>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref, onMounted, onBeforeUnmount } from "vue";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 import settings from "@/settings";
@@ -228,7 +230,69 @@ const props = defineProps({
   },
 });
 
-defineEmits(["close"]);
+const emit = defineEmits(["close"]);
+
+const isMouseOver = ref(false);
+const contentBody = ref(null);
+const originalOverflow = ref("");
+
+const handleWindowWheel = (e) => {
+  if (!isMouseOver.value) {
+    emit("close");
+    return;
+  }
+
+  const content = contentBody.value;
+  if (!content) {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+
+  const hasScrollableContent = content.scrollHeight > content.clientHeight;
+  if (!hasScrollableContent) {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+
+  const isAtTop = content.scrollTop === 0;
+  const isAtBottom =
+    content.scrollTop + content.clientHeight >= content.scrollHeight;
+  const isScrollingUp = e.deltaY < 0;
+  const isScrollingDown = e.deltaY > 0;
+
+  if ((isAtTop && isScrollingUp) || (isAtBottom && isScrollingDown)) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+};
+
+const handleMouseEnter = () => {
+  isMouseOver.value = true;
+};
+
+const handleMouseLeave = () => {
+  isMouseOver.value = false;
+};
+
+onMounted(() => {
+  originalOverflow.value = document.body.style.overflow;
+  document.body.style.overflow = "hidden";
+  // passive: false allows preventDefault()
+  window.addEventListener("wheel", handleWindowWheel, {
+    capture: true,
+    passive: false,
+  });
+});
+
+onBeforeUnmount(() => {
+  document.body.style.overflow = originalOverflow.value;
+  window.removeEventListener("wheel", handleWindowWheel, {
+    capture: true,
+    passive: false,
+  });
+});
 
 // Computed
 const style = computed(() => {
@@ -326,6 +390,7 @@ const getDownloadUrl = (fileId) => {
 .task-status-overview {
   position: fixed;
   width: 500px;
+  min-height: 500px;
   max-height: 500px;
   border-radius: 12px;
   z-index: 3000; /* Match WorkflowTaskSelector */
@@ -415,6 +480,7 @@ const getDownloadUrl = (fileId) => {
 .content-body {
   padding: 16px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   flex: 1;
 }
 

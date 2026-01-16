@@ -95,6 +95,7 @@ export function useWorkflowCanvasView({
       panY: panY.value,
       rect: container.value?.getBoundingClientRect?.(),
       viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
     });
   });
 
