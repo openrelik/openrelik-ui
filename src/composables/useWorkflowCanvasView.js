@@ -15,14 +15,14 @@ limitations under the License.
 */
 
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import { 
-  calculateTaskMenuWorldPosition, 
-  calculateOverviewScreenPosition 
+import {
+  calculateTaskMenuWorldPosition,
+  calculateOverviewScreenPosition,
 } from "@/utils/workflowCanvasUtils";
 
 /**
  * Composable to handle WorkflowCanvas navigation (pan, zoom) and positioning.
- * 
+ *
  * @param {Object} options
  * @param {Ref} options.nodes - Reactive reference to workflow nodes.
  * @param {Ref} options.container - Reference to the canvas container element.
@@ -170,7 +170,10 @@ export function useWorkflowCanvasView({
 
     if (onVisibilityUpdate) onVisibilityUpdate();
 
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    let minX = Infinity,
+      maxX = -Infinity,
+      minY = Infinity,
+      maxY = -Infinity;
 
     nodes.value.forEach((node) => {
       if (node.x < minX) minX = node.x;
@@ -192,8 +195,8 @@ export function useWorkflowCanvasView({
     const padding = 50;
     const scaleX = (viewportWidth - padding * 2) / width;
     const scaleY = (viewportHeight - padding * 2) / height;
-    
-    scale.value = Math.min(Math.max(Math.min(scaleX, scaleY), 0.6), 0.9);
+
+    scale.value = Math.min(Math.max(Math.min(scaleX, scaleY), 0.1), 0.9);
     panY.value = viewportHeight / 2 - (minY + height / 2) * scale.value;
     panX.value = 40 - minX * scale.value;
     hasInitialZoom.value = true;

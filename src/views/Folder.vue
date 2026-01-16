@@ -650,7 +650,6 @@ limitations under the License.
           ref="canvas"
           :folder="folder"
           :workflow="folder.workflows[0]"
-          @content-resize="handleContentResize"
           @workflow-updated="refreshFileListing()"
           @workflow-renamed="renameFolderFromWorkflow($event)"
         ></workflow-canvas>
@@ -795,7 +794,7 @@ export default {
       files: [],
       myRole: { role: "" },
       isFullScreen: false,
-      workflowHeight: 350,
+
       showGrid: true,
       selectedFiles: [],
       showUpload: false,
@@ -891,8 +890,7 @@ export default {
         };
       }
       return {
-        height: `${Math.max(this.workflowHeight, 550)}px`,
-        maxHeight: "70vh",
+        height: "70vh",
         minHeight: "550px",
         transition: "height 0.3s cubic-bezier(0.25, 0.8, 0.5, 1)",
       };
@@ -1122,10 +1120,6 @@ export default {
         message: message.message.detail + ": " + message.file.fileName,
         color: "error",
       });
-    },
-    handleContentResize(height) {
-      // Add 60px to account for the toolbar and bottom button row
-      this.workflowHeight = height + 60;
     },
   },
   mounted() {

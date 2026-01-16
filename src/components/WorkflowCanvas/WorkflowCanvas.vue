@@ -136,11 +136,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits([
-  "content-resize",
-  "workflow-updated",
-  "workflow-renamed",
-]);
+const emit = defineEmits(["workflow-updated", "workflow-renamed"]);
 
 // Stores
 const workflowStore = useWorkflowStore();
@@ -244,37 +240,6 @@ const visibleNodes = computed(() => {
 const hasNodes = computed(() => nodes.value.length > 0);
 
 // Methods
-const updateContentHeight = () => {
-  if (nodes.value.length === 0) return;
-
-  let maxY = -Infinity;
-
-  visibleNodes.value.forEach((node) => {
-    if (node.y > maxY) maxY = node.y;
-  });
-
-  if (hoveredGroupId.value) {
-    const groupNodes = nodes.value.filter(
-      (n) => n.groupId === hoveredGroupId.value
-    );
-    if (groupNodes.length > 0) {
-      let gMaxY = -Infinity;
-      groupNodes.forEach((n) => {
-        if (n.y > gMaxY) gMaxY = n.y;
-      });
-      const expandedBottom = gMaxY + 80 + 120;
-      if (expandedBottom > maxY) {
-        maxY = expandedBottom;
-      }
-    }
-  }
-
-  const NODE_HEIGHT_BUFFER = 200;
-  const screenHeight =
-    maxY * scale.value + panY.value + NODE_HEIGHT_BUFFER * scale.value;
-
-  emit("content-resize", screenHeight);
-};
 
 const handleNodeMove = ({ id, x, y }) => {
   const node = nodes.value.find((n) => n.id === id);
@@ -443,21 +408,6 @@ onBeforeUnmount(() => {
 });
 
 // Watchers
-watch(
-  hoverOffsets,
-  () => {
-    updateContentHeight();
-  },
-  { deep: true }
-);
-
-watch(scale, () => {
-  updateContentHeight();
-});
-
-watch(panY, () => {
-  updateContentHeight();
-});
 
 watch(
   nodes,
@@ -466,9 +416,7 @@ watch(
       newNodes.length === 0 ||
       (newNodes.length === 1 && newNodes[0].id === "node-1");
 
-    nextTick(() => {
-      updateContentHeight();
-    });
+    nextTick(() => {});
 
     if (isDefaultState) {
       setTimeout(() => {
