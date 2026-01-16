@@ -34,14 +34,28 @@ export const computeWorkflowLayout = (
   let nextId = initialNextId;
   const nodes = [];
   const edges = [];
+  const seenNodeIds = new Set();
 
   const addNode = (node) => {
+    // Prevent duplicate nodes (can happen with complex chord/group structures)
+    if (seenNodeIds.has(node.id)) {
+      return;
+    }
+    seenNodeIds.add(node.id);
     nodes.push(node);
   };
 
+  const seenEdgeIds = new Set();
+
   const addEdge = (from, to) => {
+    const edgeId = `edge-${from}-${to}`;
+    // Prevent duplicate edges
+    if (seenEdgeIds.has(edgeId)) {
+      return;
+    }
+    seenEdgeIds.add(edgeId);
     edges.push({
-      id: `edge-${from}-${to}`,
+      id: edgeId,
       from,
       to,
     });
@@ -90,11 +104,7 @@ export const computeWorkflowLayout = (
             branches.forEach((branch) => {
               const tails = findTails(branch);
               tails.forEach((tailId) => {
-                edges.push({
-                  id: `edge-${tailId}-${callbackId}`,
-                  from: tailId,
-                  to: callbackId,
-                });
+                addEdge(tailId, callbackId);
               });
             });
           }

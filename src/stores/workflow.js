@@ -100,8 +100,13 @@ export const useWorkflowStore = defineStore("workflow", {
      * @param {string} to - The ID of the target node.
      */
     addEdge(from, to) {
+      const edgeId = `edge-${from}-${to}`;
+      // Prevent duplicate edges
+      if (this.edges.some((e) => e.id === edgeId)) {
+        return;
+      }
       this.edges.push({
-        id: `edge-${from}-${to}`,
+        id: edgeId,
         from,
         to,
       });
@@ -172,11 +177,14 @@ export const useWorkflowStore = defineStore("workflow", {
       const parentId = incomingEdge ? incomingEdge.from : null;
 
       // 1. Add new node to the state (temporarily) so it exists for graph traversal
-      // We push it with a placeholder position, but importantly with the right groupId
+      // Use the same X position as existing group nodes to maintain proper chord detection
+      // (findCommonCallback uses X position to determine the callback node)
+      const groupX = groupNodes[0].x;
+      const groupMaxY = Math.max(...groupNodes.map(n => n.y));
       const label = taskData ? taskData.display_name : "Task";
       const newId = this.addNode(
-        0, // logic will fix x
-        0, // logic will fix y
+        groupX,
+        groupMaxY + 120, // Position below existing group nodes
         label,
         "default",
         groupId
@@ -203,7 +211,7 @@ export const useWorkflowStore = defineStore("workflow", {
       try {
         const currentSpec = JSON.parse(this.specJson);
         const workflowData = currentSpec.workflow || currentSpec;
-        
+
         // layoutWorkflow wipes store, so we need to pass current status map to preserve runtime data
         const taskStatusMap = new Map();
         this.nodes.forEach(n => {
