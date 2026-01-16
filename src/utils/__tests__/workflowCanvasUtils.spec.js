@@ -119,6 +119,7 @@ describe("workflowCanvasUtils", () => {
     const node = { x: 100, y: 100 };
     const rect = { left: 50, top: 50 };
     const viewportWidth = 1000;
+    const viewportHeight = 800;
 
     it("should position to the right if there is space", () => {
       const result = calculateOverviewScreenPosition({
@@ -128,10 +129,12 @@ describe("workflowCanvasUtils", () => {
         panY: 0,
         rect,
         viewportWidth,
+        viewportHeight,
       });
       // nodeScreenX = 100*1 + 0 + 50 = 150
       // rightX = 150 + 180 + 20 = 350
       // 350 + 500 <= 1000 is true
+      // nodeScreenY = 150, popupBottom = 650 < maxBottom (790), no adjustment needed
       expect(result).toEqual({ x: 350, y: 150 });
     });
 
@@ -143,6 +146,7 @@ describe("workflowCanvasUtils", () => {
         panY: 0,
         rect: null,
         viewportWidth: 1000,
+        viewportHeight: 800,
       });
       // nodeScreenX = 100*1 + 0 + 0 = 100
       // rightX = 100 + 180 + 20 = 300
@@ -157,6 +161,7 @@ describe("workflowCanvasUtils", () => {
         panY: 0,
         rect,
         viewportWidth,
+        viewportHeight,
       });
       // nodeScreenX = 800 + 50 = 850
       // rightX = 850 + 180 + 20 = 1050 (out of bounds)
@@ -173,14 +178,49 @@ describe("workflowCanvasUtils", () => {
         panY: 0,
         rect,
         viewportWidth: 600, // Small viewport
+        viewportHeight: 800,
       });
       // nodeScreenX = 200 + 50 = 250
       // rightX = 250 + 180 + 20 = 450 (450 + 500 > 600)
       // leftX = 250 - 20 - 500 = -270 (out of bounds)
-      // underX = 250, underY = 150 + 150*1 + 20 = 320 (approx, depending on nodeScreenY)
+      // underX is clamped: max(10, min(250, 600-500-10)) = max(10, min(250, 90)) = 90
       // nodeScreenY = 100 + 50 = 150
       // underY = 150 + 150*1 + 20 = 320
-      expect(result).toEqual({ x: 250, y: 320 });
+      // popupBottom = 320 + 500 = 820, maxBottom = 790, overflow = 30
+      // adjusted Y = 320 - 30 = 290
+      expect(result).toEqual({ x: 90, y: 290 });
+    });
+
+    it("should clamp Y position when node is at bottom of screen", () => {
+      const result = calculateOverviewScreenPosition({
+        node: { x: 100, y: 600 },
+        scale: 1,
+        panX: 0,
+        panY: 0,
+        rect,
+        viewportWidth,
+        viewportHeight,
+      });
+      // nodeScreenY = 600 + 50 = 650
+      // popupBottom = 650 + 500 = 1150, maxBottom = 790, overflow = 360
+      // adjusted Y = 650 - 360 = 290
+      expect(result.y).toBe(290);
+    });
+
+    it("should clamp Y position when node is at top of screen", () => {
+      const result = calculateOverviewScreenPosition({
+        node: { x: 100, y: -100 },
+        scale: 1,
+        panX: 0,
+        panY: 0,
+        rect,
+        viewportWidth,
+        viewportHeight,
+      });
+      // nodeScreenY = -100 + 50 = -50
+      // minY = 10
+      // Y should be clamped to 10
+      expect(result.y).toBe(10);
     });
   });
 

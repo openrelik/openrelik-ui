@@ -90,6 +90,7 @@ export const calculateTaskMenuWorldPosition = ({
  * @param {number} args.panY - Current pan Y.
  * @param {Object} args.rect - Bounding rect of the canvas container.
  * @param {number} args.viewportWidth - window.innerWidth.
+ * @param {number} args.viewportHeight - window.innerHeight.
  * @returns {Object} { x, y } screen coordinates.
  */
 export const calculateOverviewScreenPosition = ({
@@ -99,11 +100,14 @@ export const calculateOverviewScreenPosition = ({
   panY,
   rect,
   viewportWidth,
+  viewportHeight,
 }) => {
   const NODE_WIDTH = 180;
   const EST_NODE_HEIGHT = 150;
   const GAP = 20;
   const POPUP_WIDTH = 500;
+  const POPUP_HEIGHT = 500;
+  const EDGE_PADDING = 10;
 
   const offsetX = rect ? rect.left : 0;
   const offsetY = rect ? rect.top : 0;
@@ -113,24 +117,36 @@ export const calculateOverviewScreenPosition = ({
   const scaledNodeWidth = NODE_WIDTH * scale;
   const scaledGap = GAP * scale;
 
-  // Potential Positions
+  const clampY = (y) => {
+    const minY = EDGE_PADDING;
+    const popupBottom = y + POPUP_HEIGHT;
+    const maxBottom = viewportHeight - EDGE_PADDING;
+    const overflow = popupBottom - maxBottom;
+
+    if (overflow > 0) {
+      return Math.round(Math.max(minY, y - overflow));
+    }
+    return Math.round(Math.max(minY, y));
+  };
+
   const rightX = nodeScreenX + scaledNodeWidth + scaledGap;
   const leftX = nodeScreenX - scaledGap - POPUP_WIDTH;
   const underX = nodeScreenX;
   const underY = nodeScreenY + EST_NODE_HEIGHT * scale + scaledGap;
 
-  // Right
   if (rightX + POPUP_WIDTH <= viewportWidth) {
-    return { x: Math.round(rightX), y: Math.round(nodeScreenY) };
+    return { x: Math.round(rightX), y: clampY(nodeScreenY) };
   }
 
-  // Left
   if (leftX >= 0) {
-    return { x: Math.round(leftX), y: Math.round(nodeScreenY) };
+    return { x: Math.round(leftX), y: clampY(nodeScreenY) };
   }
 
-  // Under
-  return { x: Math.round(underX), y: Math.round(underY) };
+  const clampedUnderX = Math.max(
+    EDGE_PADDING,
+    Math.min(underX, viewportWidth - POPUP_WIDTH - EDGE_PADDING)
+  );
+  return { x: Math.round(clampedUnderX), y: clampY(underY) };
 };
 
 /**
