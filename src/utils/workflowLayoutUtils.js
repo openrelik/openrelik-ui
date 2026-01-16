@@ -137,7 +137,7 @@ export const computeWorkflowLayout = (
             prevTask.tasks[prevTask.tasks.length - 1].type === "chord");
 
         const spacing =
-          groupId || !(isGroupBoundary || isPrevComplex) ? 20 : 120;
+          groupId || !(isGroupBoundary || isPrevComplex) ? 30 : 130;
         currentSiblingY += spacing;
       }
 
@@ -206,7 +206,7 @@ export const computeWorkflowLayout = (
  * @param {Array} nodes - The array of nodes to process (mutated in place).
  */
 const resolveGroupCollisions = (nodes) => {
-  const GROUP_GAP = 100;
+  const GROUP_GAP = 110;
   const NODE_HEIGHT = 100;
 
   // Collect group bounds and single nodes as "blocks"

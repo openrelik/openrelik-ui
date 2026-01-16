@@ -179,8 +179,8 @@ export const computeCollisionOffsets = (nodes, activeGroupId) => {
   candidates.forEach((n) => {
     const targetId = n.groupId ? n.groupId : n.id;
     // requiredShift = desired-bottom (expandedBottom + spacing) - current-top (n.y)
-    // using 40 spacing
-    const requiredShift = expandedBottom + 40 - n.y;
+    // using 50 spacing
+    const requiredShift = expandedBottom + 50 - n.y;
     if (!pushMap[targetId] || pushMap[targetId] < requiredShift) {
       pushMap[targetId] = requiredShift;
     }
