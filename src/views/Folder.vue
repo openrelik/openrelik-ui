@@ -892,7 +892,6 @@ export default {
       return {
         height: "70vh",
         minHeight: "550px",
-        transition: "height 0.3s cubic-bezier(0.25, 0.8, 0.5, 1)",
       };
     },
   },

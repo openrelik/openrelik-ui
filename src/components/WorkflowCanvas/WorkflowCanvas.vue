@@ -238,7 +238,6 @@ const visibleNodes = computed(() => {
   });
 });
 
-
 // Methods
 
 const handleNodeMove = ({ id, x, y }) => {
