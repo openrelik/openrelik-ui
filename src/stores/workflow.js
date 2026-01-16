@@ -437,6 +437,61 @@ export const useWorkflowStore = defineStore("workflow", {
           }
         }
       });
+
+      // Post-processing: Mark immediate children of failed tasks as SKIPPED
+      this.markSkippedTasks();
+    },
+
+    /**
+     * Internal helper to mark children of failed nodes as SKIPPED.
+     */
+    markSkippedTasks() {
+      // Find all initial failed nodes to start propagation
+      const queue = [];
+      const visited = new Set();
+
+      this.nodes.forEach((node) => {
+        if (
+          node.data &&
+          (node.data.status_short === "FAILURE" ||
+            node.data.status_short === "SKIPPED")
+        ) {
+          queue.push(node.id);
+          visited.add(node.id);
+        }
+      });
+
+      // Propagate SKIPPED status downwards
+      while (queue.length > 0) {
+        const parentId = queue.shift();
+
+        // Find children
+        const outgoingEdges = this.edges.filter((e) => e.from === parentId);
+        outgoingEdges.forEach((edge) => {
+          const childNode = this.nodes.find((n) => n.id === edge.to);
+
+          if (childNode && childNode.data) {
+            // If child is not already marked as skipped or failed, mark it
+            if (
+              !visited.has(childNode.id) &&
+              childNode.data.status_short !== "FAILURE" &&
+              childNode.data.status_short !== "SKIPPED"
+            ) {
+              childNode.data.status_short = "SKIPPED";
+              queue.push(childNode.id);
+              visited.add(childNode.id);
+            } else if (
+              !visited.has(childNode.id) &&
+              (childNode.data.status_short === "FAILURE" ||
+                childNode.data.status_short === "SKIPPED")
+            ) {
+              // If already failed/skipped, just continue propagation
+              queue.push(childNode.id);
+              visited.add(childNode.id);
+            }
+          }
+        });
+      }
     },
 
     /**
@@ -590,6 +645,7 @@ export const useWorkflowStore = defineStore("workflow", {
         this.updateWorkflowStatus(WORKFLOW_DATA);
       } else {
         this.layoutWorkflow(workflowData, taskStatusMap);
+        this.markSkippedTasks();
       }
     },
 

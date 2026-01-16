@@ -24,6 +24,7 @@ limitations under the License.
       'status-success': node.data && node.data.status_short === 'SUCCESS',
       'status-failure': node.data && node.data.status_short === 'FAILURE',
       'status-progress': node.data && node.data.status_short === 'PROGRESS',
+      'status-skipped': node.data && node.data.status_short === 'SKIPPED',
       'light-theme': isLightTheme,
       'dark-theme': !isLightTheme,
     }"
@@ -57,6 +58,7 @@ limitations under the License.
         ),
         'success-mode': node.data.status_short === 'SUCCESS',
         'failure-mode': node.data.status_short === 'FAILURE',
+        'skipped-mode': node.data.status_short === 'SKIPPED',
         'pending-mode': node.data.status_short === 'PENDING',
       }"
       :title="`Task Status: ${node.data.status_short}`"
@@ -775,6 +777,12 @@ onUnmounted(() => {
   box-shadow: 0 0 8px rgba(234, 179, 8, 0.4);
 }
 
+.workflow-node.status-skipped {
+  border-color: #94a3b8;
+  background: rgba(148, 163, 184, 0.05);
+  opacity: 0.8;
+}
+
 .workflow-node.light-theme.status-progress {
   border-color: #ca8a04;
   box-shadow: 0 0 8px rgba(202, 138, 4, 0.4);
@@ -883,6 +891,12 @@ onUnmounted(() => {
 .running-badge.failure-mode {
   background-color: #ef4444; /* Red-500 */
   border-color: #dc2626; /* Red-600 */
+}
+
+.running-badge.skipped-mode,
+.workflow-node.status-skipped .running-badge {
+  background-color: #94a3b8; /* Slate-400 */
+  border-color: #64748b; /* Slate-500 */
 }
 
 .running-badge.pending-mode {
