@@ -46,6 +46,23 @@ limitations under the License.
         </v-card-text>
       </v-card>
     </v-dialog>
+
+    <!-- Running Badge (Top Left) -->
+    <div
+      v-if="node.data && node.data.status_short === 'PROGRESS'"
+      class="running-badge"
+      title="Task is currently running"
+    >
+      <v-progress-circular
+        indeterminate
+        size="10"
+        width="2"
+        color="white"
+        class="mr-1"
+      ></v-progress-circular>
+      Running
+    </div>
+
     <div class="content">
       <div class="title">
         <span v-if="node.type !== 'Input'">
@@ -58,6 +75,21 @@ limitations under the License.
           title="High priority issues found"
           >Alert</span
         >
+        <span
+          v-if="node.data && node.data.status_short === 'PROGRESS'"
+          class="running-badge"
+          title="Task is currently running"
+        >
+          <v-progress-circular
+            indeterminate
+            size="10"
+            width="2"
+            color="white"
+            class="mr-1"
+          ></v-progress-circular>
+          Running
+        </span>
+
         <span
           v-if="isSuccessNoOutput"
           class="no-output-badge"
@@ -95,11 +127,7 @@ limitations under the License.
         </div>
       </div>
 
-      <!-- Creative Progress Effect -->
-      <div
-        v-if="node.data && node.data.status_short === 'PROGRESS'"
-        class="circulating-border"
-      ></div>
+      <!-- Creative Progress Effect Removed -->
 
       <!-- Input Files List -->
       <div
@@ -744,42 +772,12 @@ onUnmounted(() => {
 
 .workflow-node.status-progress {
   border-color: #eab308;
-  background: rgba(234, 179, 8, 0.1);
-  box-shadow: none;
+  box-shadow: 0 0 8px rgba(234, 179, 8, 0.4);
 }
 
 .workflow-node.light-theme.status-progress {
   border-color: #ca8a04;
-  background: rgba(234, 179, 8, 0.25);
-}
-
-.circulating-border {
-  position: absolute;
-  inset: 0;
-  border-radius: 12px;
-  overflow: hidden;
-  padding: 2px;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-.circulating-border::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 200%;
-  height: 200%;
-  background: conic-gradient(
-    transparent 0%,
-    rgba(234, 179, 8, 0.8) 20%,
-    transparent 40%
-  );
-  animation: spin 3s linear infinite;
-  transform: translate(-50%, -50%);
+  box-shadow: 0 0 8px rgba(202, 138, 4, 0.4);
 }
 
 .runtime-badge-on-node {
@@ -852,13 +850,25 @@ onUnmounted(() => {
   letter-spacing: 0.05em;
 }
 
-@keyframes spin {
-  from {
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-  to {
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
+.running-badge {
+  position: absolute;
+  top: -12px;
+  left: 9px;
+  height: 25px;
+  background-color: #eab308; /* Yellow-500 */
+  color: white;
+  font-size: 0.65rem;
+  padding: 0 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  z-index: 25;
+  border: 1px solid #ca8a04;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .fade-enter-active,
