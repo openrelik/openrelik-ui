@@ -183,5 +183,87 @@ export const computeWorkflowLayout = (
     );
   }
 
+  // Post-processing: resolve group collisions
+  resolveGroupCollisions(nodes);
+
   return { nodes, edges, nextId, rootHeight };
+};
+
+/**
+ * Resolves vertical collisions between groups at the same X column.
+ * Ensures groups have at least GROUP_GAP pixels between them.
+ *
+ * @param {Array} nodes - The array of nodes to process (mutated in place).
+ */
+const resolveGroupCollisions = (nodes) => {
+  const GROUP_GAP = 100;
+  const NODE_HEIGHT = 100;
+
+  // Collect group bounds
+  const groupBounds = {};
+  nodes.forEach((node) => {
+    if (!node.groupId) return;
+
+    if (!groupBounds[node.groupId]) {
+      groupBounds[node.groupId] = {
+        id: node.groupId,
+        minX: Infinity,
+        minY: Infinity,
+        maxY: -Infinity,
+        nodes: [],
+      };
+    }
+
+    const group = groupBounds[node.groupId];
+    group.nodes.push(node);
+    group.minX = Math.min(group.minX, node.x);
+    group.minY = Math.min(group.minY, node.y);
+    group.maxY = Math.max(group.maxY, node.y + NODE_HEIGHT);
+  });
+
+  const groups = Object.values(groupBounds);
+  if (groups.length < 2) return;
+
+  // Bucket groups by X column (groups at same X level)
+  const columnThreshold = 50; // Groups within 50px are considered same column
+  const columns = [];
+
+  groups.forEach((group) => {
+    let foundColumn = columns.find(
+      (col) => Math.abs(col.x - group.minX) < columnThreshold
+    );
+    if (!foundColumn) {
+      foundColumn = { x: group.minX, groups: [] };
+      columns.push(foundColumn);
+    }
+    foundColumn.groups.push(group);
+  });
+
+  // For each column, sort groups by minY and resolve collisions
+  columns.forEach((column) => {
+    if (column.groups.length < 2) return;
+
+    // Sort by minY
+    column.groups.sort((a, b) => a.minY - b.minY);
+
+    // Resolve collisions by shifting groups down
+    for (let i = 1; i < column.groups.length; i++) {
+      const prevGroup = column.groups[i - 1];
+      const currGroup = column.groups[i];
+
+      const requiredY = prevGroup.maxY + GROUP_GAP;
+      if (currGroup.minY < requiredY) {
+        const shift = requiredY - currGroup.minY;
+
+        // Shift all nodes in this group
+        currGroup.nodes.forEach((node) => {
+          node.y += shift;
+        });
+
+        // Update group bounds
+        currGroup.minY += shift;
+        currGroup.maxY += shift;
+      }
+    }
+  });
 };
