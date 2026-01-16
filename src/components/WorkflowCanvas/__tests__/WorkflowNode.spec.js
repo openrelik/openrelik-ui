@@ -224,7 +224,7 @@ describe("WorkflowNode.vue", () => {
       };
       wrapper = createWrapper({ node: runningNode });
       expect(wrapper.find(".running-badge").exists()).toBe(true);
-      expect(wrapper.find(".running-badge").text()).toContain("Running");
+      expect(wrapper.find(".running-badge").text()).toContain("RUNNING");
 
       const pendingNode = {
         ...mockNode,
@@ -234,7 +234,61 @@ describe("WorkflowNode.vue", () => {
         },
       };
       wrapper = createWrapper({ node: pendingNode });
-      expect(wrapper.find(".running-badge").exists()).toBe(false);
+      // In debug mode, we expect it to exist for pending too
+      expect(wrapper.find(".running-badge").exists()).toBe(true);
+      expect(wrapper.find(".running-badge").text()).toContain("PENDING");
+    });
+
+    it("displays starting badge correctly", () => {
+      const startingNode = {
+        ...mockNode,
+        data: {
+          ...mockNode.data,
+          status_short: "STARTING",
+        },
+      };
+      wrapper = createWrapper({ node: startingNode });
+      expect(wrapper.find(".running-badge").exists()).toBe(true);
+      expect(wrapper.find(".running-badge").text()).toContain("STARTING");
+      expect(wrapper.find(".running-badge").classes()).toContain(
+        "starting-mode"
+      );
+    });
+
+    it("displays received badge correctly", () => {
+      const receivedNode = {
+        ...mockNode,
+        data: {
+          ...mockNode.data,
+          status_short: "RECEIVED",
+        },
+      };
+      wrapper = createWrapper({ node: receivedNode });
+      expect(wrapper.find(".running-badge").exists()).toBe(true);
+      expect(wrapper.find(".running-badge").text()).toContain("RECEIVED");
+      // Should be grey
+      expect(wrapper.find(".running-badge").classes()).toContain(
+        "starting-mode"
+      );
+      // RECEIVED should NOT have spinner (only PROGRESS and STARTING)
+      expect(wrapper.find("v-progress-circular").exists()).toBe(false);
+    });
+
+    it("displays started badge correctly with spinner", () => {
+      const startedNode = {
+        ...mockNode,
+        data: {
+          ...mockNode.data,
+          status_short: "STARTED",
+        },
+      };
+      wrapper = createWrapper({ node: startedNode });
+      expect(wrapper.find(".running-badge").exists()).toBe(true);
+      expect(wrapper.find(".running-badge").text()).toContain("RUNNING");
+      // STARTED should have spinner
+      expect(
+        wrapper.findComponent({ name: "VProgressCircular" }).exists()
+      ).toBe(true);
     });
   });
 

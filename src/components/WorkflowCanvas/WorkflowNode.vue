@@ -47,20 +47,35 @@ limitations under the License.
       </v-card>
     </v-dialog>
 
-    <!-- Running Badge (Top Left) -->
+    <!-- Debug Mode: Always show status badge -->
     <div
-      v-if="node.data && node.data.status_short === 'PROGRESS'"
+      v-if="node.data && node.data.status_short"
       class="running-badge"
-      title="Task is currently running"
+      :class="{
+        'starting-mode': ['STARTING', 'RECEIVED'].includes(
+          node.data.status_short
+        ),
+        'success-mode': node.data.status_short === 'SUCCESS',
+        'failure-mode': node.data.status_short === 'FAILURE',
+        'pending-mode': node.data.status_short === 'PENDING',
+      }"
+      :title="`Task Status: ${node.data.status_short}`"
     >
       <v-progress-circular
+        v-if="
+          ['PROGRESS', 'STARTING', 'STARTED'].includes(node.data.status_short)
+        "
         indeterminate
         size="10"
         width="2"
         color="white"
         class="mr-1"
       ></v-progress-circular>
-      Running
+      {{
+        ["STARTED", "PROGRESS"].includes(node.data.status_short)
+          ? "RUNNING"
+          : node.data.status_short
+      }}
     </div>
 
     <div class="content">
@@ -75,21 +90,6 @@ limitations under the License.
           title="High priority issues found"
           >Alert</span
         >
-        <span
-          v-if="node.data && node.data.status_short === 'PROGRESS'"
-          class="running-badge"
-          title="Task is currently running"
-        >
-          <v-progress-circular
-            indeterminate
-            size="10"
-            width="2"
-            color="white"
-            class="mr-1"
-          ></v-progress-circular>
-          Running
-        </span>
-
         <span
           v-if="isSuccessNoOutput"
           class="no-output-badge"
@@ -852,23 +852,42 @@ onUnmounted(() => {
 
 .running-badge {
   position: absolute;
-  top: -12px;
+  top: -9px;
   left: 9px;
-  height: 25px;
-  background-color: #eab308; /* Yellow-500 */
+  height: 18px;
+  background-color: #eab308; /* Yellow-500 (Progress) */
   color: white;
   font-size: 0.65rem;
-  padding: 0 8px;
-  border-radius: 12px;
+  padding: 0 6px;
+  border-radius: 9px;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   z-index: 25;
   border: 1px solid #ca8a04;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  line-height: 16px;
+}
+
+.running-badge.starting-mode {
+  background-color: #64748b; /* Slate-500 */
+  border-color: #475569; /* Slate-600 */
+}
+
+.running-badge.success-mode {
+  background-color: #22c55e; /* Green-500 */
+  border-color: #16a34a; /* Green-600 */
+}
+
+.running-badge.failure-mode {
+  background-color: #ef4444; /* Red-500 */
+  border-color: #dc2626; /* Red-600 */
+}
+
+.running-badge.pending-mode {
+  background-color: #94a3b8; /* Slate-400 */
+  border-color: #64748b; /* Slate-500 */
 }
 
 .fade-enter-active,
