@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { useAppStore } from "./app";
+import { useUserSettings } from "@/composables/useUserSettings";
 import RestApiClient from "@/RestApiClient";
 import {
   buildTaskTree,
@@ -702,7 +703,13 @@ export const useWorkflowStore = defineStore("workflow", {
      * This runs asynchronously and updates the name upon completion.
      */
     async generateAndSetWorkflowName() {
-      if (!this.workflow || this.workflow.display_name !== "Untitled workflow")
+      const { settings: userSettings } = useUserSettings();
+      if (
+        !userSettings.AIEnabled ||
+        !userSettings.AIWorkflowName ||
+        !this.workflow ||
+        this.workflow.display_name !== "Untitled workflow"
+      )
         return;
 
       this.isGeneratingName = true;

@@ -22,6 +22,7 @@ const defaultSettings = {
   AIEnabled: true,
   AIFileSummaries: true,
   AIFileChat: true,
+  AIWorkflowName: true,
   WorkflowEditor: "old",
   WorkflowChordCreation: false,
 };

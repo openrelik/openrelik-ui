@@ -106,6 +106,25 @@ limitations under the License.
                 Enable or disable LLM chat for files
               </v-list-item-subtitle>
             </v-list-item>
+
+            <v-list-item :disabled="!settings.AIEnabled">
+              <template v-slot:prepend>
+                <v-list-item-action start>
+                  <v-checkbox
+                    v-model="settings.AIWorkflowName"
+                    color="primary"
+                    hide-details
+                    :disabled="!settings.AIEnabled || !llmsAvailable"
+                  ></v-checkbox>
+                </v-list-item-action>
+              </template>
+              <v-list-item-title class="text-body-2 font-weight-medium">
+                Workflow name generation
+              </v-list-item-title>
+              <v-list-item-subtitle class="text-caption">
+                Enable or disable LLM generated names for workflows
+              </v-list-item-subtitle>
+            </v-list-item>
           </div>
 
           <v-list-subheader class="text-h6 font-weight-bold mb-2">

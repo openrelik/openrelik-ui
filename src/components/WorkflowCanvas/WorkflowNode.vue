@@ -54,7 +54,7 @@ limitations under the License.
       class="running-badge"
       :class="{
         'starting-mode': ['STARTING', 'RECEIVED'].includes(
-          node.data.status_short
+          node.data.status_short,
         ),
         'success-mode': node.data.status_short === 'SUCCESS',
         'failure-mode': node.data.status_short === 'FAILURE',
@@ -282,7 +282,7 @@ const hasMoreFiles = computed(() => {
  */
 const isConnectedToGroup = computed(() => {
   const outgoingEdges = props.edges.filter(
-    (edge) => edge.from === props.node.id
+    (edge) => edge.from === props.node.id,
   );
   return outgoingEdges.some((edge) => {
     const targetNode = props.nodes.find((n) => n.id === edge.to);
@@ -299,12 +299,12 @@ const isGroupConnectedToCallback = computed(() => {
   if (!props.node.groupId) return false;
   // Find all nodes in this group
   const groupNodes = props.nodes.filter(
-    (n) => n.groupId === props.node.groupId
+    (n) => n.groupId === props.node.groupId,
   );
   // Check if ANY of them connects to a callback
   return groupNodes.some((groupNode) => {
     const outgoingEdges = props.edges.filter(
-      (edge) => edge.from === groupNode.id
+      (edge) => edge.from === groupNode.id,
     );
     return outgoingEdges.some((edge) => {
       const targetNode = props.nodes.find((n) => n.id === edge.to);
@@ -523,10 +523,9 @@ onUnmounted(() => {
 
 <style scoped>
 .workflow-node {
-  /* Common for both themes */
   position: absolute;
   width: 180px;
-  min-height: 100px; /* Increased to account for button space uniformly */
+  min-height: 100px;
   height: auto;
   display: flex;
   flex-direction: column;
@@ -536,11 +535,11 @@ onUnmounted(() => {
   padding: 12px;
   border-radius: 12px;
   cursor: grab;
-
-  transition: transform 0.2s ease-out, box-shadow 0.2s;
+  transition:
+    transform 0.2s ease-out,
+    box-shadow 0.2s;
   user-select: none;
   z-index: 10;
-  /* padding-bottom removed to allow content to fill naturally */
 }
 
 .workflow-node.light-theme {
@@ -562,7 +561,7 @@ onUnmounted(() => {
   cursor: grabbing;
   box-shadow: 0 0 20px var(--accent-glow);
   border-color: var(--accent-color);
-  transition: none !important; /* Critical for performant dragging */
+  transition: none !important;
 }
 
 .glass {
@@ -574,7 +573,7 @@ onUnmounted(() => {
 }
 
 .content {
-  min-width: 0; /* Allow shrinking for text overflow */
+  min-width: 0;
   width: 100%;
 }
 
@@ -632,7 +631,9 @@ onUnmounted(() => {
   top: 50px; /* Fixed offset */
   transform: translateY(-50%);
   box-shadow: 0 0 8px var(--accent-glow);
-  transition: transform 0.2s, background 0.2s;
+  transition:
+    transform 0.2s,
+    background 0.2s;
 }
 
 .output-handle {
@@ -696,7 +697,9 @@ onUnmounted(() => {
   line-height: 1;
   padding-bottom: 2px;
   opacity: 0;
-  transition: opacity 0.2s, transform 0.2s;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 25;
 }
@@ -774,7 +777,6 @@ onUnmounted(() => {
 
 .workflow-node.status-progress {
   border-color: #eab308;
-  box-shadow: 0 0 8px rgba(234, 179, 8, 0.4);
 }
 
 .workflow-node.status-skipped {
@@ -785,27 +787,23 @@ onUnmounted(() => {
 
 .workflow-node.light-theme.status-progress {
   border-color: #ca8a04;
-  box-shadow: 0 0 8px rgba(202, 138, 4, 0.4);
 }
 
 .runtime-badge-on-node {
   position: absolute;
-  top: -8px;
-  right: 0;
-  background: var(--node-bg);
-  border: 1px solid var(--node-border);
-  border: 1px solid var(--node-border);
-  border-bottom: none;
-
-  border-radius: 4px;
+  top: -9px;
+  right: 12px;
+  background: var(--popup-bg, #ffffff);
+  border: 1px solid;
+  border-color: inherit;
+  border-radius: 9px;
   padding: 1px 6px;
   font-size: 0.65rem;
   color: #94a3b8;
   font-family: monospace;
-
-  background: var(--popup-bg, #ffffff);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  z-index: 20;
+  height: 18px;
+  line-height: 16px;
+  z-index: 15;
 }
 
 .workflow-node.dark-theme .runtime-badge-on-node {
@@ -817,19 +815,8 @@ onUnmounted(() => {
   color: #64748b;
 }
 
-.runtime-badge-on-node {
-  top: -9px; /* Overlap by half (18px height / 2 = 9px) */
-  right: 12px; /* Move it slightly in instead of right on the edge */
-  border-radius: 9px; /* Full pill shape */
-  border: 1px solid;
-  border-color: inherit;
-  height: 18px;
-  line-height: 16px; /* Center text vertically */
-  z-index: 15; /* Top of node but below delete btn if overlaps */
-}
-
 .runtime-badge-on-node.with-delete {
-  right: 16px; /* Shift left to avoid delete button overlap on hover */
+  right: 16px;
 }
 
 .alert-badge {
@@ -846,7 +833,7 @@ onUnmounted(() => {
 }
 
 .no-output-badge {
-  background-color: #f59e0b; /* Orange-500 */
+  background-color: #f59e0b;
   color: white;
   font-size: 0.6rem;
   padding: 1px 4px;
@@ -863,7 +850,7 @@ onUnmounted(() => {
   top: -9px;
   left: 9px;
   height: 18px;
-  background-color: #eab308; /* Yellow-500 (Progress) */
+  background-color: #eab308;
   color: white;
   font-size: 0.65rem;
   padding: 0 6px;
@@ -874,39 +861,40 @@ onUnmounted(() => {
   justify-content: center;
   z-index: 25;
   border: 1px solid #ca8a04;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   line-height: 16px;
 }
 
 .running-badge.starting-mode {
-  background-color: #64748b; /* Slate-500 */
-  border-color: #475569; /* Slate-600 */
+  background-color: #64748b;
+  border-color: #475569;
 }
 
 .running-badge.success-mode {
-  background-color: #22c55e; /* Green-500 */
-  border-color: #16a34a; /* Green-600 */
+  background-color: #22c55e;
+  border-color: #16a34a;
 }
 
 .running-badge.failure-mode {
-  background-color: #ef4444; /* Red-500 */
-  border-color: #dc2626; /* Red-600 */
+  background-color: #ef4444;
+  border-color: #dc2626;
 }
 
 .running-badge.skipped-mode,
 .workflow-node.status-skipped .running-badge {
-  background-color: #94a3b8; /* Slate-400 */
-  border-color: #64748b; /* Slate-500 */
+  background-color: #94a3b8;
+  border-color: #64748b;
 }
 
 .running-badge.pending-mode {
-  background-color: #94a3b8; /* Slate-400 */
-  border-color: #64748b; /* Slate-500 */
+  background-color: #94a3b8;
+  border-color: #64748b;
 }
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s, transform 0.2s;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
 }
 
 .fade-enter-from,
@@ -936,15 +924,14 @@ onUnmounted(() => {
   font-size: 0.65rem;
 }
 
-/* Theme specific backgrounds to match runtime badge */
 .workflow-node.dark-theme .config-btn {
-  background: #1e293b; /* Match dark theme runtime badge */
+  background: #1e293b;
   color: #94a3b8;
   border-color: var(--node-border);
 }
 
 .workflow-node.light-theme .config-btn {
-  background: #ffffff; /* Match light theme runtime badge */
+  background: #ffffff;
   color: #64748b;
   border-color: var(--node-border);
 }
