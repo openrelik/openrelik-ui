@@ -16,7 +16,7 @@
     "core-js": "^3.34.0",
     "dayjs": "^1.11.10",
     "dompurify": "^3.0.9",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "marked": "^12.0.0",
     "mitt": "^3.0.1",
     "resumablejs": "^1.1.0",
