@@ -540,8 +540,8 @@ export default {
     allowedPreview() {
       // Render unescaped HTML content in sandboxed iframe if data_type is in server side
       // provided allowlist and magic_mime is text/html.
-      return this.systemConfig.allowed_data_types_preview.includes(
-        this.file.data_type
+      return this.systemConfig?.allowed_data_types_preview?.includes(
+        this.file.data_type,
       );
     },
     canEdit() {
@@ -551,7 +551,7 @@ export default {
       return this.myRole.role === "Owner";
     },
     isFileCompatibleWithAI() {
-      if (!this.systemConfig.active_llms.length) {
+      if (!this.systemConfig?.active_llms?.length) {
         return false;
       }
       // For SQL files, we can always generate a summary, ignoring the file size.
@@ -577,7 +577,7 @@ export default {
     },
     AIisEnabled() {
       return (
-        this.systemConfig.active_llms.length && this.userSettings.AIEnabled
+        this.systemConfig?.active_llms?.length && this.userSettings.AIEnabled
       );
     },
     firstSQLTable() {
@@ -648,7 +648,7 @@ export default {
     },
     setActiveTab() {
       const tabIndex = this.tabs.findIndex(
-        (tab) => tab.routeName === this.$route.name
+        (tab) => tab.routeName === this.$route.name,
       );
       this.activeTab = tabIndex;
     },
@@ -656,7 +656,7 @@ export default {
       RestApiClient.createWorkflow(
         [this.file.id],
         this.file.folder.id,
-        templateId
+        templateId,
       ).then((response) => {
         this.$router.push({
           name: "folder",

@@ -79,7 +79,8 @@ function RestApiSSEClient(endpoint, requestBody) {
                   .filter((line) => line.startsWith("data:"))
                   .forEach((line) => {
                     const data = line.replace(/^data:\s*/, "");
-                    if (data && observer.next) observer.next(data);
+                    if (data !== undefined && observer.next)
+                      observer.next(data);
                   });
 
                 read();
@@ -129,7 +130,7 @@ function addRefreshTokenInterceptor(client) {
             settings.apiServerUrl + "/auth/refresh",
             {
               withCredentials: true, // Include credentials (cookies) in the refresh request.
-            }
+            },
           );
 
           // Update CSRF token in sessionStorage
@@ -149,7 +150,7 @@ function addRefreshTokenInterceptor(client) {
       // If the error is not a 401 or the refresh failed, reject the promise and
       // let the calling code handle the error.
       return Promise.reject(error);
-    }
+    },
   );
 }
 
@@ -158,7 +159,7 @@ async function fetchCsrfToken() {
     `${settings.apiServerUrl}/auth/csrf`,
     {
       withCredentials: true, // Include credentials for cross-origin requests
-    }
+    },
   );
 
   // Store CSRF token in session storage and return.
@@ -200,7 +201,7 @@ function addCSRFInterceptor(client) {
     (error) => {
       // Handle general request errors.
       return Promise.reject(error);
-    }
+    },
   );
 }
 
@@ -502,7 +503,7 @@ export default {
     return new Promise((resolve, reject) => {
       RestApiClient.patch(
         "/folders/" + workflow.folder.id + "/workflows/" + workflow.id,
-        requestBody
+        requestBody,
       )
         .then((response) => {
           resolve(response.data);
@@ -519,7 +520,7 @@ export default {
           workflow.folder.id +
           "/workflows/" +
           workflow.id +
-          "/generate_name/"
+          "/generate_name/",
       )
         .then((response) => {
           resolve(response.data);
@@ -536,7 +537,7 @@ export default {
           workflow.folder.id +
           "/workflows/" +
           workflow.id +
-          "/copy/"
+          "/copy/",
       )
         .then((response) => {
           resolve(response.data);
@@ -557,7 +558,7 @@ export default {
           "/workflows/" +
           workflow.id +
           "/run/",
-        requestBody
+        requestBody,
       )
         .then((response) => {
           resolve(response.data);
@@ -570,7 +571,7 @@ export default {
   async deleteWorkflow(workflow) {
     return new Promise((resolve, reject) => {
       RestApiClient.delete(
-        "/folders/" + workflow.folder.id + "/workflows/" + workflow.id
+        "/folders/" + workflow.folder.id + "/workflows/" + workflow.id,
       )
         .then((response) => {
           resolve(response.data);
@@ -631,7 +632,7 @@ export default {
   },
   async getFileChat(fileId) {
     return new Promise((resolve, reject) => {
-      RestApiClient.get("/files/" + fileId + "/chat")
+      RestApiClient.get("/files/" + fileId + "/chat/history")
         .then((response) => {
           resolve(response.data);
         })
@@ -737,7 +738,7 @@ export default {
   async deleteUserRole(folder_id, user_role_id) {
     return new Promise((resolve, reject) => {
       RestApiClient.delete(
-        "/folders/" + folder_id + "/roles/users/" + user_role_id
+        "/folders/" + folder_id + "/roles/users/" + user_role_id,
       )
         .then((response) => {
           resolve(response.data);
@@ -750,7 +751,7 @@ export default {
   async deleteGroupRole(folder_id, group_role_id) {
     return new Promise((resolve, reject) => {
       RestApiClient.delete(
-        "/folders/" + folder_id + "/roles/groups/" + group_role_id
+        "/folders/" + folder_id + "/roles/groups/" + group_role_id,
       )
         .then((response) => {
           resolve(response.data);
@@ -810,7 +811,7 @@ export default {
     return new Promise((resolve, reject) => {
       RestApiClient.post(
         "/files/" + file_id + "/sql/query/generate",
-        requestBody
+        requestBody,
       )
         .then((response) => {
           resolve(response.data);
@@ -825,7 +826,7 @@ export default {
     return new Promise((resolve, reject) => {
       RestApiClient.post(
         "/folders/" + folderId + "/investigations/init",
-        requestBody
+        requestBody,
       )
         .then((response) => {
           resolve(response.data);

@@ -1,5 +1,5 @@
 <!--
-Copyright 2025 Google LLC
+Copyright 2026 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,8 +16,7 @@ limitations under the License.
 <template>
   <v-card-text class="pt-0">
     <v-alert closable>
-      This is an <b>experimental feature</b>. AI can make mistakes so always
-      double-check the responses.</v-alert
+      AI can make mistakes so always double-check the responses.</v-alert
     >
   </v-card-text>
   <v-card-text
@@ -74,7 +73,6 @@ limitations under the License.
 import RestApiClient from "@/RestApiClient";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
-import settings from "../settings.js";
 
 export default {
   props: { file: { type: Object, required: true } },
@@ -83,12 +81,13 @@ export default {
       loading: false,
       chatPrompt: "",
       chatMessages: [],
-      ws: null,
+      sseSubscription: null,
     };
   },
   computed: {},
   methods: {
     toHtml(markdown) {
+      if (!markdown) return "";
       return DOMPurify.sanitize(marked(markdown, { FORBID_TAGS: ["hr"] }));
     },
     sendMessage() {
@@ -97,65 +96,40 @@ export default {
         return;
       }
 
-      // Add loading state
       this.loading = true;
-
-      // Setup websocket if it's not already open
-      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-        this.setupWebsocket()
-          .then(() => {
-            this.sendMessageToWebSocket();
-          })
-          .catch((error) => {
-            console.error("Failed to setup websocket:", error);
-            this.loading = false; // Stop loading in case of error
-          });
-      } else {
-        this.sendMessageToWebSocket();
-      }
-    },
-    sendMessageToWebSocket() {
       const prompt = this.chatPrompt;
       this.chatPrompt = "";
+
       this.chatMessages.push({ role: "user", content: prompt });
-      this.ws.send(prompt);
-    },
-    setupWebsocket() {
-      return new Promise((resolve, reject) => {
-        if (this.ws) {
-          resolve();
-          return;
-        }
-        this.ws = new WebSocket(
-          settings.apiServerUrl +
-            "/api/" +
-            settings.apiServerVersion +
-            "/websockets/files/" +
-            this.file.id +
-            "/chat"
-        );
 
-        this.ws.onopen = () => {
-          console.log("WebSocket connection opened");
-          resolve();
-        };
+      const assistantMessageIndex =
+        this.chatMessages.push({
+          role: "assistant",
+          content: "",
+        }) - 1;
 
-        this.ws.onerror = (error) => {
-          console.error("WebSocket error:", error);
-          reject(error);
-        };
+      if (this.sseSubscription) {
+        this.sseSubscription.unsubscribe();
+      }
 
-        this.ws.onclose = () => {
-          console.log("WebSocket connection closed");
-        };
-
-        this.ws.onmessage = (event) => {
+      this.sseSubscription = RestApiClient.sse(`files/${this.file.id}/chat`, {
+        prompt: prompt,
+      }).subscribe({
+        next: (data) => {
           this.loading = false;
-          this.chatMessages.push({
-            role: "assistant",
-            content: event.data,
-          });
-        };
+          // Every chunk from backend corresponds to a line
+          if (this.chatMessages[assistantMessageIndex].content !== "") {
+            this.chatMessages[assistantMessageIndex].content += "\n";
+          }
+          this.chatMessages[assistantMessageIndex].content += data;
+        },
+        error: (error) => {
+          console.error("SSE Error:", error);
+          this.loading = false;
+        },
+        complete: () => {
+          this.loading = false;
+        },
       });
     },
   },
@@ -172,9 +146,9 @@ export default {
     });
   },
   unmounted() {
-    // Close the WebSocket connection when the component is destroyed
-    if (this.ws) {
-      this.ws.close();
+    // Close the SSE connection when the component is destroyed
+    if (this.sseSubscription) {
+      this.sseSubscription.unsubscribe();
     }
   },
 };
