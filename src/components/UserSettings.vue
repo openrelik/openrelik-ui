@@ -193,7 +193,7 @@ const { settings } = useUserSettings();
 const appStore = useAppStore();
 
 const llmsAvailable = computed(() => {
-  return appStore.systemConfig.active_llms.length > 0;
+  return appStore.systemConfig?.active_llms?.length > 0;
 });
 
 const open = () => {

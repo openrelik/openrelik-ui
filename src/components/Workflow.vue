@@ -233,7 +233,7 @@ export default {
         (task) =>
           task.status_short === "STARTED" ||
           task.status_short === "PROGRESS" ||
-          task.status_short === "RECEIVED"
+          task.status_short === "RECEIVED",
       );
     },
     extractedTaskConfigs() {
@@ -246,7 +246,7 @@ export default {
               const key = configItem.param_name || configItem.name;
               const value = Object.prototype.hasOwnProperty.call(
                 configItem,
-                "value"
+                "value",
               )
                 ? configItem.value
                 : null;
@@ -270,7 +270,7 @@ export default {
       RestApiClient.getWorkflow(this.workflow.folder.id, this.workflow.id).then(
         (response) => {
           this.workflow = response;
-        }
+        },
       );
     },
     getWorkflow() {
@@ -338,7 +338,7 @@ export default {
       }
       RestApiClient.createWorkflowTemplate(
         this.newTemplateForm.displayName,
-        this.workflow.id
+        this.workflow.id,
       ).then(() => {
         this.appStore.setWorkflowTemplates();
         this.newTemplateForm.displayName = "";
@@ -347,7 +347,7 @@ export default {
     runWorkflow() {
       // Generate a workflow name if it is not set
       // and if there are active LLMs configured.
-      if (this.systemConfig.active_llms.length) {
+      if (this.systemConfig?.active_llms?.length) {
         if (this.workflow.display_name === "Untitled workflow") {
           this.workflow.display_name = "Generating workflow name...";
           RestApiClient.generateWorkflowName(this.workflow).then((response) => {
