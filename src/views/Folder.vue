@@ -543,6 +543,7 @@ limitations under the License.
     <div class="mt-4">
       <v-card
         v-if="isWorkflowFolder && settings.WorkflowEditor === 'new'"
+        ref="workflowCard"
         variant="flat"
         class="workflow-card custom-border-color d-flex flex-column"
         :class="{
@@ -573,8 +574,8 @@ limitations under the License.
                   isGeneratingName
                     ? "Generating workflow name..."
                     : storeWorkflow && storeWorkflow.id === currentWorkflow.id
-                    ? storeWorkflow.display_name
-                    : currentWorkflow.display_name
+                      ? storeWorkflow.display_name
+                      : currentWorkflow.display_name
                 }}
                 <v-icon
                   v-if="isHovering"
@@ -648,6 +649,8 @@ limitations under the License.
 
         <workflow-canvas
           ref="canvas"
+          class="flex-grow-1"
+          :style="{ 'pointer-events': isResizing ? 'none' : 'auto' }"
           :folder="folder"
           :workflow="folder.workflows[0]"
           @workflow-updated="refreshFileListing()"
@@ -700,6 +703,15 @@ limitations under the License.
             :loading="isGeneratingReport"
             @click="generateReport()"
           ></v-btn>
+          <v-spacer></v-spacer>
+
+          <v-icon
+            class="resize-handle"
+            @mousedown="startResizing"
+            title="Drag to resize"
+            color="grey"
+            >mdi-resize-bottom-right</v-icon
+          >
         </v-card-actions>
       </v-card>
 
@@ -794,6 +806,10 @@ export default {
       files: [],
       myRole: { role: "" },
       isFullScreen: false,
+      manualHeight: null,
+      isResizing: false,
+      initialDragY: 0,
+      initialDragHeight: 0,
 
       showGrid: true,
       selectedFiles: [],
@@ -833,6 +849,7 @@ export default {
   },
   computed: {
     ...mapState(useWorkflowStore, {
+      nodes: "nodes",
       readOnly: "readOnly",
       storeSpecJson: "specJson",
       storeWorkflow: "workflow",
@@ -862,6 +879,14 @@ export default {
     isOwner() {
       return this.myRole.role === "Owner";
     },
+    isSimpleWorkflow() {
+      if (!this.nodes || this.nodes.length === 0 || this.nodes.length >= 10) {
+        return false;
+      }
+      const minY = Math.min(...this.nodes.map((n) => n.y));
+      const maxY = Math.max(...this.nodes.map((n) => n.y + 100));
+      return maxY - minY < 400;
+    },
     hasChords() {
       let jsonStr = null;
       // Prefer store data if it matches current workflow
@@ -889,8 +914,22 @@ export default {
           zIndex: 2000,
         };
       }
+
+      if (this.manualHeight) {
+        return {
+          height: `${this.manualHeight}px`,
+        };
+      }
+
+      if (this.isSimpleWorkflow) {
+        return {
+          height: "450px",
+          minHeight: "450px",
+        };
+      }
+
       return {
-        height: "70vh",
+        height: "60vh",
         minHeight: "550px",
       };
     },
@@ -911,7 +950,7 @@ export default {
     }, 300),
     removeFolder(folder_to_remove) {
       this.folders = this.folders.filter(
-        (folder) => folder.id != folder_to_remove.id
+        (folder) => folder.id != folder_to_remove.id,
       );
     },
     removeFile(file_to_remove) {
@@ -958,7 +997,7 @@ export default {
             name: "folder",
             params: { folderId: response.id },
           });
-        }
+        },
       );
     },
     renameFolder(newName) {
@@ -982,7 +1021,7 @@ export default {
         this.selectedGroups,
         this.selectedGroupsRole,
         this.selectedUsers,
-        this.selectedUsersRole
+        this.selectedUsersRole,
       ).then(() => {
         this.getFolder();
         this.selectedGroups = [];
@@ -1054,7 +1093,7 @@ export default {
       RestApiClient.createWorkflow(
         this.selectedFiles.map((file) => file.id),
         this.folder.id,
-        templateId
+        templateId,
       ).then((response) => {
         this.$router.push({
           name: "folder",
@@ -1094,7 +1133,7 @@ export default {
       this.isGeneratingReport = true;
       try {
         const response = await RestApiClient.generateWorkflowReport(
-          this.currentWorkflow.id
+          this.currentWorkflow.id,
         );
         this.workflowReportMarkdown = response;
         this.showWorkflowReportDialog = true;
@@ -1119,6 +1158,31 @@ export default {
         message: message.message.detail + ": " + message.file.fileName,
         color: "error",
       });
+    },
+    startResizing(e) {
+      this.isResizing = true;
+      this.initialDragY = e.clientY;
+      const card = this.$refs.workflowCard?.$el || this.$refs.workflowCard;
+      this.initialDragHeight = card.offsetHeight;
+
+      document.addEventListener("mousemove", this.handleResizing);
+      document.addEventListener("mouseup", this.stopResizing);
+      document.body.style.cursor = "ns-resize";
+      e.preventDefault();
+    },
+    stopResizing() {
+      this.isResizing = false;
+      document.removeEventListener("mousemove", this.handleResizing);
+      document.removeEventListener("mouseup", this.stopResizing);
+      document.body.style.cursor = "";
+    },
+    handleResizing(e) {
+      if (!this.isResizing) return;
+      const deltaY = e.clientY - this.initialDragY;
+      const newHeight = this.initialDragHeight + deltaY;
+      if (newHeight > 300) {
+        this.manualHeight = newHeight;
+      }
     },
   },
   mounted() {
@@ -1192,5 +1256,10 @@ export default {
   100% {
     opacity: 0.5;
   }
+}
+
+.resize-handle {
+  cursor: ns-resize;
+  margin-right: 20px;
 }
 </style>
