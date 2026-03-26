@@ -41,7 +41,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-vue": "^9.19.0",
-    "happy-dom": "^20.0.11",
+    "happy-dom": "^20.8.8",
     "pinia": "^2.1.0",
     "sass": "^1.84.0",
     "unplugin-fonts": "^1.1.0",
