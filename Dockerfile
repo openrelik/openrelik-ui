@@ -6,7 +6,7 @@ WORKDIR /app
 COPY package.json ./
 COPY yarn.lock ./
 # Install the project dependencies
-RUN yarn install
+RUN yarn install --frozen-lockfile
 # Copy the rest of the project files to the container
 COPY . .
 # Build the Vue.js application to the production mode to dist folder
