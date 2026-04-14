@@ -836,4 +836,80 @@ export default {
         });
     });
   },
+  async getDatastores() {
+    return new Promise((resolve, reject) => {
+      RestApiClient.get("/datastores/")
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async createDatastore(name, mountPoint, description) {
+    const requestBody = { name, mount_point: mountPoint, description };
+    return new Promise((resolve, reject) => {
+      RestApiClient.post("/datastores/", requestBody)
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async updateDatastore(name, requestBody) {
+    return new Promise((resolve, reject) => {
+      RestApiClient.patch("/datastores/" + name, requestBody)
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async deleteDatastore(name) {
+    return new Promise((resolve, reject) => {
+      RestApiClient.delete("/datastores/" + name)
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async browseDatastore(name, path = "") {
+    return new Promise((resolve, reject) => {
+      RestApiClient.get("/datastores/" + name + "/browse", { params: { path } })
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
+  async registerExternalFile(
+    datastoreName,
+    folderId,
+    relativePath,
+    displayName,
+    extension,
+  ) {
+    const requestBody = { folder_id: folderId, relative_path: relativePath };
+    if (displayName) requestBody.display_name = displayName;
+    if (extension) requestBody.extension = extension;
+    return new Promise((resolve, reject) => {
+      RestApiClient.post("/datastores/" + datastoreName + "/files", requestBody)
+        .then((response) => {
+          resolve(response.data);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
 };

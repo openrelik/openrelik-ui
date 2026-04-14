@@ -96,6 +96,13 @@ limitations under the License.
     </v-card>
   </v-dialog>
 
+  <!-- Add from external storage dialog -->
+  <add-external-file-dialog
+    ref="addExternalFileDialog"
+    :folder-id="folderId"
+    @file-added="onExternalFileAdded($event)"
+  />
+
   <!-- Share folder dialog -->
   <v-dialog v-model="showSharingDialog" width="400">
     <v-card width="500" class="mx-auto">
@@ -475,6 +482,14 @@ limitations under the License.
         @click="showUpload = !showUpload"
         >Upload files</v-btn
       >
+      <v-btn
+        v-if="!isWorkflowFolder && canEdit"
+        variant="outlined"
+        class="text-none mr-2 custom-border-color"
+        prepend-icon="mdi-database-arrow-right-outline"
+        @click="$refs.addExternalFileDialog.open()"
+        >Add from external storage</v-btn
+      >
       <v-menu v-if="files.length && canEdit">
         <template v-slot:activator="{ props }">
           <v-btn
@@ -766,6 +781,11 @@ limitations under the License.
 import _ from "lodash";
 import { mapActions, mapState } from "pinia";
 
+// Module-level cache: persists across component re-creations (i.e. navigation).
+// The GET /folders/{id}/files/ list endpoint may omit is_external, so we cache
+// which file IDs are external and restore the flag after every getFiles() call.
+const externalFilesCache = new Map(); // key: folderId → value: Set<fileId>
+
 import RestApiClient from "@/RestApiClient";
 import { useAppStore } from "@/stores/app";
 import { useUserStore } from "@/stores/user";
@@ -777,6 +797,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import FolderList from "@/components/FolderList";
 import ProfilePicture from "@/components/ProfilePicture.vue";
 import UploadFile from "@/components/UploadFile";
+import AddExternalFileDialog from "@/components/AddExternalFileDialog.vue";
 import Workflow from "@/components/Workflow.vue";
 import WorkflowCanvas from "@/components/WorkflowCanvas/WorkflowCanvas.vue";
 import WorkflowReport from "@/components/WorkflowReport.vue";
@@ -787,6 +808,7 @@ export default {
     FolderList,
     ProfilePicture,
     UploadFile,
+    AddExternalFileDialog,
     Workflow,
     WorkflowCanvas,
     WorkflowReport,
@@ -943,6 +965,34 @@ export default {
       createWorkflowTemplate: "createWorkflowTemplate",
       renameWorkflowFromStore: "renameWorkflow",
     }),
+    // Restore is_external from the module-level cache for files that the list
+    // endpoint may have returned without the field, then update the cache with
+    // any new information returned by the API.
+    setFilesFromApiResponse(files) {
+      const cached = externalFilesCache.get(this.folderId);
+      if (cached && cached.size > 0) {
+        this.files = files.map((f) =>
+          cached.has(f.id) ? { ...f, is_external: true } : f,
+        );
+      } else {
+        this.files = files;
+      }
+      // Persist any is_external flags that the API did return.
+      const externalIds = new Set(
+        this.files.filter((f) => f.is_external).map((f) => f.id),
+      );
+      if (externalIds.size > 0) {
+        externalFilesCache.set(this.folderId, externalIds);
+      }
+    },
+    onExternalFileAdded(file) {
+      this.files.push(file);
+      if (file.is_external) {
+        const cached = externalFilesCache.get(this.folderId) || new Set();
+        cached.add(file.id);
+        externalFilesCache.set(this.folderId, cached);
+      }
+    },
     searchUsers: _.debounce(function (query) {
       RestApiClient.searchUsers(query).then((response) => {
         this.searchUserResult = response;
@@ -958,7 +1008,7 @@ export default {
     },
     updateFilesArray() {
       RestApiClient.getFiles(this.folderId).then((response) => {
-        this.files = response;
+        this.setFilesFromApiResponse(response);
       });
     },
     toggleFullScreen() {
@@ -1049,7 +1099,7 @@ export default {
     },
     refreshFileListing() {
       RestApiClient.getFiles(this.folderId).then((response) => {
-        this.files = response;
+        this.setFilesFromApiResponse(response);
       });
     },
     getFolder() {
@@ -1064,7 +1114,7 @@ export default {
               this.folder.workflows[0].display_name;
           }
           RestApiClient.getFiles(this.folderId).then((response) => {
-            this.files = response;
+            this.setFilesFromApiResponse(response);
           });
           RestApiClient.getFolders(this.folderId)
             .then((response) => {

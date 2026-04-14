@@ -26,13 +26,21 @@ limitations under the License.
         </template>
         <v-list-item-title>Metrics</v-list-item-title>
       </v-list-item>
+      <v-list-item @click="$refs.externalStorageManager.open()">
+        <template v-slot:prepend>
+          <v-icon size="small">mdi-database-arrow-right-outline</v-icon>
+        </template>
+        <v-list-item-title>External storages</v-list-item-title>
+      </v-list-item>
     </v-list>
   </v-menu>
+  <external-storage-manager ref="externalStorageManager" />
 </template>
 
 <script>
 import { useTheme } from "vuetify";
 import ToggleTheme from "./ToggleTheme.vue";
+import ExternalStorageManager from "./ExternalStorageManager.vue";
 
 export default {
   data() {
@@ -42,6 +50,7 @@ export default {
   },
   components: {
     ToggleTheme,
+    ExternalStorageManager,
   },
 };
 </script>

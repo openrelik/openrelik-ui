@@ -432,6 +432,14 @@ limitations under the License.
                   <td>Original Path</td>
                   <td>{{ file.original_path }}</td>
                 </tr>
+                <tr v-if="file.is_external">
+                  <td>Storage</td>
+                  <td>{{ file.external_storage_name }}</td>
+                </tr>
+                <tr v-if="file.is_external && file.external_relative_path">
+                  <td>External path</td>
+                  <td>{{ file.external_relative_path }}</td>
+                </tr>
               </tbody>
             </v-table>
           </v-card>
@@ -545,6 +553,7 @@ export default {
       );
     },
     canEdit() {
+      if (this.file?.is_external) return false;
       return this.myRole.role === "Owner" || this.myRole.role === "Editor";
     },
     isOwner() {

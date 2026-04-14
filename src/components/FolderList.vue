@@ -69,6 +69,13 @@ limitations under the License.
           >
             {{ item.display_name }}
           </router-link>
+          <v-chip
+            v-if="item.is_external"
+            size="x-small"
+            color="grey"
+            label
+            class="ml-2"
+          >external</v-chip>
         </span>
         <span v-else>
           <v-icon
@@ -137,7 +144,7 @@ limitations under the License.
       <!-- Actions -->
       <template v-slot:item.actions="{ item }">
         <v-btn
-          v-if="item.user.id === currentUser.id"
+          v-if="item.user.id === currentUser.id && !item.is_external"
           icon
           variant="flat"
           size="small"
