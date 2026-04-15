@@ -17,9 +17,9 @@ The UI supports registering files from external read-only storage locations dire
 
 A settings dialog for managing external storage configurations. Accessible from the system menu. Provides full CRUD operations:
 
-- Lists all configured external storages with their name, type, and base path.
-- Create a new storage configuration (name, type, connection details).
-- Edit an existing configuration inline.
+- Lists all configured external storages with their name, mount point, and description.
+- Create a new storage configuration (name, mount point, and description).
+- Edit an existing configuration inline — only mount point and description can be changed. **Storage name is immutable after creation**; to rename, delete and recreate the entry.
 - Delete a configuration (with confirmation).
 - The mount point field displays a hint clarifying that the value must match the container path defined in `docker-compose.yml`.
 - After creating or updating a storage, the UI probes it via the browse endpoint and shows a success message if accessible, or a warning if the mount point cannot be reached (e.g. missing volume mount or container not restarted).
@@ -56,11 +56,11 @@ Added an "External storages" menu item that opens the `ExternalStorageManager` d
 
 **`FolderList.vue`**
 
-- External files are visually distinguished with an "external" badge. Edit and delete actions are disabled for external file entries.
+- External files are visually distinguished with an "external" badge. The delete button is hidden for external file entries. External files are selectable for bulk workflow creation — workers read them directly from the mounted path.
 - Virtual external folders (synthetic entries representing subdirectories within a mounted storage) are rendered with a network folder icon (`mdi-folder-network-outline`) and emit navigation events instead of routing to a real folder URL.
 - The ".." entry navigates up within the virtual path when inside a virtual external subdirectory, rather than routing to the parent real folder.
 - Virtual folders show "—" in the Last modified column instead of an invalid date.
 
 **`File.vue`**
 
-The Details tab for external files includes a storage metadata section showing the originating storage name, type, and path. The "Create workflow" action is disabled for external files, as they are read-only references and cannot be used as workflow inputs.
+The Details tab for external files includes a storage metadata section showing the originating storage name and path. The "Create workflow" action is available for external files — workers read them directly from the mounted path, so they are valid workflow inputs.

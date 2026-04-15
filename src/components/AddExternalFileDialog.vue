@@ -42,6 +42,12 @@ limitations under the License.
             hide-details
             @update:model-value="onDatastoreSelected"
           />
+          <div
+            v-if="datastores.length === 0 && !isLoadingDatastores"
+            class="text-caption text-medium-emphasis mb-3"
+          >
+            No external storages configured. Add one via Settings → External Storages.
+          </div>
 
           <!-- File browser -->
           <div
@@ -163,6 +169,7 @@ export default {
     return {
       dialog: false,
       datastores: [],
+      isLoadingDatastores: false,
       errorMessage: "",
       isSubmitting: false,
       browserItems: [],
@@ -200,12 +207,16 @@ export default {
         displayName: "",
         extension: "",
       };
+      this.isLoadingDatastores = true;
       RestApiClient.getDatastores()
         .then((data) => {
           this.datastores = data;
         })
         .catch(() => {
           this.errorMessage = "Failed to load datastores.";
+        })
+        .finally(() => {
+          this.isLoadingDatastores = false;
         });
     },
     onDatastoreSelected() {

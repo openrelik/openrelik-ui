@@ -485,7 +485,7 @@ limitations under the License.
   <div v-if="no_access" class="mt-2">You don't have access to this folder.</div>
   <div v-else>
     <!-- Button row -->
-    <div class="mt-3">
+    <div class="mt-3 d-flex align-center">
       <v-btn
         v-if="!isWorkflowFolder && canEdit"
         variant="outlined"
@@ -518,17 +518,6 @@ limitations under the License.
         @click="$refs.mountExternalStorageDialog.open()"
         >Mount external storage</v-btn
       >
-      <v-btn
-        v-if="folder.external_storage_name"
-        icon
-        variant="outlined"
-        class="mr-2 custom-border-color"
-        :loading="isRefreshingExternalFiles"
-        title="Refresh external files"
-        @click="refreshExternalFiles()"
-      >
-        <v-icon>mdi-refresh</v-icon>
-      </v-btn>
       <v-menu v-if="files.length && canEdit">
         <template v-slot:activator="{ props }">
           <v-btn
@@ -591,6 +580,16 @@ limitations under the License.
         :to="{ name: 'investigation', params: { folderId: folderId } }"
         prepend-icon="mdi-feature-search-outline"
         >Investigate</v-btn
+      >
+      <v-btn
+        v-if="folder.external_storage_name"
+        variant="outlined"
+        class="text-none custom-border-color"
+        style="margin-left: auto"
+        prepend-icon="mdi-refresh"
+        :loading="isRefreshingExternalFiles"
+        @click="refreshExternalFiles()"
+        >Refresh</v-btn
       >
     </div>
 
@@ -1095,6 +1094,7 @@ export default {
       this.files.push(file);
     },
     refreshExternalFiles() {
+      this.externalVirtualPath = "";
       this.isRefreshingExternalFiles = true;
       RestApiClient.getFiles(this.folderId)
         .then((response) => {
@@ -1124,6 +1124,7 @@ export default {
         external_storage_name: null,
         external_base_path: null,
       }).then((updatedFolder) => {
+        this.externalVirtualPath = "";
         this.folder.external_storage_name = updatedFolder.external_storage_name;
         this.folder.external_base_path = updatedFolder.external_base_path;
         this.refreshFileListing();

@@ -553,7 +553,6 @@ export default {
       );
     },
     canEdit() {
-      if (this.file?.is_external) return false;
       return this.myRole.role === "Owner" || this.myRole.role === "Editor";
     },
     isOwner() {

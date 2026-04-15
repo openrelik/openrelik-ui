@@ -141,7 +141,14 @@ limitations under the License.
             </td>
           </tr>
           <tr v-for="ds in datastores" :key="ds.name">
-            <td>{{ ds.name }}</td>
+            <td>
+              <span v-if="editingName !== ds.name">{{ ds.name }}</span>
+              <v-tooltip v-else location="top" text="Storage name cannot be changed after creation.">
+                <template v-slot:activator="{ props }">
+                  <span v-bind="props" class="text-medium-emphasis" style="cursor: not-allowed">{{ ds.name }}</span>
+                </template>
+              </v-tooltip>
+            </td>
             <td>
               <span v-if="editingName !== ds.name">{{ ds.mount_point }}</span>
               <v-text-field

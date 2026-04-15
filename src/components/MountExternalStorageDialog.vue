@@ -29,6 +29,16 @@ limitations under the License.
           >{{ errorMessage }}</v-alert
         >
 
+        <v-alert
+          v-if="replacingExistingMount"
+          type="warning"
+          variant="tonal"
+          density="compact"
+          class="mb-4"
+        >
+          This folder already has <strong>{{ folder.external_storage_name }}</strong> mounted. Saving will replace it.
+        </v-alert>
+
         <v-form @submit.prevent @keyup.enter="submit()">
           <v-select
             v-model="form.datastoreName"
@@ -94,6 +104,15 @@ export default {
         basePath: "",
       },
     };
+  },
+  computed: {
+    replacingExistingMount() {
+      return (
+        this.folder.external_storage_name &&
+        this.form.datastoreName &&
+        this.form.datastoreName !== this.folder.external_storage_name
+      );
+    },
   },
   methods: {
     open() {
