@@ -55,7 +55,7 @@ limitations under the License.
                 :class="{ 'text-primary': true }"
                 style="cursor: pointer"
                 @click="browseTo('')"
-              >root</span>
+              >{{ form.datastoreName }}</span>
               <template v-for="(segment, index) in breadcrumbSegments" :key="index">
                 <v-icon size="x-small" class="mx-1">mdi-chevron-right</v-icon>
                 <span

@@ -103,6 +103,13 @@ limitations under the License.
     @file-added="onExternalFileAdded($event)"
   />
 
+  <!-- Mount external storage dialog -->
+  <mount-external-storage-dialog
+    ref="mountExternalStorageDialog"
+    :folder="folder"
+    @mounted="onExternalStorageMounted($event)"
+  />
+
   <!-- Share folder dialog -->
   <v-dialog v-model="showSharingDialog" width="400">
     <v-card width="500" class="mx-auto">
@@ -453,6 +460,19 @@ limitations under the License.
       </h3>
     </v-hover>
     <h2 v-else>{{ folder.display_name }}</h2>
+
+    <v-chip
+      v-if="folder.external_storage_name"
+      size="small"
+      color="info"
+      variant="tonal"
+      prepend-icon="mdi-database-arrow-right-outline"
+      class="ml-3"
+      closable
+      close-icon="mdi-link-off"
+      title="Unmount external storage"
+      @click:close="unmountExternalStorage()"
+    >{{ folder.external_storage_name }}</v-chip>
   </span>
 
   <div v-if="folder.is_deleted">
@@ -489,6 +509,14 @@ limitations under the License.
         prepend-icon="mdi-database-arrow-right-outline"
         @click="$refs.addExternalFileDialog.open()"
         >Add from external storage</v-btn
+      >
+      <v-btn
+        v-if="!isWorkflowFolder && canEdit"
+        variant="outlined"
+        class="text-none mr-2 custom-border-color"
+        prepend-icon="mdi-database-sync-outline"
+        @click="$refs.mountExternalStorageDialog.open()"
+        >Mount external storage</v-btn
       >
       <v-menu v-if="files.length && canEdit">
         <template v-slot:activator="{ props }">
@@ -764,13 +792,36 @@ limitations under the License.
           Workflow results
         </v-card-title>
 
+        <!-- Virtual external path breadcrumb -->
+        <div v-if="externalVirtualPath" class="d-flex align-center mb-2 text-caption text-medium-emphasis">
+          <v-icon size="x-small" class="mr-1">mdi-database-arrow-right-outline</v-icon>
+          <span
+            class="text-primary"
+            style="cursor: pointer"
+            @click="externalVirtualPath = ''"
+          >{{ folder.external_storage_name }}</span>
+          <template v-for="(seg, idx) in externalVirtualPath.split('/')" :key="idx">
+            <v-icon size="x-small" class="mx-1">mdi-chevron-right</v-icon>
+            <span
+              v-if="idx < externalVirtualPath.split('/').length - 1"
+              class="text-primary"
+              style="cursor: pointer"
+              @click="externalVirtualPath = externalVirtualPath.split('/').slice(0, idx + 1).join('/')"
+            >{{ seg }}</span>
+            <span v-else>{{ seg }}</span>
+          </template>
+        </div>
+
         <folder-list
-          :items="items"
+          :items="virtualDisplayItems"
           :is-loading="isLoading"
           :folder="folder"
+          :virtual-path="externalVirtualPath"
           @file-deleted="removeFile($event)"
           @folder-deleted="removeFolder($event)"
           @selected-files="selectedFiles = $event"
+          @virtual-folder-enter="onVirtualFolderEnter($event)"
+          @virtual-folder-back="onVirtualFolderBack()"
         ></folder-list>
       </div>
     </div>
@@ -793,6 +844,7 @@ import FolderList from "@/components/FolderList";
 import ProfilePicture from "@/components/ProfilePicture.vue";
 import UploadFile from "@/components/UploadFile";
 import AddExternalFileDialog from "@/components/AddExternalFileDialog.vue";
+import MountExternalStorageDialog from "@/components/MountExternalStorageDialog.vue";
 import Workflow from "@/components/Workflow.vue";
 import WorkflowCanvas from "@/components/WorkflowCanvas/WorkflowCanvas.vue";
 import WorkflowReport from "@/components/WorkflowReport.vue";
@@ -804,6 +856,7 @@ export default {
     ProfilePicture,
     UploadFile,
     AddExternalFileDialog,
+    MountExternalStorageDialog,
     Workflow,
     WorkflowCanvas,
     WorkflowReport,
@@ -839,6 +892,7 @@ export default {
       showRenameWorkflowDialog: false,
       showWorkflowReportDialog: false,
 
+      externalVirtualPath: "",
       workflowReportMarkdown: "",
       isGeneratingReport: false,
       newFolderForm: {
@@ -883,6 +937,54 @@ export default {
     },
     items() {
       return this.folders.concat(this.files);
+    },
+    virtualDisplayItems() {
+      // Only activate virtual grouping when some external files carry a relative path
+      // that contains a directory separator.
+      const hasPathsWithDirs = this.files.some(
+        (f) => f.is_external && f.external_relative_path && f.external_relative_path.includes("/")
+      );
+      if (!hasPathsWithDirs && !this.externalVirtualPath) {
+        return this.items;
+      }
+
+      const prefix = this.externalVirtualPath ? this.externalVirtualPath + "/" : "";
+      const virtualFolderNames = new Set();
+      const directExternalFiles = [];
+
+      for (const file of this.files) {
+        if (!file.is_external || !file.external_relative_path) continue;
+        const rel = file.external_relative_path;
+        if (!rel.startsWith(prefix)) continue;
+        const remainder = rel.slice(prefix.length);
+        const slashIdx = remainder.indexOf("/");
+        if (slashIdx === -1) {
+          directExternalFiles.push(file);
+        } else {
+          virtualFolderNames.add(remainder.slice(0, slashIdx));
+        }
+      }
+
+      const virtualFolders = [...virtualFolderNames].sort().map((name) => ({
+        id: "__virtual__" + name,
+        display_name: name,
+        is_virtual_external_folder: true,
+        user: { id: null, display_name: "" },
+        workflows: [],
+        updated_at: null,
+        selectable: false,
+      }));
+
+      if (this.externalVirtualPath) {
+        // Inside a virtual directory: only virtual subfolders and their direct files
+        return [...virtualFolders, ...directExternalFiles];
+      }
+
+      // At root: real folders, non-external + path-less external files, then virtual tree
+      const nonExternalOrPathless = this.files.filter(
+        (f) => !f.is_external || !f.external_relative_path
+      );
+      return [...this.folders, ...nonExternalOrPathless, ...virtualFolders, ...directExternalFiles];
     },
     isWorkflowFolder() {
       if (!this.folder.workflows) {
@@ -965,6 +1067,36 @@ export default {
     },
     onExternalFileAdded(file) {
       this.files.push(file);
+    },
+    onVirtualFolderEnter(name) {
+      this.externalVirtualPath = this.externalVirtualPath
+        ? this.externalVirtualPath + "/" + name
+        : name;
+    },
+    onVirtualFolderBack() {
+      const lastSlash = this.externalVirtualPath.lastIndexOf("/");
+      this.externalVirtualPath =
+        lastSlash === -1 ? "" : this.externalVirtualPath.slice(0, lastSlash);
+    },
+    onExternalStorageMounted(updatedFolder) {
+      this.folder.external_storage_name = updatedFolder.external_storage_name;
+      this.folder.external_base_path = updatedFolder.external_base_path;
+      this.refreshFileListing();
+    },
+    unmountExternalStorage() {
+      RestApiClient.updateFolder(this.folder, {
+        external_storage_name: null,
+        external_base_path: null,
+      }).then((updatedFolder) => {
+        this.folder.external_storage_name = updatedFolder.external_storage_name;
+        this.folder.external_base_path = updatedFolder.external_base_path;
+        this.refreshFileListing();
+      }).catch(() => {
+        this.$eventBus.emit("showSnackbar", {
+          message: "Failed to unmount external storage.",
+          color: "error",
+        });
+      });
     },
     searchUsers: _.debounce(function (query) {
       RestApiClient.searchUsers(query).then((response) => {
@@ -1217,6 +1349,7 @@ export default {
   },
   watch: {
     "$route.params": function () {
+      this.externalVirtualPath = "";
       this.getFolder();
     },
   },

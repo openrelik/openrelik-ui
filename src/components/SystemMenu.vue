@@ -18,7 +18,7 @@ limitations under the License.
     <template v-slot:activator="{ props }">
       <v-icon v-bind="props" class="ml-3">mdi-dots-vertical</v-icon>
     </template>
-    <v-list width="200">
+    <v-list width="220">
       <toggle-theme />
       <v-list-item :to="'/metrics'">
         <template v-slot:prepend>

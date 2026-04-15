@@ -34,8 +34,16 @@ limitations under the License.
       <template v-slot:body.prepend v-if="folder">
         <tr>
           <td>
+            <!-- Inside a virtual external subfolder: go up in virtual path -->
+            <span
+              v-if="virtualPath"
+              style="text-decoration: none; color: inherit; cursor: pointer"
+              @click="$emit('virtual-folder-back')"
+            >
+              <v-icon color="info" class="mr-2 mt-n1">mdi-folder</v-icon> ..
+            </span>
             <router-link
-              v-if="folder.parent"
+              v-else-if="folder.parent"
               style="text-decoration: none; color: inherit"
               :to="{ name: 'folder', params: { folderId: folder.parent.id } }"
             >
@@ -76,6 +84,14 @@ limitations under the License.
             label
             class="ml-2"
           >external</v-chip>
+        </span>
+        <!-- Virtual external subfolder (no real DB ID, no route) -->
+        <span v-else-if="item.is_virtual_external_folder">
+          <v-icon class="mr-3 mt-n1" color="info">mdi-folder-network-outline</v-icon>
+          <span
+            style="cursor: pointer"
+            @click="$emit('virtual-folder-enter', item.display_name)"
+          >{{ item.display_name }}</span>
         </span>
         <span v-else>
           <v-icon
@@ -127,9 +143,10 @@ limitations under the License.
 
       <!-- Time -->
       <template v-slot:item.updated_at="{ item }">
-        <span :title="item.updated_at">{{
+        <span v-if="!item.is_virtual_external_folder" :title="item.updated_at">{{
           $filters.formatTime(item.updated_at)
         }}</span>
+        <span v-else>—</span>
       </template>
 
       <!-- Owner -->
@@ -168,7 +185,12 @@ export default {
     items: Array,
     isLoading: Boolean,
     folder: Object,
+    virtualPath: {
+      type: String,
+      default: "",
+    },
   },
+  emits: ["file-deleted", "folder-deleted", "selected-files", "virtual-folder-enter", "virtual-folder-back"],
   components: {
     ProfilePicture,
   },

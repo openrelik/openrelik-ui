@@ -43,6 +43,28 @@ limitations under the License.
         >{{ errorMessage }}</v-alert
       >
 
+      <v-alert
+        v-if="successMessage"
+        type="success"
+        variant="tonal"
+        density="compact"
+        closable
+        class="ma-4"
+        @click:close="successMessage = ''"
+        >{{ successMessage }}</v-alert
+      >
+
+      <v-alert
+        v-if="warningMessage"
+        type="warning"
+        variant="tonal"
+        density="compact"
+        closable
+        class="ma-4"
+        @click:close="warningMessage = ''"
+        >{{ warningMessage }}</v-alert
+      >
+
       <!-- Create form -->
       <v-expand-transition>
         <div v-if="showCreateForm" class="pa-4 pb-0">
@@ -76,6 +98,9 @@ limitations under the License.
                 />
               </v-col>
             </v-row>
+            <div class="text-caption text-medium-emphasis mt-2">
+              Mount point must match the container path defined in docker-compose.yml (e.g. /mnt/external)
+            </div>
             <div class="mt-3">
               <v-btn
                 variant="flat"
@@ -195,6 +220,8 @@ export default {
       datastores: [],
       isLoading: false,
       errorMessage: "",
+      successMessage: "",
+      warningMessage: "",
       showCreateForm: false,
       createForm: { name: "", mountPoint: "", description: "" },
       editingName: null,
@@ -204,6 +231,9 @@ export default {
   methods: {
     open() {
       this.dialog = true;
+      this.errorMessage = "";
+      this.successMessage = "";
+      this.warningMessage = "";
       this.loadDatastores();
     },
     loadDatastores() {
@@ -222,6 +252,17 @@ export default {
     resetCreateForm() {
       this.createForm = { name: "", mountPoint: "", description: "" };
     },
+    probeDatastore(name, mountPoint) {
+      RestApiClient.browseDatastore(name, "")
+        .then(() => {
+          this.successMessage = `Storage '${name}' created and accessible.`;
+        })
+        .catch(() => {
+          this.warningMessage =
+            `Storage created, but mount point ${mountPoint} is not accessible. ` +
+            `Make sure the path is mounted in docker-compose.yml and the container is restarted.`;
+        });
+    },
     createDatastore() {
       const { name, mountPoint, description } = this.createForm;
       RestApiClient.createDatastore(name, mountPoint, description)
@@ -229,6 +270,7 @@ export default {
           this.datastores.push(ds);
           this.showCreateForm = false;
           this.resetCreateForm();
+          this.probeDatastore(ds.name, ds.mount_point);
         })
         .catch((err) => {
           this.errorMessage =
@@ -252,6 +294,7 @@ export default {
           const idx = this.datastores.findIndex((d) => d.name === name);
           if (idx !== -1) this.datastores[idx] = updated;
           this.editingName = null;
+          this.probeDatastore(updated.name, updated.mount_point);
         })
         .catch((err) => {
           this.errorMessage =
