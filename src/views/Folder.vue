@@ -939,11 +939,25 @@ export default {
       return this.folders.concat(this.files);
     },
     virtualDisplayItems() {
-      // Only activate virtual grouping when some external files carry a relative path
-      // that contains a directory separator.
-      const hasPathsWithDirs = this.files.some(
-        (f) => f.is_external && f.external_relative_path && f.external_relative_path.includes("/")
-      );
+      // Strip the folder's external_base_path prefix from a file's external_relative_path
+      // so that files registered under the base path appear at the virtual root, not nested
+      // inside a virtual folder named after the base path itself.
+      const basePath = this.folder.external_base_path
+        ? this.folder.external_base_path.replace(/\/$/, "") + "/"
+        : "";
+      const stripBasePath = (relPath) => {
+        if (basePath && relPath.startsWith(basePath)) {
+          return relPath.slice(basePath.length);
+        }
+        return relPath;
+      };
+
+      // Only activate virtual grouping when some external files (after stripping base path)
+      // still contain a directory separator.
+      const hasPathsWithDirs = this.files.some((f) => {
+        if (!f.is_external || !f.external_relative_path) return false;
+        return stripBasePath(f.external_relative_path).includes("/");
+      });
       if (!hasPathsWithDirs && !this.externalVirtualPath) {
         return this.items;
       }
@@ -954,7 +968,7 @@ export default {
 
       for (const file of this.files) {
         if (!file.is_external || !file.external_relative_path) continue;
-        const rel = file.external_relative_path;
+        const rel = stripBasePath(file.external_relative_path);
         if (!rel.startsWith(prefix)) continue;
         const remainder = rel.slice(prefix.length);
         const slashIdx = remainder.indexOf("/");
