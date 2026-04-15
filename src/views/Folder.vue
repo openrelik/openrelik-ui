@@ -518,6 +518,17 @@ limitations under the License.
         @click="$refs.mountExternalStorageDialog.open()"
         >Mount external storage</v-btn
       >
+      <v-btn
+        v-if="folder.external_storage_name"
+        icon
+        variant="outlined"
+        class="mr-2 custom-border-color"
+        :loading="isRefreshingExternalFiles"
+        title="Refresh external files"
+        @click="refreshExternalFiles()"
+      >
+        <v-icon>mdi-refresh</v-icon>
+      </v-btn>
       <v-menu v-if="files.length && canEdit">
         <template v-slot:activator="{ props }">
           <v-btn
@@ -893,6 +904,7 @@ export default {
       showWorkflowReportDialog: false,
 
       externalVirtualPath: "",
+      isRefreshingExternalFiles: false,
       workflowReportMarkdown: "",
       isGeneratingReport: false,
       newFolderForm: {
@@ -1081,6 +1093,16 @@ export default {
     },
     onExternalFileAdded(file) {
       this.files.push(file);
+    },
+    refreshExternalFiles() {
+      this.isRefreshingExternalFiles = true;
+      RestApiClient.getFiles(this.folderId)
+        .then((response) => {
+          this.setFilesFromApiResponse(response);
+        })
+        .finally(() => {
+          this.isRefreshingExternalFiles = false;
+        });
     },
     onVirtualFolderEnter(name) {
       this.externalVirtualPath = this.externalVirtualPath
