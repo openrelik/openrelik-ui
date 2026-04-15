@@ -781,11 +781,6 @@ limitations under the License.
 import _ from "lodash";
 import { mapActions, mapState } from "pinia";
 
-// Module-level cache: persists across component re-creations (i.e. navigation).
-// The GET /folders/{id}/files/ list endpoint may omit is_external, so we cache
-// which file IDs are external and restore the flag after every getFiles() call.
-const externalFilesCache = new Map(); // key: folderId → value: Set<fileId>
-
 import RestApiClient from "@/RestApiClient";
 import { useAppStore } from "@/stores/app";
 import { useUserStore } from "@/stores/user";
@@ -965,33 +960,11 @@ export default {
       createWorkflowTemplate: "createWorkflowTemplate",
       renameWorkflowFromStore: "renameWorkflow",
     }),
-    // Restore is_external from the module-level cache for files that the list
-    // endpoint may have returned without the field, then update the cache with
-    // any new information returned by the API.
     setFilesFromApiResponse(files) {
-      const cached = externalFilesCache.get(this.folderId);
-      if (cached && cached.size > 0) {
-        this.files = files.map((f) =>
-          cached.has(f.id) ? { ...f, is_external: true } : f,
-        );
-      } else {
-        this.files = files;
-      }
-      // Persist any is_external flags that the API did return.
-      const externalIds = new Set(
-        this.files.filter((f) => f.is_external).map((f) => f.id),
-      );
-      if (externalIds.size > 0) {
-        externalFilesCache.set(this.folderId, externalIds);
-      }
+      this.files = files;
     },
     onExternalFileAdded(file) {
       this.files.push(file);
-      if (file.is_external) {
-        const cached = externalFilesCache.get(this.folderId) || new Set();
-        cached.add(file.id);
-        externalFilesCache.set(this.folderId, cached);
-      }
     },
     searchUsers: _.debounce(function (query) {
       RestApiClient.searchUsers(query).then((response) => {
