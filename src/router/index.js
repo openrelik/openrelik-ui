@@ -123,11 +123,11 @@ router.beforeEach((to, _from, next) => {
           next();
         }
       })
-      .catch((error) => {
-        if (error.response.status === 401) {
-          next({ name: "login" });
-          return;
-        }
+      .catch(() => {
+        // Any failure to resolve the user (401, network error, blocked
+        // cross-origin request) lands on the login page instead of leaving
+        // the navigation pending, which renders a blank screen.
+        next({ name: "login" });
       });
   } else {
     next();
