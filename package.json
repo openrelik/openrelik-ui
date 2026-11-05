@@ -22,7 +22,7 @@
     "resumablejs": "^1.1.0",
     "roboto-fontface": "*",
     "sass-loader": "^16.0.4",
-    "uuid": "^9.0.1",
+    "uuid": "^14.0.0",
     "vue": "^3.3.0",
     "vue3-apexcharts": "^1.8.0",
     "vuetify": "^3.0.0"
